@@ -10,7 +10,7 @@ dk_lib_dir = os.path.abspath(f"{this_dir}/..")
 sys.path.insert(0, dk_lib_dir)
 
 from os import PathLike
-from lib.bash import run_command
+from lib.bash import run_command, getuser
 from lib.basic_functions import now_date, is_empty_string, valid_absolute_path, now_year
 from lib.file_system_object import mkdir, remove, find, FileSystemObjectType
 from lib.file_utils import read_file, write_file, get_git_config
@@ -172,7 +172,7 @@ def create_cmake_project(project_path: (str, os.PathLike)):
 def main():
     parser = argparse.ArgumentParser(description='Create a CMake project with Docker Compose files')
     parser.add_argument("--root_dir", "-r",
-                        default="/home/dieter/Repos/interviews",
+                        default=f"/home/{getuser()}/Repos/CPP",
                         type=str,
                         help='Root directory for the project')
     parser.add_argument("--project_name", "-n",
