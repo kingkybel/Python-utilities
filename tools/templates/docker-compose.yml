@@ -1,0 +1,9 @@
+[[LICENCE]]
+
+version: '3'
+services:
+  [[PROJECT_NAME_TEMPLATE_LOWER]]:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ./bin/[[PROJECT_NAME_TEMPLATE_LOWER]]_test

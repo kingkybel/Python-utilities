@@ -1,6 +1,7 @@
 import os.path
 from os import PathLike
 
+from lib.bash import assert_tools_installed, run_command
 from lib.basic_functions import valid_absolute_path, is_empty_string
 from lib.file_system_object import mkdir
 from lib.logger import log_command, error
@@ -82,6 +83,21 @@ def write_file(filename: (str | PathLike),
             file.writelines(content)
 
 
+def extract_dict_from_string(content: (str | list[str])):
+    key_val_dict = dict()
+    lines = content.split("\n")
+    for line in lines:
+        key_val = squeeze_chars(source=(line.split("#")[0]), squeeze_set="\t ").split("=")
+        key = key_val[0]
+        if not is_empty_string(key):
+            if len(key_val) == 1:
+                val = ""
+            else:
+                val = key_val[1]
+            key_val_dict[key] = val
+    return key_val_dict
+
+
 def parse_env_file(filename: (str | PathLike), dryrun: bool = False) -> dict[str, str]:
     """
     Simple *.env file parser.
@@ -98,14 +114,19 @@ def parse_env_file(filename: (str | PathLike), dryrun: bool = False) -> dict[str
     content = read_file(filename=filename, dryrun=dryrun)
     key_val_dict = dict()
     if not dryrun:
-        lines = content.split("\n")
-        for line in lines:
-            key_val = squeeze_chars(source=(line.split("#")[0]), squeeze_set="\t ").split("=")
-            key = key_val[0]
-            if not is_empty_string(key):
-                if len(key_val) == 1:
-                    val = ""
-                else:
-                    val = key_val[1]
-                key_val_dict[key] = val
+        key_val_dict = extract_dict_from_string(content)
+    return key_val_dict
+
+
+def get_git_config(path: (str | PathLike) = None, dryrun: bool = False) -> dict[str, str]:
+    key_val_dict = dict()
+    if path is None:
+        path = valid_absolute_path(".")
+    assert_tools_installed("git")
+    reval, s_out, s_err = run_command(cmd="git config --list", cwd=path, raise_errors=False, dryrun=dryrun)
+    if reval != 0:
+        error(f"Could not retrieve git-config in path '{path}': {s_err}")
+    if not dryrun:
+        key_val_dict = extract_dict_from_string(s_out)
+
     return key_val_dict

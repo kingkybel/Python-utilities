@@ -13,6 +13,11 @@ class EnumListType(Flag):
 
 
 def always_match(any_obj):
+    """
+    Predicate that always matches for any object of any type.
+    :param any_obj: placeholder object
+    :return: always true.
+    """
     return True
 
 

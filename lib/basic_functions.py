@@ -24,6 +24,10 @@ def now_date() -> str:
     return datetime.now(tz=None).strftime("%Y-%m-%d")
 
 
+def now_year() -> str:
+    return datetime.now(tz=None).strftime("%Y")
+
+
 def valid_absolute_path(path: (str | PathLike),
                         protect_system_patterns: (str | list[str]) = None):
     """

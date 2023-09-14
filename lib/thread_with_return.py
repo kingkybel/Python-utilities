@@ -1,5 +1,6 @@
 import os
 import sys
+
 this_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = f"{this_dir}/.."
 sys.path.insert(0, parent_dir)
@@ -30,7 +31,7 @@ class ReturningThread(Thread):
     @overrides(Thread)
     def run(self):
         if self._target is not None:
-            self.__return__ = self._target(*self.args, **self.kwargs)
+            self.__return__ = self._target(*self._args, **self._kwargs)
 
     @overrides(Thread)
     def join(self, *args) -> object:

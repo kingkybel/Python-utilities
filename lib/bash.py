@@ -142,7 +142,7 @@ def run_command(cmd: (str | list[str]),
             cmd_copy.append(c)
     cmd_str = " ".join(cmd_copy)
 
-    if is_empty_string(str(cwd)):
+    if cwd is None or is_empty_string(cwd):
         cwd = pwd()
 
     pushdir(cwd, dryrun=dryrun)
@@ -209,7 +209,7 @@ def run_interactive_command(cmd: (str | list),
             cmd_copy.append(c)
     cmd_str = " ".join(cmd_copy)
 
-    if is_empty_string(str(cwd)):
+    if cwd is None or is_empty_string(cwd):
         cwd = pwd()
 
     pushdir(cwd, dryrun=dryrun)
