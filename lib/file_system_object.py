@@ -1,14 +1,14 @@
 import glob
 import os
 import shutil
+import psutil
+import grp
+import pwd
 from datetime import datetime
 from distutils.dir_util import copy_tree
 from enum import auto
 from os import PathLike
 from pathlib import Path
-
-import psutil
-
 from lib.basic_functions import is_empty_string, valid_absolute_path
 from lib.extended_enum import ExtendedFlag, ExtendedEnum, always_match
 from lib.logger import error, log_warning, log_command
@@ -127,12 +127,13 @@ def glob_path_patterns(paths: (str | PathLike | list), glob_mode: GlobMode = Glo
 
 def remove(paths: (str | PathLike | list),
            force: bool = False,
+           allow_system_paths: bool = False,
            dryrun: bool = False):
     paths = glob_path_patterns(paths, glob_mode=GlobMode.WARN_EMPTY)
     log_command(f"rm -rf {paths}", dryrun=dryrun)
     if not dryrun:
         for path in paths:
-            path = valid_absolute_path(path)
+            path = valid_absolute_path(path, allow_system_paths=allow_system_paths)
             try:
                 if os.path.isdir(path):
                     shutil.rmtree(path, ignore_errors=force)
@@ -155,12 +156,15 @@ def set_file_last_modified(paths: (str | PathLike | list), dt: datetime, dryrun:
     return modified
 
 
-def touch(paths: (str | PathLike | list), glob_mode: GlobMode = GlobMode.KEEP_EMPTY, dryrun: bool = False):
+def touch(paths: (str | PathLike | list),
+          glob_mode: GlobMode = GlobMode.KEEP_EMPTY,
+          allow_system_paths:bool = False,
+          dryrun: bool = False):
     paths = glob_path_patterns(paths, glob_mode=glob_mode)
     if not dryrun:
         touched = list()
         for path in paths:
-            path = valid_absolute_path(path)
+            path = valid_absolute_path(path, allow_system_paths=allow_system_paths)
             parent_path = os.path.dirname(path)
             log_command(f"touch {path}")
             if not os.path.isdir(parent_path):
@@ -183,19 +187,21 @@ def mkdir(paths: (str | PathLike | list),
           force: bool = False,
           recreate: bool = False,
           expect_1: bool = False,
+          allow_system_paths: bool = False,
           dryrun: bool = False):
     paths = glob_path_patterns(paths, glob_mode=GlobMode.KEEP_EMPTY)
     log_command(f"mkdir {paths}", dryrun=dryrun)
     created_paths = list()
     if not dryrun:
         for path in paths:
-            path = valid_absolute_path(path)
+            path = valid_absolute_path(path, allow_system_paths=allow_system_paths)
             if os.path.isfile(path) and not recreate:
                 raise FileExistsError(f"Cannot create directory {path}. Path is regular file")
             try:
                 if recreate:
                     remove(paths=paths, force=force)
                 os.makedirs(path, exist_ok=force)
+                created_paths.append(path)
             except FileExistsError:
                 created_paths.append(path)
                 pass
@@ -209,6 +215,7 @@ def mkdir(paths: (str | PathLike | list),
 def symbolic_link(existing_path: (str | PathLike),
                   new_link: (str | PathLike),
                   overwrite_link: bool = False,
+                  allow_system_paths: bool = False,
                   dryrun: bool = False):
     if isinstance(existing_path, PathLike):
         existing_path = str(existing_path)
@@ -221,14 +228,14 @@ def symbolic_link(existing_path: (str | PathLike),
             error(f"Cannot link empty path to {new_link}")
         force = ""
         if overwrite_link and (os.path.exists(new_link) or os.path.islink(new_link)):
-            remove(new_link)
+            remove(new_link, allow_system_paths=allow_system_paths)
             force = "-f "
         log_command(f"ln {force}-s {existing_path} {new_link}")
         symlink = Path(new_link)
         symlink.symlink_to(existing_path)
 
 
-def pwd() -> str:
+def current_dir() -> str:
     try:
         cwd = os.getcwd()
     except OSError:
@@ -241,7 +248,7 @@ push_stack = list()
 
 def pushdir(path: (str | PathLike), dryrun: bool = False):
     global push_stack
-    push_stack.append(pwd())
+    push_stack.append(current_dir())
     log_command(f"pushd {path}", dryrun=dryrun)
     if not dryrun:
         os.chdir(path)
@@ -249,7 +256,7 @@ def pushdir(path: (str | PathLike), dryrun: bool = False):
 
 def popdir(dryrun: bool = False):
     global push_stack
-    current = pwd()
+    current = current_dir()
     if len(push_stack) > 0:
         current = push_stack.pop()
         os.chdir(current)
@@ -263,6 +270,7 @@ def find(paths: (str | PathLike | list),
          name_patterns: (str | list) = None,
          sort_field: FindSortField = FindSortField.NONE,
          reverse: bool = False,
+         allow_system_paths:bool = False,
          dryrun: bool = False):
     paths = glob_path_patterns(paths)
     list_of_non_directories = list()
@@ -294,7 +302,8 @@ def find(paths: (str | PathLike | list),
                     if name_patterns is not None:
                         matches = matches_any(search_string=path, patterns=name_patterns)
                     if matches:
-                        augmented_path_list.append((valid_absolute_path(dir_name),
+                        augmented_path_list.append((valid_absolute_path(dir_name,
+                                                                        allow_system_paths= allow_system_paths),
                                                     FileSystemObjectType.DIR.value,
                                                     depth))
                 depth += 1
@@ -303,7 +312,8 @@ def find(paths: (str | PathLike | list),
                     if name_patterns is not None:
                         matches = matches_any(search_string=file, patterns=name_patterns)
                     if matches:
-                        file_path = valid_absolute_path(f"{dir_name}/{file}")
+                        file_path = valid_absolute_path(f"{dir_name}/{file}",
+                                                        allow_system_paths= allow_system_paths)
                         file_type = FileSystemObjectType.from_file_system_object(file_path)
                         if file_type & file_type_filter == file_type:
                             augmented_path_list.append((file_path, file_type.value, depth))
@@ -375,7 +385,7 @@ def cp(paths: (str | PathLike | list), target: (str | PathLike), dryrun: bool = 
     :param dryrun:
     :return:
     """
-    log_command(f"cp -rf {paths} {target}", dryrun=dryrun)
+    log_command(f"cp -R {paths} {target}", dryrun=dryrun)
     if not dryrun:
         paths = glob_path_patterns(paths)
         for path in paths:
@@ -396,7 +406,7 @@ def cp(paths: (str | PathLike | list), target: (str | PathLike), dryrun: bool = 
                 if os.path.exists(target_file) or os.path.isdir(target_file):
                     remove(target_file)
                     shutil.copy(path, target_file)
-            elif os.path.isfile(path) and (os.path.isdir(target) or not os.path.exists(target)):
+            elif os.path.isfile(path):# and (os.path.isdir(target)) or not os.path.exists(target)
                 mkdir(os.path.dirname(target))
                 remove(target)
                 shutil.copy(path, target)
@@ -404,10 +414,24 @@ def cp(paths: (str | PathLike | list), target: (str | PathLike), dryrun: bool = 
                 error(f"Cannot copy '{path}' to '{target}'")
 
 
-def mv(paths: (str | PathLike | list), target: (str | PathLike), dryrun: bool = False):
+def mv(paths: (str | PathLike | list[str | PathLike]), target: (str | PathLike), dryrun: bool = False):
     log_command(f"mv {paths} {target}", dryrun=dryrun)
     paths = glob_path_patterns(paths)
     if len(paths) > 1 and not os.path.isdir(target):
         error(f"Cannot move multiple files to target-file '{target}'")
     for path in paths:
         shutil.move(path, target)
+
+
+def chown(paths: (str | PathLike | list[str | PathLike]),
+          user: (str | int),
+          group: (str | int) = None,
+          dryrun: bool = False):
+    if group is None:
+        group = user
+    log_command(f"chmod {user}:{group} {paths}", dryrun=dryrun)
+    paths = glob_path_patterns(paths)
+    for path in paths:
+        uid = pwd.getpwnam(user).pw_uid
+        gid = grp.getgrnam(group).gr_gid
+        os.chown(path, uid, gid)

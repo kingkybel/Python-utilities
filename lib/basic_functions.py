@@ -29,12 +29,14 @@ def now_year() -> str:
 
 
 def valid_absolute_path(path: (str | PathLike),
-                        protect_system_patterns: (str | list[str]) = None):
+                        protect_system_patterns: (str | list[str]) = None,
+                        allow_system_paths: bool = False):
     """
     Create an absolute path from the given path.
     :param path: the original path.
     :param protect_system_patterns: a list of patterns to prevent the returned path to be a protected system-path.
                                     By default, the Unix/Linux system paths are protected.
+    :param allow_system_paths: if set to True then system paths are allowed, default False
     :return: the absolute path as string.
     """
     if protect_system_patterns is None:
@@ -46,9 +48,10 @@ def valid_absolute_path(path: (str | PathLike),
     path = os.path.abspath(path)
     if isinstance(protect_system_patterns, str):
         protect_system_patterns = [protect_system_patterns]
-    for protected in protect_system_patterns:
-        if bool(re.match(pattern=protected, string=path)):
-            raise SystemError(f"Path '{path}' is a protected path. Change protect_system_patterns - parameter")
+    if not allow_system_paths:
+        for protected in protect_system_patterns:
+            if bool(re.match(pattern=protected, string=path)):
+                raise SystemError(f"Path '{path}' is a protected path. Change protect_system_patterns - parameter")
     if path.find("/") and not path.startswith("/") and not path.startswith("."):
         path = f"./{path}"
     return os.path.abspath(path)

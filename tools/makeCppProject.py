@@ -169,7 +169,7 @@ def create_cmake_project(project_path: (str, os.PathLike)):
                            comment_style=comment_style)
 
 
-def main():
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Create a CMake project with Docker Compose files')
     parser.add_argument("--root_dir", "-r",
                         default=f"/home/{getuser()}/Repos/CPP",
@@ -197,7 +197,3 @@ def main():
     run_command(cmd=["git", "commit", "-m", "initial checkin"], cwd=project_dir)
     mkdir(f"{project_dir}/build")
     print(f"Project '{found_args.project_name}' has been created successfully in {project_dir}.")
-
-
-if __name__ == "__main__":
-    main()

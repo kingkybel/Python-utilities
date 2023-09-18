@@ -8,10 +8,11 @@ from lib.logger import log_command, error
 from lib.string_utils import squeeze_chars
 
 
-def generate_incremental_filename(filename: (str | PathLike)) -> str:
+def generate_incremental_filename(filename: (str | PathLike), allow_system_paths: bool = False) -> str:
     """
     Generate a filename with incremental numbers if file exists.
     :param filename: The basic path of the file, may contain spaces, which will be replaced by underscores.
+    :param allow_system_paths: allow to manipulate system paths
     :return: A unique filename with an incremental number.
     """
     filename = squeeze_chars(source=str(filename), squeeze_set="\n\t\r ", replace_with="_")
@@ -31,7 +32,7 @@ def generate_incremental_filename(filename: (str | PathLike)) -> str:
         full_path = f"{dir_path}/{base_filename}_{counter}{extension}"
         counter += 1
 
-    return valid_absolute_path(full_path)
+    return valid_absolute_path(full_path, allow_system_paths=allow_system_paths)
 
 
 def read_file(filename: (str | PathLike), dryrun: bool = False) -> str:
@@ -52,6 +53,7 @@ def read_file(filename: (str | PathLike), dryrun: bool = False) -> str:
 def write_file(filename: (str | PathLike),
                content: (str | list[str]) = None,
                mode: str = "w",
+               allow_system_paths:bool = False,
                dryrun: bool = False):
     """
     Write the given content to the given filename.
@@ -61,7 +63,7 @@ def write_file(filename: (str | PathLike),
     :param dryrun: if set to True, then do not execute but just output a comment describing the command.
     :return:
     """
-    filename = valid_absolute_path(filename)
+    filename = valid_absolute_path(filename, allow_system_paths= allow_system_paths)
     log_command(f"write_file({filename}, mode='{mode}')",
                 extra_comment=f"Python command in {__file__}",
                 dryrun=dryrun)
@@ -118,10 +120,12 @@ def parse_env_file(filename: (str | PathLike), dryrun: bool = False) -> dict[str
     return key_val_dict
 
 
-def get_git_config(path: (str | PathLike) = None, dryrun: bool = False) -> dict[str, str]:
+def get_git_config(path: (str | PathLike) = None,
+                   allow_system_paths:bool = False,
+                   dryrun: bool = False) -> dict[str, str]:
     key_val_dict = dict()
     if path is None:
-        path = valid_absolute_path(".")
+        path = valid_absolute_path(".", allow_system_paths= allow_system_paths)
     assert_tools_installed("git")
     reval, s_out, s_err = run_command(cmd="git config --list", cwd=path, raise_errors=False, dryrun=dryrun)
     if reval != 0:
