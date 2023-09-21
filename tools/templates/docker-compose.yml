@@ -3,7 +3,8 @@
 version: '3'
 services:
   [[PROJECT_NAME_TEMPLATE_LOWER]]:
+    image: [[PROJECT_NAME_TEMPLATE_LOWER]]:${VERSION}
     build:
       context: .
       dockerfile: Dockerfile
-    command: ./bin/[[PROJECT_NAME_TEMPLATE_LOWER]]_test
+    command: -c ./[[PROJECT_NAME_TEMPLATE_LOWER]]

@@ -22,7 +22,8 @@ message("Linux version is '${LINUX_VERSION}'")
 
 set(COVERAGE_COMPILER_FLAGS "-g -O0 -fno-default-inline --coverage -fprofile-abs-path -fprofile-arcs -fno-inline -fno-inline-small-functions -ftest-coverage -lgcov" CACHE INTERNAL "")
 
-set(CMAKE_CXX_FLAGS "-rdynamic -Wall -Werror -DBOOST_ALLOW_DEPRECATED_HEADERS -DBOOST_BIND_GLOBAL_PLACEHOLDERS" CACHE STRING "Default C++ compiler flags")
+#set(CMAKE_CXX_FLAGS "-rdynamic -Wall -Werror -DBOOST_ALLOW_DEPRECATED_HEADERS -DBOOST_BIND_GLOBAL_PLACEHOLDERS" CACHE STRING "Default C++ compiler flags")
+set(CMAKE_CXX_FLAGS "-Wall -Werror -DBOOST_ALLOW_DEPRECATED_HEADERS -DBOOST_BIND_GLOBAL_PLACEHOLDERS" CACHE STRING "Default C++ compiler flags")
 set(CMAKE_CXX_FLAGS_DEBUG "-g" CACHE STRING "g++ debug flags")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O2" CACHE STRING "g++ rel+gbg flags")
 set(CMAKE_CXX_FLAGS_COVERAGE "${COVERAGE_COMPILER_FLAGS} CACHE STRING g++ coverage flags." FORCE )
@@ -45,13 +46,13 @@ set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 #set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 #FetchContent_MakeAvailable(googletest)
 
-# include(FetchContent)
-# FetchContent_Declare(
+#include(FetchContent)
+#FetchContent_Declare(
 #   Boost
 #   GIT_REPOSITORY https://github.com/boostorg/boost.git
 #   GIT_TAG boost-1.83.0
-# )
-# FetchContent_MakeAvailable(Boost)
+#)
+#FetchContent_MakeAvailable(Boost)
 
 find_library(DL_LIB NAMES libdl.a dl)
 find_library(SSL_LIB NAMES libssl.a ssl)
@@ -71,6 +72,8 @@ link_directories(
   ${Boost_LIBRARY_DIR_RELEASE}
   system
   )
+
+set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=* -p ${CMAKE_SOURCE_DIR}/build")
 
 add_subdirectory(src)
 add_subdirectory(test)

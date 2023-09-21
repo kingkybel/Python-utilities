@@ -7,7 +7,7 @@ from pathlib import Path
 parent_path = f"{os.path.dirname(os.path.abspath(__file__))}/.."
 sys.path.insert(0, parent_path)
 
-from lib.file_system_object import make_path_list, glob_path_patterns, GlobMode, mkdir, remove, touch, pushdir, pwd, \
+from lib.file_system_object import make_path_list, glob_path_patterns, GlobMode, mkdir, remove, touch, pushdir, current_dir, \
     popdir
 from lib.logger import LogLevels, set_logger
 
@@ -138,21 +138,21 @@ class FileSystemObjectTests(unittest.TestCase):
         tmp_dir = "/tmp/test_pwd_pushdir_popdir"
         mkdir([f"{tmp_dir}/sub1/sub11", f"{tmp_dir}/sub1/sub12", f"{tmp_dir}/sub2/sub21", f"{tmp_dir}/sub2/sub22"])
         pushdir(tmp_dir)
-        self.assertEqual(pwd(), tmp_dir)
+        self.assertEqual(current_dir(), tmp_dir)
 
         pushdir(f"{tmp_dir}/sub1/sub11")
         pushdir(f"{tmp_dir}/sub1/sub12")
         pushdir(f"{tmp_dir}/sub2/sub21")
         pushdir(f"{tmp_dir}/sub2/sub22")
-        self.assertEqual(pwd(), f"{tmp_dir}/sub2/sub22")
+        self.assertEqual(current_dir(), f"{tmp_dir}/sub2/sub22")
         popdir()
-        self.assertEqual(pwd(), f"{tmp_dir}/sub2/sub21")
+        self.assertEqual(current_dir(), f"{tmp_dir}/sub2/sub21")
         popdir()
-        self.assertEqual(pwd(), f"{tmp_dir}/sub1/sub12")
+        self.assertEqual(current_dir(), f"{tmp_dir}/sub1/sub12")
         popdir()
-        self.assertEqual(pwd(), f"{tmp_dir}/sub1/sub11")
+        self.assertEqual(current_dir(), f"{tmp_dir}/sub1/sub11")
         popdir()
-        self.assertEqual(pwd(), tmp_dir)
+        self.assertEqual(current_dir(), tmp_dir)
 
         remove(tmp_dir)
 

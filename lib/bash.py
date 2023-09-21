@@ -7,6 +7,7 @@ import subprocess
 import sys
 import termios
 import tty
+import pwd
 import urllib.request
 from getpass import getuser
 from multiprocessing import cpu_count
@@ -14,8 +15,10 @@ from os import PathLike
 from shutil import which
 from socket import gethostname
 
+from colorama import Fore, Style
+
 from lib.basic_functions import is_empty_string
-from lib.file_system_object import pwd, pushdir, popdir
+from lib.file_system_object import current_dir, pushdir, popdir
 from lib.logger import error, log_progress_output, LogLevels
 from lib.string_utils import squeeze_chars
 from lib.thread_with_return import ReturningThread
@@ -36,7 +39,9 @@ def get_logged_in_user() -> str:
 
 def assert_is_root():
     if get_effective_user() != "root":
-        error("This script needs to be run with root privileges")
+        error(
+            f"""This script needs to be run with root privileges.
+Try: {Fore.MAGENTA}sudo {which('python')} {' '.join(sys.argv)}{Style.RESET_ALL}""")
 
 
 def number_of_cores():
@@ -143,7 +148,7 @@ def run_command(cmd: (str | list[str]),
     cmd_str = " ".join(cmd_copy)
 
     if cwd is None or is_empty_string(cwd):
-        cwd = pwd()
+        cwd = current_dir()
 
     pushdir(cwd, dryrun=dryrun)
     log_progress_output(message=cmd_str, extra_comment=comment, verbosity=LogLevels.COMMAND, dryrun=dryrun)
@@ -210,7 +215,7 @@ def run_interactive_command(cmd: (str | list),
     cmd_str = " ".join(cmd_copy)
 
     if cwd is None or is_empty_string(cwd):
-        cwd = pwd()
+        cwd = current_dir()
 
     pushdir(cwd, dryrun=dryrun)
     log_progress_output(message=cmd_str, extra_comment=comment, verbosity=LogLevels.COMMAND, dryrun=dryrun)
