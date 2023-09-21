@@ -289,7 +289,7 @@ def find(paths: (str | PathLike | list),
             for pattern in name_patterns[1:]:
                 pattern_str += f' -o -name "{pattern}"'
     file_type_str = f" -type ({file_type_filter})"
-    log_command(f"find {''.join(paths)}{file_type_str}{pattern_str}", dryrun=dryrun)
+    log_command(f"find {' '.join(paths)}{file_type_str}{pattern_str}", dryrun=dryrun)
 
     result_path_list = list()
     if not dryrun:

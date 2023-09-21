@@ -25,7 +25,7 @@ class JsonObject:
         elif not is_empty_string(filename):
             self.from_file(filename)
         elif json_obj is not None:
-            self.from_string(json.dumps(json_obj))
+            self.from_object(json_obj)
         else:
             self.from_string("{}")
 
@@ -39,6 +39,31 @@ class JsonObject:
         if is_empty_string(json_str):
             json_str = "{}"
         self.json_ = json.loads(json_str)
+
+    @classmethod
+    def convert_sets_to_vectors(cls, obj):
+        if isinstance(obj, set):
+            # If it's a set, convert it to a list after doing the same recursively.
+            return [JsonObject.convert_sets_to_vectors(item) for item in obj]
+        elif isinstance(obj, dict):
+            # If it's a dictionary, recursively process its values
+            return {key: JsonObject.convert_sets_to_vectors(value) for key, value in obj.items()}
+        elif isinstance(obj, list):
+            # If it's a list, recursively process its elements
+            return [JsonObject.convert_sets_to_vectors(item) for item in obj]
+        elif isinstance(obj, tuple):
+            # If it's a tuple, recursively process its elements and convert to list
+            return [JsonObject.convert_sets_to_vectors(item) for item in obj]
+        # elif isinstance(obj, object):
+        #     # If it's a custom object, recursively process its attributes
+        #     for attr_name in dir(obj):
+        #         attr_value = getattr(obj, attr_name)
+        #         setattr(obj, attr_name, JsonObject.convert_sets_to_vectors(attr_value))
+        return obj
+
+    def from_object(self, obj: object):
+        obj = JsonObject.convert_sets_to_vectors(obj)
+        self.from_string(json.dumps(obj))
 
     def from_file(self, filename: (str | PathLike)):
         if not os.path.isfile(filename):
