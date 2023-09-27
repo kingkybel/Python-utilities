@@ -1,7 +1,6 @@
 [[LICENCE]]
 
-#include "[[PROJECT_NAME_TEMPLATE_LOWER]].h"
-
+[[CLASS_INCLUDES]]
 #include <gtest/gtest.h>
 #include <iostream>
 #include <map>
@@ -9,8 +8,9 @@
 #include <vector>
 
 using namespace std;
+[[USING_NAMESPACE]]
 
-class [[PROJECT_NAME_TEMPLATE]] : public ::testing::Test
+class [[PROJECT_NAME]] : public ::testing::Test
 {
     protected:
     void SetUp() override
@@ -22,7 +22,7 @@ class [[PROJECT_NAME_TEMPLATE]] : public ::testing::Test
     }
 };
 
-TEST_F([[PROJECT_NAME_TEMPLATE]], [[PROJECT_NAME_TEMPLATE_LOWER]]_test)
+TEST_F([[PROJECT_NAME]], [[PROJECT_NAME_LOWER]]_test)
 {
     ASSERT_EQ(false, true);
 }

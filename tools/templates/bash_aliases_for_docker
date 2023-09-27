@@ -1,4 +1,6 @@
 #!/usr/bin/bash
+[[LICENCE]]
+
 [[ "${0}" != "${BASH_SOURCE[0]}" ]] && THIS_FILE="${BASH_SOURCE[0]}" || THIS_FILE="${0}"
 THIS_DIR=$(realpath "$(dirname ${THIS_FILE})")
 
@@ -85,7 +87,7 @@ export MY_HOST=$(hostname)
 function prompt() {
 	PS1="\u@\h [\t]> "
 
-  DOCKPROMPT="[[PROJECT_NAME_TEMPLATE_LOWER]]_server"
+  DOCKPROMPT="[[PROJECT_NAME_LOWER]]_server"
 	if [ "${IS_LINUX}X" = "YesX" ]; then
 		PS1="\$(date +%H:%M:%S) ${FYEL}\u@${DOCKPROMPT} ${FRED}[${FCYN}\w ${FRED}]>${RS} "
 		PS2='continue-> '

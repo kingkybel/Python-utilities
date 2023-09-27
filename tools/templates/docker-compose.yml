@@ -2,9 +2,9 @@
 
 version: '3'
 services:
-  [[PROJECT_NAME_TEMPLATE_LOWER]]:
-    image: [[PROJECT_NAME_TEMPLATE_LOWER]]:${VERSION}
+  [[PROJECT_NAME_LOWER]]:
+    image: [[PROJECT_NAME_LOWER]]:${VERSION}
     build:
       context: .
       dockerfile: Dockerfile
-    command: -c ./[[PROJECT_NAME_TEMPLATE_LOWER]]
+    command: -c ./[[PROJECT_NAME_LOWER]]

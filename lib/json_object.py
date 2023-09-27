@@ -59,6 +59,8 @@ class JsonObject:
         #     for attr_name in dir(obj):
         #         attr_value = getattr(obj, attr_name)
         #         setattr(obj, attr_name, JsonObject.convert_sets_to_vectors(attr_value))
+        if not isinstance(obj, (bool, int, float, str)):
+            return str(obj)
         return obj
 
     def from_object(self, obj: object):

@@ -4,7 +4,7 @@
 [[ "${0}" != "${BASH_SOURCE[0]}" ]] && THIS_FILE="${BASH_SOURCE[0]}" || THIS_FILE="${0}"
 THIS_DIR=$(realpath "$(dirname ${THIS_FILE})")
 
-[ -f "${THIS_DIR}/build/bin/[[PROJECT_NAME_TEMPLATE_LOWER]]" ] || {
+[ -f "${THIS_DIR}/build/bin/[[PROJECT_NAME_LOWER]]" ] || {
     mkdir -p "${THIS_DIR}/build"
     pushd "${THIS_DIR}/build"
     cmake ..
@@ -12,5 +12,5 @@ THIS_DIR=$(realpath "$(dirname ${THIS_FILE})")
     popd
 }
 
-docker-compose build
+[[DOCKER_BUILD_COMMAND]]
 

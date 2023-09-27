@@ -1,19 +1,17 @@
 [[LICENCE]]
-
-#include "[[PROJECT_NAME_TEMPLATE_LOWER]].h"
-
+[[CLASS_INCLUDES]]
 #include <iostream>
 #include <map>
 #include <set>
 #include <vector>
 
 using namespace std;
-using namespace ns_[[PROJECT_NAME_TEMPLATE_LOWER]];
+[[USING_NAMESPACE]]
 
 int main(int argc, char* argv[])
 {
     cout << "\n=====" << endl;
-    cout << "Hello from [[PROJECT_NAME_TEMPLATE]]" << endl;
+    cout << "Hello from [[PROJECT_NAME]]" << endl;
     cout << "=====" << endl << endl;
     return 0;
 }

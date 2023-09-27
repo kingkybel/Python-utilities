@@ -2,6 +2,7 @@ import itertools
 import random
 import re
 import string
+import keyword
 
 from colorama import Style, Fore, init as colorama_init
 
@@ -66,7 +67,7 @@ def input_value(var_name: str, help_str: str, var_type=str, regex_str=None, cons
         return reval
 
 
-def squeeze_chars(source: str, squeeze_set: str, replace_with: str = ' '):
+def squeeze_chars(source: str, squeeze_set: str, replace_with: str = ' ') -> str:
     """
     Return a string that is identical to the given source, but with sub-strings containing
     only chars in the squeeze-set replaced by a single replacement char.
@@ -154,7 +155,7 @@ def normalise_sentence(sentence: str,
     return reval
 
 
-def get_random_string(length, letters: str = None):
+def get_random_string(length, letters: str = None) -> str:
     """
     Create a random string of given length.
     :param length: number of characters.
@@ -183,7 +184,29 @@ def contains_at_least_n_of(text, specified_words: (str | list[str]) = None, mini
     return word_count >= minimum
 
 
-def split_text_into_chunks(text: str, max_chunk_size: int):
+def is_cpp_id(identifier: str) -> bool:
+    # Check if the identifier is not empty
+    if not identifier:
+        return False
+
+    # Check if the first character is a letter or an underscore
+    if not (identifier[0].isalpha() or identifier[0] == '_'):
+        return False
+
+    # Check the remaining characters
+    for char in identifier[1:]:
+        if not (char.isalnum() or char == '_'):
+            return False
+
+    # Check if the identifier is not a C++ keyword or reserved word
+    if keyword.iskeyword(identifier):
+        return False
+
+    # If all checks pass, it's a valid C++ identifier
+    return True
+
+
+def split_text_into_chunks(text: str, max_chunk_size: int) -> list[str]:
     """
     Split a text into smaller texts and without splitting words or sentences.
     :param text: the text to split.
@@ -211,7 +234,7 @@ def split_text_into_chunks(text: str, max_chunk_size: int):
     return chunks
 
 
-def is_utf8_ascii(text: str):
+def is_utf8_ascii(text: str) -> bool:
     try:
         text.encode(encoding='utf-8').decode('ascii')
         return True

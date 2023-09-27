@@ -9,6 +9,6 @@ RUN rm /tmp/bash_aliases_for_docker
 # Copy project files and build the project
 WORKDIR /app
 
-COPY ./build/bin/[[PROJECT_NAME_TEMPLATE_LOWER]] .
+COPY ./build/bin/[[PROJECT_NAME_LOWER]] .
 
 ENTRYPOINT ["bash"]

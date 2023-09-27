@@ -2,12 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "[[PROJECT_NAME_TEMPLATE]]: g++ build and debug tests",
+      "name": "[[PROJECT_NAME]]: g++ build and debug tests",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/bin/run_[[PROJECT_NAME_TEMPLATE_LOWER]]_tests",
+      "program": "${workspaceFolder}/build/bin/run_[[PROJECT_NAME]]_tests",
       "args": [
-         "--gtest_filter=[[PROJECT_NAME_TEMPLATE]].[[PROJECT_NAME_TEMPLATE_LOWER]]_test"
+         "--gtest_filter=[[PROJECT_NAME]].[[PROJECT_NAME]]_test"
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
@@ -25,10 +25,10 @@
       "preLaunchTask": "make current project"
     },
     {
-      "name": "[[PROJECT_NAME_TEMPLATE]]: g++ build and debug main",
+      "name": "[[PROJECT_NAME]]: g++ build and debug main",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/bin/[[PROJECT_NAME_TEMPLATE_LOWER]]",
+      "program": "${workspaceFolder}/build/bin/[[PROJECT_NAME_LOWER]]",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",

@@ -1,9 +1,9 @@
-[[LICENCE]]
-
 # Build directory
 /build
 /src/*.o
 /test/*.o
+/tmp_proto_src
+/src/proto_cpp
 
 # doxygen output directory
 /doxygen
