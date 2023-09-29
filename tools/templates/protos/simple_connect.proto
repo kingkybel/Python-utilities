@@ -1,0 +1,28 @@
+[[LICENCE]]
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "[[JAVA_DOMAIN]].[[PROTO_NAME_LOWER]]";
+option java_outer_classname = "[[PROTO_NAME]]Proto";
+option objc_class_prefix = "HLW";
+
+package [[PROTO_NAME_LOWER]];
+
+// The greeting service definition.
+service [[SERVICE_NAME]]Service {
+  // Sends a greeting
+  rpc Handle[[SERVICE_NAME]]Request ([[SERVICE_NAME]]RequestMessage) returns ([[SERVICE_NAME]]ReplyMessage) {}
+
+  rpc SayHelloStreamReply ([[SERVICE_NAME]]RequestMessage) returns (stream [[SERVICE_NAME]]ReplyMessage) {}
+}
+
+// The request containing the request_str's request_string.
+message [[SERVICE_NAME]]RequestMessage {
+  string request_string = 1;
+}
+
+// The response containing the greetings
+message [[SERVICE_NAME]]ReplyMessage {
+  string reply_string = 1;
+}

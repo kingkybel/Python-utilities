@@ -41,7 +41,7 @@ def input_value(var_name: str, help_str: str, var_type=str, regex_str=None, cons
     prompt = f"\t{Fore.YELLOW}{var_name}{Style.RESET_ALL} ({help_str}{range_str}) [{regex_str}]"
     if is_empty_string(help_str):
         prompt = f"\t{Fore.YELLOW}{var_name}{Style.RESET_ALL}{range_str})"
-
+    prompt += "->"
     while reval is None:
         reval = input(prompt)
         if not is_empty_string(regex_str):
