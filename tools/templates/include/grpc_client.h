@@ -11,7 +11,7 @@ class [[SERVICE_NAME]]Client
 
     // Assembles the client's payload, sends it and presents the response back
     // from the server.
-    std::string Handle[[SERVICE_NAME]]Request(const std::string& request_str);
+    std::string Handle[[REQUEST]]Request(const std::string& request_str);
 
     private:
     std::unique_ptr<[[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]Service::Stub> stub_;

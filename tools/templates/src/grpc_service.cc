@@ -17,13 +17,13 @@ using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::Status;
 using [[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]Service;
-using [[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]ReplyMessage;
-using [[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]RequestMessage;
+using [[PROTO_NAME_LOWER]]::[[REQUEST]]ReplyMessage;
+using [[PROTO_NAME_LOWER]]::[[REQUEST]]RequestMessage;
 
-Status [[SERVICE_NAME]]ServiceImpl::Handle[[SERVICE_NAME]]Request(
+Status [[SERVICE_NAME]]ServiceImpl::Handle[[REQUEST]]Request(
         ServerContext* context,
-        const [[SERVICE_NAME]]RequestMessage* request,
-        [[SERVICE_NAME]]ReplyMessage* reply)
+        const [[REQUEST]]RequestMessage* request,
+        [[REQUEST]]ReplyMessage* reply)
 {
     std::string prefix{"Dispatched "};
     reply->set_reply_string(prefix + request->request_string());

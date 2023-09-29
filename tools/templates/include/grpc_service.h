@@ -16,9 +16,9 @@ class [[SERVICE_NAME]]ServiceImpl final : public [[PROTO_NAME_LOWER]]::[[SERVICE
     void        ShutDown();
 
     private:
-    grpc::Status Handle[[SERVICE_NAME]]Request(grpc::ServerContext*            context,
-                          const [[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]RequestMessage* request,
-                          [[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]ReplyMessage*         reply) override;
+    grpc::Status Handle[[REQUEST]]Request(grpc::ServerContext*            context,
+                          const [[PROTO_NAME_LOWER]]::[[REQUEST]]RequestMessage* request,
+                          [[PROTO_NAME_LOWER]]::[[REQUEST]]ReplyMessage*         reply) override;
 
     std::unique_ptr<grpc::Server> server_;
     bool                          started_ = false;

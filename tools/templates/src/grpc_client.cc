@@ -12,8 +12,8 @@ using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
 using [[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]Service;
-using [[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]ReplyMessage;
-using [[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]RequestMessage;
+using [[PROTO_NAME_LOWER]]::[[REQUEST]]ReplyMessage;
+using [[PROTO_NAME_LOWER]]::[[REQUEST]]RequestMessage;
 
 [[SERVICE_NAME]]Client::[[SERVICE_NAME]]Client(std::shared_ptr<Channel> channel) : stub_([[SERVICE_NAME]]Service::NewStub(channel))
 {
@@ -21,21 +21,21 @@ using [[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]RequestMessage;
 
 // Assembles the client's payload, sends it and presents the response back
 // from the server.
-std::string [[SERVICE_NAME]]Client::Handle[[SERVICE_NAME]]Request(const std::string& request_str)
+std::string [[SERVICE_NAME]]Client::Handle[[REQUEST]]Request(const std::string& request_str)
 {
     // Data we are sending to the server.
-    [[SERVICE_NAME]]RequestMessage request;
+    [[REQUEST]]RequestMessage request;
     request.set_request_string(request_str);
 
     // Container for the data we expect from the server.
-    [[SERVICE_NAME]]ReplyMessage reply;
+    [[REQUEST]]ReplyMessage reply;
 
     // Context for the client. It could be used to convey extra information to
     // the server and/or tweak certain RPC behaviors.
     ClientContext context;
 
     // The actual RPC.
-    Status status = stub_->Handle[[SERVICE_NAME]]Request(&context, request, &reply);
+    Status status = stub_->Handle[[REQUEST]]Request(&context, request, &reply);
 
     // Act upon its status.
     if(status.ok())

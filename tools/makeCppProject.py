@@ -38,7 +38,7 @@ if __name__ == "__main__":
                         default=False,
                         help='Whether or not to add dockerisation, default: False')
     parser.add_argument("--grpc-client-servers", "-g",
-                        metavar="proto-name[:service-name]",
+                        metavar="proto-name[:service-name[:request-name]]",
                         nargs='+',
                         help='List of grpc client-servers')
     parser.add_argument("--force-overwrite", "-f",

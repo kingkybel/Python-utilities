@@ -91,6 +91,7 @@ class FileListElement:
                  class_name: str = None,
                  grpc_proto: str = None,
                  grpc_service: str = None,
+                 grpc_request: str = None,
                  port: int = None):
         self.template_file = template_file
         self.target_file = target_file
@@ -98,6 +99,7 @@ class FileListElement:
         self.class_name = class_name
         self.grpc_proto = grpc_proto
         self.grpc_service = grpc_service
+        self.grpc_request = grpc_request
         self.port = port
 
 
@@ -138,19 +140,22 @@ class TemplatePopulator:
         ##############################################################################
 
         ##############################################################################
-        # Create tags needed there are any grpc-client/servers to be created
+        # Create tags needed for any grpc-client/servers to be created.
         self.grpc_client_server_names = dict()
-        # split all <proto-name>:<service-name> strings as key/val and add to map
+        # split all <proto-name>:<service-name> strings as key/val and add to map.
         if isinstance(grpc_client_server_names, str):
             grpc_client_server_names = [grpc_client_server_names]
         if grpc_client_server_names is not None:
-            for key_val_str in grpc_client_server_names:
-                key_val = key_val_str.split(":")
-                if not is_empty_string(key_val[0]):
-                    val = key_val[0]
-                    if len(key_val) > 1:
-                        val = key_val[1]
-                    self.grpc_client_server_names[key_val[0]] = val
+            for proto_service_request_str in grpc_client_server_names:
+                proto_service_request = proto_service_request_str.split(":")
+                if not is_empty_string(proto_service_request[0]):
+                    service = proto_service_request[0]
+                    request = service
+                    if len(proto_service_request) > 1:
+                        service = proto_service_request[1]
+                        if len(proto_service_request) > 2:
+                            request = proto_service_request[2]
+                    self.grpc_client_server_names[proto_service_request[0]] = (service, request)
         self.java_domain = ""
         self.cmake_include_grpc = ""
         self.cmake_generate_cpp_from_proto = ""
@@ -166,8 +171,9 @@ class TemplatePopulator:
         self.docker_build_command = ""
         if self.add_docker:
             self.docker_build_command = "docker-compose build"
-            for service in self.grpc_client_server_names.values():
-                self.docker_build_command += f"\ndocker-compose --file docker-compose.{service}.yml --env-file .{service}.env build"
+            for service, request in self.grpc_client_server_names.values():
+                self.docker_build_command += \
+                    f"\ndocker-compose --file docker-compose.{service}.yml --env-file .{service}.env build"
         ##############################################################################
 
         ##############################################################################
@@ -251,7 +257,8 @@ class TemplatePopulator:
             if len(self.grpc_client_server_names) > 1:
                 protos += "\n\t"
             protos += proto
-            service = self.grpc_client_server_names[proto]
+            service = self.grpc_client_server_names[proto][0]
+            request = self.grpc_client_server_names[proto][1]
             self.cmake_grpc_services += f'\n\t{service.lower()}'
             self.cmake_proto_grpc_cpp_sources += f'\n\t${{{proto.upper()}_PROTO_CPP_SOURCE}}'
             self.cmake_proto_grpc_cpp_sources += f'\n\t${{{proto.upper()}_PROTO_CPP_HEADER}}'
@@ -326,7 +333,8 @@ class TemplatePopulator:
         port = 50050
         for proto in self.grpc_client_server_names.keys():
             port += 1
-            service = self.grpc_client_server_names[proto]
+            service = self.grpc_client_server_names[proto][0]
+            request = self.grpc_client_server_names[proto][1]
             if not is_cpp_id(service):
                 error(f"Class-name {service} is not a valid C++ identifier")
             self.file_list.append(
@@ -336,6 +344,7 @@ class TemplatePopulator:
                                 class_name=f"{service}Client",
                                 grpc_proto=proto,
                                 grpc_service=service,
+                                grpc_request=request,
                                 port=port))
             self.file_list.append(
                 FileListElement(template_file=f"{this_dir}/templates/include/grpc_service.h",
@@ -344,6 +353,7 @@ class TemplatePopulator:
                                 class_name=f"{service}Service",
                                 grpc_proto=proto,
                                 grpc_service=service,
+                                grpc_request=request,
                                 port=port))
             self.file_list.append(
                 FileListElement(template_file=f"{this_dir}/templates/src/grpc_client.cc",
@@ -352,6 +362,7 @@ class TemplatePopulator:
                                 class_name=f"{service}Client",
                                 grpc_proto=proto,
                                 grpc_service=service,
+                                grpc_request=request,
                                 port=port))
             self.file_list.append(
                 FileListElement(template_file=f"{this_dir}/templates/src/grpc_client_main.cc",
@@ -359,6 +370,7 @@ class TemplatePopulator:
                                 comment_style=CommentStyle.CPP,
                                 grpc_proto=proto,
                                 grpc_service=service,
+                                grpc_request=request,
                                 port=port))
             self.file_list.append(
                 FileListElement(template_file=f"{this_dir}/templates/src/grpc_service.cc",
@@ -367,6 +379,7 @@ class TemplatePopulator:
                                 class_name=f"{service}Service",
                                 grpc_proto=proto,
                                 grpc_service=service,
+                                grpc_request=request,
                                 port=port))
             self.file_list.append(
                 FileListElement(template_file=f"{this_dir}/templates/src/grpc_server_main.cc",
@@ -374,13 +387,15 @@ class TemplatePopulator:
                                 comment_style=CommentStyle.CPP,
                                 grpc_proto=proto,
                                 grpc_service=service,
+                                grpc_request=request,
                                 port=port))
             self.file_list.append(
                 FileListElement(template_file=f"{this_dir}/templates/protos/simple_connect.proto",
                                 target_file=f"{self.project_path}/protos/{proto.lower()}.proto",
                                 comment_style=CommentStyle.PROTO,
                                 grpc_proto=proto,
-                                grpc_service=service))
+                                grpc_service=service,
+                                grpc_request=request))
             if self.add_docker:
                 for tmplt in [("Dockerfile.server", CommentStyle.DOCKER),
                               ("Dockerfile.client", CommentStyle.DOCKER),
@@ -431,6 +446,10 @@ class TemplatePopulator:
         if file_list_element.grpc_service is not None:
             grpc_service = str(file_list_element.grpc_service)
 
+        grpc_request = ""
+        if file_list_element.grpc_request is not None:
+            grpc_request = str(file_list_element.grpc_request)
+
         tmplt_text = tmplt_text.replace("[[FILENAME]]", filename_for_licence_header)
         tmplt_text = tmplt_text.replace("[[CLASS_NAME]]", class_name)
         tmplt_text = tmplt_text.replace("[[CLASS_NAME_UPPER]]", class_name.upper())
@@ -451,6 +470,7 @@ class TemplatePopulator:
         tmplt_text = tmplt_text.replace("[[SERVICE_NAME]]", grpc_service)
         tmplt_text = tmplt_text.replace("[[SERVICE_NAME_LOWER]]", grpc_service.lower())
         tmplt_text = tmplt_text.replace("[[SERVICE_NAME_UPPER]]", grpc_service.upper())
+        tmplt_text = tmplt_text.replace("[[REQUEST]]", grpc_request)
         tmplt_text = tmplt_text.replace("[[JAVA_DOMAIN]]", self.java_domain)
         tmplt_text = tmplt_text.replace("[[PORT]]", str(port))
         tmplt_text = tmplt_text.replace("[[CMAKE_INCLUDE_GRPC]]", self.cmake_include_grpc)

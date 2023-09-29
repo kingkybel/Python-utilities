@@ -15,7 +15,7 @@ int main(int argc, char** argv)
     std::string   request_str{"request some service"};
     for(size_t i = 0; i < 5; i++)
     {
-        std::string reply = [[SERVICE_NAME_LOWER]].Handle[[SERVICE_NAME]]Request(request_str);
+        std::string reply = [[SERVICE_NAME_LOWER]].Handle[[REQUEST]]Request(request_str);
         std::cout << "[[SERVICE_NAME]]Service received: " << reply << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
