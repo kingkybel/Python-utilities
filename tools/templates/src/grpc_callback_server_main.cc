@@ -1,20 +1,10 @@
 [[LICENCE]]
-#include "[[SERVICE_NAME_LOWER]]_service.h"
 
-#include <csignal>
+#include "[[PROTO_NAME_LOWER]].grpc.pb.h"
+#include "[[SERVICE_NAME_LOWER]]_callback_service.h"
+
 #include <cstdlib>
 #include <string>
-#include <thread>
-#include <iostream>
-
-std::thread server_thread;
-
-auto service = [[SERVICE_NAME]]ServiceImpl{};
-
-void signalHandler(int signum)
-{
-    service.ShutDown();
-}
 
 int main(int argc, char** argv)
 {
@@ -29,9 +19,6 @@ int main(int argc, char** argv)
         }
     }
 
-    signal(SIGTERM, signalHandler);
-    server_thread = service.Run(std::atoi(port.c_str()));
-
-    server_thread.join();
+    [[SERVICE_NAME]]CallbackServiceImpl::RunServer(std::atoi(port.c_str()));
     return 0;
 }

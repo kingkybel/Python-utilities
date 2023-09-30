@@ -9,6 +9,6 @@ RUN rm /tmp/bash_aliases_for_docker
 # Copy project files and build the project
 WORKDIR /app
 
-COPY ./build/bin/[[SERVICE_NAME_LOWER]]_server .
+COPY ./build/bin/[[SERVICE_NAME_LOWER]]_[[CONNECTION_TYPE]]server .
 
 ENTRYPOINT ["bash"]

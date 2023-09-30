@@ -1,20 +1,20 @@
 [[LICENCE]]
 version: '3'
 services:
-  [[SERVICE_NAME_LOWER]]_server:
-    image: [[SERVICE_NAME_LOWER]]_server:${VERSION}
+  [[SERVICE_NAME_LOWER]]_[[CONNECTION_TYPE]]server:
+    image: [[SERVICE_NAME_LOWER]]_[[CONNECTION_TYPE]]server:${VERSION}
     build:
       context: .
       dockerfile: Dockerfile.[[SERVICE_NAME]]_server
     ports:
       - ${PORT}:${PORT}
-    command: -c ./[[SERVICE_NAME_LOWER]]_server ${PORT}
-  [[SERVICE_NAME_LOWER]]_client:
-    image: [[SERVICE_NAME_LOWER]]_client:${VERSION}
+    command: -c "./[[SERVICE_NAME_LOWER]]_[[CONNECTION_TYPE]]server --port ${PORT}"
+  [[SERVICE_NAME_LOWER]]_[[CONNECTION_TYPE]]client:
+    image: [[SERVICE_NAME_LOWER]]_[[CONNECTION_TYPE]]client:${VERSION}
     build:
       context: .
       dockerfile: Dockerfile.[[SERVICE_NAME]]_client
-    command: -c ./[[SERVICE_NAME_LOWER]]_client ${PORT}
+    command: -c "./[[SERVICE_NAME_LOWER]]_[[CONNECTION_TYPE]]client --server [[SERVICE_NAME_LOWER]]_[[CONNECTION_TYPE]]server --port ${PORT}"
     depends_on:
-      - [[SERVICE_NAME_LOWER]]_server
+      - [[SERVICE_NAME_LOWER]]_[[CONNECTION_TYPE]]server
       

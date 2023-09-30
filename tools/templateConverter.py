@@ -83,6 +83,19 @@ class CommentStyle(ExtendedEnum):
             return "////"
 
 
+class GrpcConnectivity(ExtendedEnum):
+    DEFAULT = auto()
+    ASYNC = auto()
+    CALLBACK = auto()
+
+    def __str__(self):
+        if self == GrpcConnectivity.ASYNC:
+            return "async"
+        if self == GrpcConnectivity.CALLBACK:
+            return "callback"
+        return ""
+
+
 class FileListElement:
     def __init__(self,
                  template_file: (str | PathLike),
@@ -110,7 +123,8 @@ class TemplatePopulator:
                  project_path: (str | PathLike),
                  class_names: (str | list[str]) = None,
                  grpc_client_server_names: (str | list[str]) = None,
-                 add_docker: bool = False):
+                 add_docker: bool = False,
+                 connectivity_type: GrpcConnectivity = GrpcConnectivity.DEFAULT):
         self.project_path = valid_absolute_path(project_path)
         self.project_name = os.path.basename(self.project_path)
 
@@ -123,7 +137,7 @@ class TemplatePopulator:
         ##############################################################################
 
         ##############################################################################
-        # Create tags needed when there are any classes to be created
+        # Create tags needed when any classes are created.
         self.class_names = list()
         if isinstance(class_names, str):
             self.class_names = {class_names}
@@ -141,6 +155,7 @@ class TemplatePopulator:
 
         ##############################################################################
         # Create tags needed for any grpc-client/servers to be created.
+        self.connectivity_type = connectivity_type
         self.grpc_client_server_names = dict()
         # split all <proto-name>:<service-name> strings as key/val and add to map.
         if isinstance(grpc_client_server_names, str):
@@ -160,7 +175,6 @@ class TemplatePopulator:
         self.cmake_include_grpc = ""
         self.cmake_generate_cpp_from_proto = ""
         self.cmake_grpc_services = ""
-        self.cmake_proto_grpc_cpp_sources = ""
         self.java_domain = ""
         self.create_tags_for_grpc()
         ##############################################################################
@@ -251,19 +265,17 @@ class TemplatePopulator:
         self.java_domain += self.project_name.lower()
         self.cmake_generate_cpp_from_proto = ""
         self.cmake_grpc_services = ""
-        self.cmake_proto_grpc_cpp_sources = ""
         protos = ""
+        conn_type_str = str(self.connectivity_type)
+        if not is_empty_string(conn_type_str):
+            conn_type_str = "_" + conn_type_str
         for proto in self.grpc_client_server_names.keys():
             if len(self.grpc_client_server_names) > 1:
                 protos += "\n\t"
             protos += proto
             service = self.grpc_client_server_names[proto][0]
             request = self.grpc_client_server_names[proto][1]
-            self.cmake_grpc_services += f'\n\t{service.lower()}'
-            self.cmake_proto_grpc_cpp_sources += f'\n\t${{{proto.upper()}_PROTO_CPP_SOURCE}}'
-            self.cmake_proto_grpc_cpp_sources += f'\n\t${{{proto.upper()}_PROTO_CPP_HEADER}}'
-            self.cmake_proto_grpc_cpp_sources += f'\n\t${{{proto.upper()}_GRPC_CPP_SOURCE}}'
-            self.cmake_proto_grpc_cpp_sources += f'\n\t${{{proto.upper()}_GRPC_CPP_HEADER}}'
+            self.cmake_grpc_services += f'\n\t{service.lower()}{conn_type_str}'
 
         self.cmake_generate_cpp_from_proto += \
             f'create_cpp_from_protos("${{CMAKE_SOURCE_DIR}}/protos" ${{PROTO_CPP_SRC_DIR}} {protos})\n'
@@ -272,14 +284,14 @@ class TemplatePopulator:
                                                                   self.cmake_generate_cpp_from_proto)
         self.cmake_include_grpc = self.cmake_include_grpc.replace("[[PROJECT_NAME_LOWER]]",
                                                                   self.project_name.lower())
-        self.cmake_include_grpc = self.cmake_include_grpc.replace("[[CMAKE_PROTO_GRPC_CPP_SOURCES]]",
-                                                                  self.cmake_proto_grpc_cpp_sources)
         self.cmake_include_grpc = self.cmake_include_grpc.replace("[[CMAKE_GRPC_SERVICES]]",
                                                                   self.cmake_grpc_services)
 
     def make_project_file_list(self):
         self.file_list = list()
-        # add non-project-dependent files
+
+        ######################################
+        # add common project files.
         for tmplt in [(".vscode/c_cpp_properties.json", CommentStyle.NONE),
                       (".vscode/launch.json", CommentStyle.NONE),
                       (".vscode/settings.json", CommentStyle.NONE),
@@ -297,6 +309,7 @@ class TemplatePopulator:
                                 target_file=f"{self.project_path}/{tmplt[0]}",
                                 comment_style=tmplt[1]))
 
+        ######################################
         # add C++ main and test-main files
         self.file_list.append(
             FileListElement(template_file=f"{this_dir}/templates/src/project_main.cc",
@@ -322,7 +335,8 @@ class TemplatePopulator:
                                 comment_style=CommentStyle.CPP,
                                 class_name=class_name))
 
-        # add grpc-clients and -servers split in headers, implementation and main
+        ######################################
+        # add grpc-clients and -servers split in headers, implementation and main files.
         if len(self.grpc_client_server_names) > 0:
             self.file_list.append(
                 FileListElement(template_file=f"{this_dir}/templates/src/cmake/common.cmake",
@@ -331,15 +345,19 @@ class TemplatePopulator:
 
         # all client server pairs will use a different port
         port = 50050
+        conn_type_str = str(self.connectivity_type)
+        if not is_empty_string(conn_type_str):
+            conn_type_str += "_"
+
         for proto in self.grpc_client_server_names.keys():
             port += 1
             service = self.grpc_client_server_names[proto][0]
             request = self.grpc_client_server_names[proto][1]
             if not is_cpp_id(service):
-                error(f"Class-name {service} is not a valid C++ identifier")
+                error(f"Service-name {service} is not a valid C++ identifier")
             self.file_list.append(
-                FileListElement(template_file=f"{this_dir}/templates/include/grpc_client.h",
-                                target_file=f"{self.project_path}/include/{service.lower()}_client.h",
+                FileListElement(template_file=f"{this_dir}/templates/include/grpc_{conn_type_str}client.h",
+                                target_file=f"{self.project_path}/include/{service.lower()}_{conn_type_str}client.h",
                                 comment_style=CommentStyle.CPP,
                                 class_name=f"{service}Client",
                                 grpc_proto=proto,
@@ -347,8 +365,8 @@ class TemplatePopulator:
                                 grpc_request=request,
                                 port=port))
             self.file_list.append(
-                FileListElement(template_file=f"{this_dir}/templates/include/grpc_service.h",
-                                target_file=f"{self.project_path}/include/{service.lower()}_service.h",
+                FileListElement(template_file=f"{this_dir}/templates/include/grpc_{conn_type_str}service.h",
+                                target_file=f"{self.project_path}/include/{service.lower()}_{conn_type_str}service.h",
                                 comment_style=CommentStyle.CPP,
                                 class_name=f"{service}Service",
                                 grpc_proto=proto,
@@ -356,8 +374,8 @@ class TemplatePopulator:
                                 grpc_request=request,
                                 port=port))
             self.file_list.append(
-                FileListElement(template_file=f"{this_dir}/templates/src/grpc_client.cc",
-                                target_file=f"{self.project_path}/src/{service.lower()}_client.cc",
+                FileListElement(template_file=f"{this_dir}/templates/src/grpc_{conn_type_str}client.cc",
+                                target_file=f"{self.project_path}/src/{service.lower()}_{conn_type_str}client.cc",
                                 comment_style=CommentStyle.CPP,
                                 class_name=f"{service}Client",
                                 grpc_proto=proto,
@@ -365,16 +383,16 @@ class TemplatePopulator:
                                 grpc_request=request,
                                 port=port))
             self.file_list.append(
-                FileListElement(template_file=f"{this_dir}/templates/src/grpc_client_main.cc",
-                                target_file=f"{self.project_path}/src/{service.lower()}_client_main.cc",
+                FileListElement(template_file=f"{this_dir}/templates/src/grpc_{conn_type_str}client_main.cc",
+                                target_file=f"{self.project_path}/src/{service.lower()}_{conn_type_str}client_main.cc",
                                 comment_style=CommentStyle.CPP,
                                 grpc_proto=proto,
                                 grpc_service=service,
                                 grpc_request=request,
                                 port=port))
             self.file_list.append(
-                FileListElement(template_file=f"{this_dir}/templates/src/grpc_service.cc",
-                                target_file=f"{self.project_path}/src/{service.lower()}_service.cc",
+                FileListElement(template_file=f"{this_dir}/templates/src/grpc_{conn_type_str}service.cc",
+                                target_file=f"{self.project_path}/src/{service.lower()}_{conn_type_str}service.cc",
                                 comment_style=CommentStyle.CPP,
                                 class_name=f"{service}Service",
                                 grpc_proto=proto,
@@ -382,8 +400,8 @@ class TemplatePopulator:
                                 grpc_request=request,
                                 port=port))
             self.file_list.append(
-                FileListElement(template_file=f"{this_dir}/templates/src/grpc_server_main.cc",
-                                target_file=f"{self.project_path}/src/{service.lower()}_server_main.cc",
+                FileListElement(template_file=f"{this_dir}/templates/src/grpc_{conn_type_str}server_main.cc",
+                                target_file=f"{self.project_path}/src/{service.lower()}_{conn_type_str}server_main.cc",
                                 comment_style=CommentStyle.CPP,
                                 grpc_proto=proto,
                                 grpc_service=service,
@@ -411,6 +429,7 @@ class TemplatePopulator:
                                         comment_style=tmplt[1],
                                         grpc_proto=proto,
                                         grpc_service=service,
+                                        grpc_request=request,
                                         port=port))
 
         # if we want dockerisation then add docker-files
@@ -474,9 +493,10 @@ class TemplatePopulator:
         tmplt_text = tmplt_text.replace("[[JAVA_DOMAIN]]", self.java_domain)
         tmplt_text = tmplt_text.replace("[[PORT]]", str(port))
         tmplt_text = tmplt_text.replace("[[CMAKE_INCLUDE_GRPC]]", self.cmake_include_grpc)
-        # tmplt_text = tmplt_text.replace("[[CMAKE_GENERATE_CPP_FROM_PROTOS]]", self.cmake_generate_cpp_from_proto)
-        # tmplt_text = tmplt_text.replace("[[CMAKE_GRPC_SERVICES]]", self.cmake_grpc_services)
-        # tmplt_text = tmplt_text.replace("[[CMAKE_PROTO_GRPC_CPP_SOURCES]]", self.cmake_proto_grpc_cpp_sources)
+        conn_type_str = str(self.connectivity_type)
+        if not is_empty_string(conn_type_str):
+            conn_type_str += "_"
+        tmplt_text = tmplt_text.replace("[[CONNECTION_TYPE]]", conn_type_str)
 
         return tmplt_text
 

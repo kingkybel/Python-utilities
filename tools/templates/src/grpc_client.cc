@@ -15,7 +15,8 @@ using [[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]Service;
 using [[PROTO_NAME_LOWER]]::[[REQUEST]]ReplyMessage;
 using [[PROTO_NAME_LOWER]]::[[REQUEST]]RequestMessage;
 
-[[SERVICE_NAME]]Client::[[SERVICE_NAME]]Client(std::shared_ptr<Channel> channel) : stub_([[SERVICE_NAME]]Service::NewStub(channel))
+[[SERVICE_NAME]]Client::[[SERVICE_NAME]]Client(std::shared_ptr<Channel> channel)
+: stub_([[SERVICE_NAME]]Service::NewStub(channel))
 {
 }
 

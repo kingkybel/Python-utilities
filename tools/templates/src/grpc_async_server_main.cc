@@ -1,20 +1,9 @@
 [[LICENCE]]
-#include "[[SERVICE_NAME_LOWER]]_service.h"
 
-#include <csignal>
+#include "[[SERVICE_NAME_LOWER]]_async_service.h"
+
 #include <cstdlib>
 #include <string>
-#include <thread>
-#include <iostream>
-
-std::thread server_thread;
-
-auto service = [[SERVICE_NAME]]ServiceImpl{};
-
-void signalHandler(int signum)
-{
-    service.ShutDown();
-}
 
 int main(int argc, char** argv)
 {
@@ -29,9 +18,8 @@ int main(int argc, char** argv)
         }
     }
 
-    signal(SIGTERM, signalHandler);
-    server_thread = service.Run(std::atoi(port.c_str()));
+    [[SERVICE_NAME]]AsynchServiceImpl server;
+    server.Run(std::atoi(port.c_str()));
 
-    server_thread.join();
     return 0;
 }
