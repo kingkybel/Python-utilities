@@ -9,13 +9,12 @@ if not os.path.isdir(dk_lib_dir):
 sys.path.insert(0, dk_lib_dir)
 
 from tools.cpp_project.abc_file_set_creator import ABCFileSetCreator
-from tools.cpp_project.file_name_mapper import FileNameMapper
+from tools.cpp_project.file_name_mapper import FileNameMapper, CommentStyle
 from lib.basic_functions import is_empty_string
 from lib.exceptions import ExtendedEnumError
 from lib.logger import error, log_warning
 from lib.overrides import overrides
 from lib.string_utils import is_cpp_id
-from tools.cpp_project.comment_style import CommentStyle
 from tools.cpp_project.grpc_messaging_type import GrpcMessagingType
 
 

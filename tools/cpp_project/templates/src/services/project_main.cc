@@ -6,7 +6,6 @@
 #include <vector>
 
 using namespace std;
-[[USING_NAMESPACE]]
 
 int main(int argc, char* argv[])
 {

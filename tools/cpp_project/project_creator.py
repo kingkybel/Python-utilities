@@ -18,11 +18,11 @@ from tools.cpp_project.basic_file_set_creator import BasicFileSetCreator
 from tools.cpp_project.class_file_set_creator import ClassFileSetCreator
 from tools.cpp_project.cmake_file_set_creator import CmakeFileSetCreator
 from tools.cpp_project.grpc_file_set_creator import GrpcFileSetCreator
-from tools.cpp_project.simple_file_set_creator import SimpleFileSetCreator
+from tools.cpp_project.main_only_file_set_creator import MainOnlyFileSetCreator
 from tools.cpp_project.template_file_set_creator import TemplateFileSetCreator
 
 
-class TemplatePopulator:
+class ProjectCreator:
     git_config = get_git_config()
 
     def __init__(self,
@@ -73,8 +73,8 @@ class TemplatePopulator:
             self.__file_list.append(TemplateFileSetCreator(project_path=self.__project_path,
                                                            template_config_str=template))
 
-        if len(self.__class_names) == 0 and len(self.__grpc_service_config_strings) == 0:
-            self.__file_list.append(SimpleFileSetCreator(project_path=self.__project_path))
+        if len(self.__class_names) + len(self.__grpc_service_config_strings) == 0:
+            self.__file_list.append(MainOnlyFileSetCreator(project_path=self.__project_path))
 
         self.__file_list.append(CmakeFileSetCreator(project_path=self.__project_path,
                                                     class_names=self.__class_names,

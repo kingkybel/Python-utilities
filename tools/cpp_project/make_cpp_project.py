@@ -17,7 +17,7 @@ from lib.basic_functions import valid_absolute_path
 from lib.file_system_object import remove
 from lib.logger import error, log_info
 from lib.string_utils import is_cpp_id, input_value
-from tools.cpp_project.template_converter import TemplatePopulator
+from tools.cpp_project.project_creator import ProjectCreator
 
 DEFAULT_ROOT_DIRECTORY = f"/home/{getuser()}/Repos/CPP"
 
@@ -66,12 +66,13 @@ if __name__ == "__main__":
         else:
             error(f"Folder '{project_path}' exists")
 
-    template_populator = TemplatePopulator(project_path=project_path,
-                                           class_names=found_args.classes,
-                                           grpc_service_config_strings=found_args.grpc_client_servers,
-                                           add_docker=found_args.add_docker)
+    project_creator = ProjectCreator(project_path=project_path,
+                                     class_names=found_args.classes,
+                                     grpc_service_config_strings=found_args.grpc_client_servers,
+                                     templates=found_args.templates,
+                                     add_docker=found_args.add_docker)
 
-    template_populator.create_cmake_project()
+    project_creator.create_cmake_project()
 
     log_info(f"Project '{found_args.project_name}' has been created successfully in "
              f"{Fore.MAGENTA}{project_path}{Style.RESET_ALL}.")
