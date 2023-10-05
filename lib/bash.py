@@ -93,7 +93,8 @@ def assert_tools_installed(tools: (str | list[str])):
         if not is_tool_installed(tool):
             missing_tools.append(tool)
     if len(missing_tools) > 0:
-        error(f"Please install the following tools {missing_tools} to run this script")
+        error(f"Please install the following tools {missing_tools} "
+              "to run this script (or add location to PATH variable)")
 
 
 def check_correct_tool_version(tool: str, version: str) -> bool:

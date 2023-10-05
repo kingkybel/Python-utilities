@@ -129,7 +129,10 @@ def remove(paths: (str | PathLike | list),
            force: bool = False,
            allow_system_paths: bool = False,
            dryrun: bool = False):
-    paths = glob_path_patterns(paths, glob_mode=GlobMode.WARN_EMPTY)
+    glob_mode = GlobMode.WARN_EMPTY
+    if force:
+        glob_mode = GlobMode.KEEP_EMPTY
+    paths = glob_path_patterns(paths, glob_mode=glob_mode)
     log_command(f"rm -rf {paths}", dryrun=dryrun)
     if not dryrun:
         for path in paths:
@@ -158,7 +161,7 @@ def set_file_last_modified(paths: (str | PathLike | list), dt: datetime, dryrun:
 
 def touch(paths: (str | PathLike | list),
           glob_mode: GlobMode = GlobMode.KEEP_EMPTY,
-          allow_system_paths:bool = False,
+          allow_system_paths: bool = False,
           dryrun: bool = False):
     paths = glob_path_patterns(paths, glob_mode=glob_mode)
     if not dryrun:
@@ -199,7 +202,7 @@ def mkdir(paths: (str | PathLike | list),
                 raise FileExistsError(f"Cannot create directory {path}. Path is regular file")
             try:
                 if recreate:
-                    remove(paths=paths, force=force)
+                    remove(paths=path, force=force)
                 os.makedirs(path, exist_ok=force)
                 created_paths.append(path)
             except FileExistsError:
@@ -268,9 +271,10 @@ def popdir(dryrun: bool = False):
 def find(paths: (str | PathLike | list),
          file_type_filter: (str | FileSystemObjectType) = FileSystemObjectType.ALL,
          name_patterns: (str | list) = None,
+         exclude_patterns: (str | list) = None,
          sort_field: FindSortField = FindSortField.NONE,
          reverse: bool = False,
-         allow_system_paths:bool = False,
+         allow_system_paths: bool = False,
          dryrun: bool = False):
     paths = glob_path_patterns(paths)
     list_of_non_directories = list()
@@ -301,11 +305,14 @@ def find(paths: (str | PathLike | list),
                     matches = True
                     if name_patterns is not None:
                         matches = matches_any(search_string=path, patterns=name_patterns)
+                    if exclude_patterns is not None:
+                        if matches_any(search_string=path, patterns=exclude_patterns):
+                            matches = False
                     if matches:
-                        augmented_path_list.append((valid_absolute_path(dir_name,
-                                                                        allow_system_paths= allow_system_paths),
-                                                    FileSystemObjectType.DIR.value,
-                                                    depth))
+                        augmented_path_list.append(
+                            (valid_absolute_path(dir_name, allow_system_paths=allow_system_paths),
+                             FileSystemObjectType.DIR.value,
+                             depth))
                 depth += 1
                 for file in file_list:
                     matches = True
@@ -313,7 +320,7 @@ def find(paths: (str | PathLike | list),
                         matches = matches_any(search_string=file, patterns=name_patterns)
                     if matches:
                         file_path = valid_absolute_path(f"{dir_name}/{file}",
-                                                        allow_system_paths= allow_system_paths)
+                                                        allow_system_paths=allow_system_paths)
                         file_type = FileSystemObjectType.from_file_system_object(file_path)
                         if file_type & file_type_filter == file_type:
                             augmented_path_list.append((file_path, file_type.value, depth))
@@ -406,7 +413,7 @@ def cp(paths: (str | PathLike | list), target: (str | PathLike), dryrun: bool = 
                 if os.path.exists(target_file) or os.path.isdir(target_file):
                     remove(target_file)
                     shutil.copy(path, target_file)
-            elif os.path.isfile(path):# and (os.path.isdir(target)) or not os.path.exists(target)
+            elif os.path.isfile(path):  # and (os.path.isdir(target)) or not os.path.exists(target)
                 mkdir(os.path.dirname(target))
                 remove(target)
                 shutil.copy(path, target)

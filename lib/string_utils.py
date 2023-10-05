@@ -124,6 +124,12 @@ def matches_any(search_string: str, patterns: (str | list[str]) = None) -> bool:
     return False
 
 
+def replace_all(content: str, replacements: dict[str, str]) -> str:
+    for tag in replacements.keys():
+        content = content.replace(tag, replacements[tag])
+    return content
+
+
 def normalise_sentence(sentence: str,
                        squeeze_set: str = "\n\t\r *#\\*@><|^&~",
                        expected_non_al_nums: (str | list[str]) = None) -> str:
