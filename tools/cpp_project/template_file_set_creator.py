@@ -81,7 +81,7 @@ class TemplateFileSetCreator(ABCFileSetCreator):
     def __make_template_args_hash_defines(self) -> str:
         hash_defines = ""
         num_types = len(self.__typenames)
-        types_to_rotate = ["size_t", "double", "int32_t", "char"]
+        types_to_rotate = ["std::size_t", "double", "std::int32_t", "char"]
         for i in range(num_types):
             type_str = self.__typenames[i]
             hash_defines += f"typedef {types_to_rotate[i%len(types_to_rotate)]} {type_str};\n"

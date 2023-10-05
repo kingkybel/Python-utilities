@@ -4,6 +4,7 @@
 #define [[TEMPLATE_CLASS_NAME_UPPER]]_H_INCLUDED
 
 #include <type_traits>
+#include <cstdint>
 
 namespace ns_[[PROJECT_NAME_LOWER]]
 {
@@ -33,5 +34,5 @@ public:
 
 };  // namespace ns_[[PROJECT_NAME_LOWER]]
 
-#endif [[TEMPLATE_CLASS_NAME_UPPER]]_H_INCLUDED
+#endif  // [[TEMPLATE_CLASS_NAME_UPPER]]_H_INCLUDED
 
