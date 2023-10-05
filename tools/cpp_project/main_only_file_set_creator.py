@@ -9,12 +9,11 @@ if not os.path.isdir(dk_lib_dir):
 sys.path.insert(0, dk_lib_dir)
 
 from lib.overrides import overrides
-from tools.cpp_project.comment_style import CommentStyle
-from tools.cpp_project.file_name_mapper import FileNameMapper
+from tools.cpp_project.file_name_mapper import FileNameMapper, CommentStyle
 from tools.cpp_project.abc_file_set_creator import ABCFileSetCreator
 
 
-class SimpleFileSetCreator(ABCFileSetCreator):
+class MainOnlyFileSetCreator(ABCFileSetCreator):
     """
     @brief Create files for one class
     """

@@ -2,6 +2,8 @@ import os
 import sys
 from os import PathLike
 
+from tools.cpp_project.template_file_set_creator import TemplateFileSetCreator
+
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../../Python-utilities")
 if not os.path.isdir(dk_lib_dir):
@@ -12,8 +14,7 @@ from lib.file_utils import read_file
 from lib.overrides import overrides
 from lib.basic_functions import is_empty_string
 from tools.cpp_project.grpc_file_set_creator import GrpcFileSetCreator
-from tools.cpp_project.comment_style import CommentStyle
-from tools.cpp_project.file_name_mapper import FileNameMapper
+from tools.cpp_project.file_name_mapper import FileNameMapper, CommentStyle
 from tools.cpp_project.abc_file_set_creator import ABCFileSetCreator
 
 
@@ -176,25 +177,20 @@ class CmakeFileSetCreator(ABCFileSetCreator):
 
     def __make_test_source_files(self) -> str:
         test_sources = ""
-        multiline = len(self.__class_names) + len(self.__grpc_service_config_strings) > 1
         for cls in self.__class_names:
-            if multiline:
-                test_sources += "\n               "
-            test_sources += f"{cls.lower()}_tests.cc"
+            test_sources += f"\n               {cls.lower()}_tests.cc"
         for grpc_service_config_string in self.__grpc_service_config_strings:
             grpc_config = GrpcFileSetCreator(project_path=self.project_path(),
                                              proto_service_request_str=grpc_service_config_string,
                                              port=-1)
-            if multiline:
-                test_sources += "\n               "
-            test_sources += f"{grpc_config.service_with_type().lower()}_client_tests.cc"
-            if multiline:
-                test_sources += "\n               "
-            test_sources += f"{grpc_config.service_with_type().lower()}_service_tests.cc"
+            test_sources += f"\n               {grpc_config.service_with_type().lower()}_client_tests.cc"
+            test_sources += f"\n               {grpc_config.service_with_type().lower()}_service_tests.cc"
+        for template_config_string in self.__templates:
+            template_config = TemplateFileSetCreator(project_path=self.project_path(),
+                                                     template_config_str=template_config_string)
+            test_sources += f"\n               {template_config.template_name().lower()}_tests.cc"
         if is_empty_string(test_sources):
-            if multiline:
-                test_sources += "\n               "
-            test_sources = f"{self.project_name().lower()}_tests.cc"
+            test_sources += f"\n               {self.project_name().lower()}_tests.cc"
         return test_sources
 
     def __make_cmake_test_exe_link_libraries(self) -> str:

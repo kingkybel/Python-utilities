@@ -12,8 +12,7 @@ sys.path.insert(0, dk_lib_dir)
 
 from lib.logger import error
 from lib.string_utils import is_cpp_id
-from tools.cpp_project.comment_style import CommentStyle
-from tools.cpp_project.file_name_mapper import FileNameMapper
+from tools.cpp_project.file_name_mapper import FileNameMapper, CommentStyle
 from tools.cpp_project.abc_file_set_creator import ABCFileSetCreator
 
 

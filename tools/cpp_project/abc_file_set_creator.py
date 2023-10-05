@@ -9,12 +9,12 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+from lib.file_system_object import remove, mkdir
 from lib.basic_functions import valid_absolute_path, now_year, now_date
 from lib.file_utils import read_file, write_file, get_git_config
 from lib.string_utils import replace_all
 from lib.logger import error, log_info
-from tools.cpp_project.file_name_mapper import FileNameMapper
-from tools.cpp_project.comment_style import CommentStyle
+from tools.cpp_project.file_name_mapper import FileNameMapper, CommentStyle
 
 
 class ABCFileSetCreator(ABC):
@@ -56,6 +56,21 @@ class ABCFileSetCreator(ABC):
         licence_str = read_file(filename=f"{this_dir}/templates/licence/licence")
         return replace_all(licence_str, self.__common_replacements)
 
+    def __create_basic_dir_structure(self):
+        # Create the project directory and subdirectories
+        if not ABCFileSetCreator.is_basic_structure_created:
+            remove(self.project_path())
+            mkdir([f"{self.include_dir()}",
+                   f"{self.src_dir()}",
+                   f"{self.services_dir()}",
+                   f"{self.test_dir()}",
+                   f"{self.licence_dir()}",
+                   f"{self.build_dir()}",
+                   f"{self.vscode_dir()}"], force=True, recreate=True)
+            write_file(f"{self.project_path()}/licence/licence", self.licence())
+            ABCFileSetCreator.is_basic_structure_created = True
+            self.write_project_files()
+
     def commented_licence_string(self, licence_text: str, comment_style: CommentStyle, filename: str) -> str:
         lic_with_comments = comment_style.start() + "\n"
         filename = filename.replace(f"{self.__project_path}", self.__project_name)
@@ -69,20 +84,20 @@ class ABCFileSetCreator(ABC):
 
     def write_project_files(self):
         if not ABCFileSetCreator.is_basic_structure_created:
-            error(f"Basic file-structure for project '{self.__project_name}' has not yet been created.")
-        template_replacements = self.get_file_map_list()
-        for template_replacement in template_replacements:
-            content = read_file(template_replacement.template_file())
-            log_info(f"template={template_replacement.template_file()}")
+            self.__create_basic_dir_structure()
+        file_maps = self.get_file_map_list()
+        for file_map in file_maps:
+            content = read_file(file_map.template_file())
+            log_info(f"template={file_map.template_file()}")
             self.__common_replacements["[[LICENCE]]"] = \
                 self.commented_licence_string(licence_text=self.__licence,
-                                              comment_style=template_replacement.comment_style(),
-                                              filename=template_replacement.target_file())
+                                              comment_style=file_map.comment_style(),
+                                              filename=file_map.target_file())
             content = replace_all(content, self.get_tag_replacements())
             content = replace_all(content, self.__common_replacements)
             content = replace_all(content, self.get_tag_replacements())
-            write_file(filename=template_replacement.target_file(), content=content)
-            log_info(f"proj_file={template_replacement.target_file()}")
+            write_file(filename=file_map.target_file(), content=content)
+            log_info(f"proj_file={file_map.target_file()}")
 
     def project_dir(self):
         return self.__project_path

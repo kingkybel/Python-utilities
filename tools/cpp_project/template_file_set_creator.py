@@ -2,8 +2,6 @@ import os
 import sys
 from os import PathLike
 
-from lib.overrides import overrides
-
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../../Python-utilities")
 if not os.path.isdir(dk_lib_dir):
@@ -12,8 +10,9 @@ sys.path.insert(0, dk_lib_dir)
 
 from lib.logger import error
 from lib.string_utils import is_cpp_id
-from tools.cpp_project.comment_style import CommentStyle
-from tools.cpp_project.file_name_mapper import FileNameMapper
+from lib.basic_functions import is_empty_string
+from lib.overrides import overrides
+from tools.cpp_project.file_name_mapper import FileNameMapper, CommentStyle
 from tools.cpp_project.abc_file_set_creator import ABCFileSetCreator
 
 
@@ -24,26 +23,106 @@ class TemplateFileSetCreator(ABCFileSetCreator):
 
     def __init__(self, project_path: (str | PathLike), template_config_str: str):
         super().__init__(project_path)
+        if is_empty_string(template_config_str):
+            error(f"Configuration for template is empty")
+        name_and_type = template_config_str.split(":")
+        if len(name_and_type) < 2:
+            error(f"Invalid template config str '{template_config_str}. Needs at least one type.")
+        if not is_cpp_id(name_and_type[0]):
+            error(f"Template name '{name_and_type[0]}' is not a valid C++ identifier")
+        typenames = name_and_type[1].split(",")
+        for typename in typenames:
+            if not is_cpp_id(typename):
+                error(f"Type '{typename}' is not a valid C++ identifier")
+        self.__template_name = name_and_type[0]
+        self.__typenames = typenames
 
     @overrides(ABCFileSetCreator)
     def get_tag_replacements(self) -> dict[str, str]:
         return {
-            "[[CLASS_NAME]]": self.__class_name,
-            "[[CLASS_NAME_LOWER]]": self.__class_name.lower(),
-            "[[CLASS_NAME_UPPER]]": self.__class_name.upper(),
-            "[[CLASS_HASH_INCLUDE]]": f'#include "{self.__class_name.lower()}.h"\n'}
+            "[[TEMPLATE_CLASS_NAME]]": self.__template_name,
+            "[[TEMPLATE_CLASS_NAME_LOWER]]": self.__template_name.lower(),
+            "[[TEMPLATE_CLASS_NAME_UPPER]]": self.__template_name.upper(),
+            "[[TEMPLATE_ARGS_DEF]]": self.__make_template_args_def(),
+            "[[TEMPLATE_ARGS_HASH_DEFINES]]": self.__make_template_args_hash_defines(),
+            "[[TEMPLATE_ARGS_MEMBERS]]": self.__make_template_args_members(),
+            "[[TEMPLATE_CLASS_CONSTRUCTOR_ARGS]]": self.__make_template_class_constructor_args(),
+            "[[TEMPLATE_CLASS_CONSTRUCTOR_INIT]]": self.__make_template_class_constructor_init(),
+            "[[TEMPLATE_INCLUDES]]": f'#include "{self.__template_name.lower()}.h"'
+        }
 
     @overrides(ABCFileSetCreator)
     def get_file_map_list(self) -> list[FileNameMapper]:
-        return [FileNameMapper(template_file=f"{self.tpl_include_dir()}/class_include.h",
-                               target_file=f"{self.include_dir()}/{self.__class_name.lower()}.h",
+        return [FileNameMapper(template_file=f"{self.tpl_include_dir()}/template.h",
+                               target_file=f"{self.include_dir()}/{self.__template_name.lower()}.h",
                                comment_style=CommentStyle.CPP),
-                FileNameMapper(template_file=f"{self.tpl_classes_dir()}/class_source.cc",
-                               target_file=f"{self.classes_dir()}/{self.__class_name.lower()}.cc",
-                               comment_style=CommentStyle.CPP),
-                FileNameMapper(template_file=f"{self.tpl_test_dir()}/class_tests.cc",
-                               target_file=f"{self.test_dir()}/{self.__class_name.lower()}_tests.cc",
+                FileNameMapper(template_file=f"{self.tpl_test_dir()}/template_tests.cc",
+                               target_file=f"{self.test_dir()}/{self.__template_name.lower()}_tests.cc",
                                comment_style=CommentStyle.CPP),
                 FileNameMapper(template_file=f"{self.tpl_test_dir()}/run_tests.cc",
                                target_file=f"{self.test_dir()}/run_{self.project_name().lower()}_tests.cc",
                                comment_style=CommentStyle.CPP)]
+
+    def template_name(self):
+        return self.__template_name
+
+    def __make_template_args_def(self) -> str:
+        template_args = ""
+        num_types = len(self.__typenames)
+        for i in range(num_types):
+            type_str = self.__typenames[i]
+            if len(self.__typenames) > 1 and i > 0:
+                template_args += "\n         "
+            template_args += f"typename {type_str}"
+            if i < num_types-1:
+                template_args += ","
+        return template_args
+
+    def __make_template_args_hash_defines(self) -> str:
+        hash_defines = ""
+        num_types = len(self.__typenames)
+        types_to_rotate = ["size_t", "double", "int32_t", "char"]
+        for i in range(num_types):
+            type_str = self.__typenames[i]
+            hash_defines += f"typedef {types_to_rotate[i%len(types_to_rotate)]} {type_str};\n"
+        return hash_defines
+
+    def __make_template_args_members(self) -> str:
+        members = ""
+        num_types = len(self.__typenames)
+        for i in range(num_types):
+            type_str = self.__typenames[i]
+            members += f"    {type_str} {type_str.lower()}_val_;\n"
+
+        return members
+
+    def __make_template_class_constructor_args(self) -> str:
+        constructor_args = ""
+        indent_len = len(self.template_name()) + 5
+        indent = " " * indent_len
+        num_types = len(self.__typenames)
+        for i in range(num_types):
+            type_str = self.__typenames[i]
+            if len(self.__typenames) > 1 and i > 0:
+                constructor_args += "\n" + indent
+            constructor_args += f"{type_str} {type_str.lower()}_val"
+            if i < num_types-1:
+                constructor_args += ","
+
+        return constructor_args
+
+    def __make_template_class_constructor_init(self) -> str:
+        constructor_init = ""
+
+        num_types = len(self.__typenames)
+        for i in range(num_types):
+            type_str = self.__typenames[i]
+            if len(self.__typenames) > 1:
+                constructor_init += "\n        "
+            if i == 0:
+                constructor_init += ": "
+            else:
+                constructor_init += ", "
+            constructor_init += f"{type_str.lower()}_val_({type_str.lower()}_val)"
+
+        return constructor_init
