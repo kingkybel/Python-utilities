@@ -1,0 +1,40 @@
+#!/usr/bin/bash
+
+[[LICENCE]]
+
+[[ "${0}" != "${BASH_SOURCE[0]}" ]] && THIS_FILE="${BASH_SOURCE[0]}" || THIS_FILE="${0}"
+THIS_DIR=$(realpath "$(dirname ${THIS_FILE})")
+
+BUILD_LIBS=$(grep -o -E "[a-z_]+_lib" Makefile | sort -u | xargs)
+BUILD_EXES=$(grep -o -E "[a-z_]+_exe" Makefile | sort -u | xargs)
+BUILD_TESTS=$(grep -o -E "run_[a-z_]+_tests" Makefile | sort -u | xargs)
+[ -f "${THIS_DIR}/build/bin/[[PROJECT_NAME_LOWER]]" ] || {
+    mkdir -p "${THIS_DIR}/build"
+    pushd "${THIS_DIR}/build"
+    cmake .. || {
+      echo "Error configuring (cmake'ing) project"
+      exit 1
+    }
+    if [ "${BUILD_LIBS}" = "" ]; then
+      make -j $(nproc --all) $(grep -o -E "[a-z_]+_lib" Makefile | sort -u | xargs) || {
+        echo "Error building (make'ing) project libraries"
+        exit 1
+      }
+    fi
+    if [ "${BUILD_EXES}" = "" ]; then
+      make -j $(nproc --all) $(grep -o -E "[a-z_]+_exe" Makefile | sort -u | xargs) || {
+        echo "Error building (make'ing) project executables"
+        exit 1
+      }
+    fi
+    if [ "${BUILD_TESTS}" = "" ]; then
+      make -j $(nproc --all) $(grep -o -E "run_[a-z_]+_tests" Makefile | sort -u | xargs) || {
+        echo "Error building (make'ing) project tests"
+        exit 1
+      }
+    fi
+    popd
+}
+
+[[DOCKER_BUILD_COMMAND]]
+

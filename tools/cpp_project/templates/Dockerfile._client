@@ -1,0 +1,14 @@
+[[LICENCE]]
+
+FROM ubuntu:22.04
+
+COPY ./bash_aliases_for_docker /tmp
+RUN cat /tmp/bash_aliases_for_docker > ~/.bash_aliases
+RUN rm /tmp/bash_aliases_for_docker
+
+# Copy project files and build the project
+WORKDIR /app
+
+COPY ./build/bin/[[SERVICE_NAME_WITH_MESSAGING_TYPE]]_client .
+
+ENTRYPOINT ["bash"]

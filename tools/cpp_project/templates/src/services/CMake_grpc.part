@@ -1,0 +1,24 @@
+
+####################################################################
+## gRPC - executables
+####################################################################
+
+foreach(_target [[CMAKE_GRPC_SERVICES]])
+
+  # server executable
+  add_executable("${_target}_server_exe" "${_target}_server_main.cc")
+  set_property(TARGET "${_target}_server_exe" PROPERTY OUTPUT_NAME "${_target}_server")
+  target_include_directories("${_target}_server_exe" PRIVATE ${PROTO_CPP_SRC_DIR})
+  target_link_libraries("${_target}_server_exe"
+    [[PROJECT_NAME_LOWER]]_grpc_proto
+    "${_target}_service")
+
+  # client executable
+  add_executable("${_target}_client_exe" "${_target}_client_main.cc")
+  set_property(TARGET "${_target}_client_exe" PROPERTY OUTPUT_NAME "${_target}_client")
+  target_include_directories("${_target}_client_exe" PRIVATE ${PROTO_CPP_SRC_DIR})
+  target_link_libraries("${_target}_client_exe"
+    [[PROJECT_NAME_LOWER]]_grpc_proto
+    "${_target}_client")
+
+endforeach()

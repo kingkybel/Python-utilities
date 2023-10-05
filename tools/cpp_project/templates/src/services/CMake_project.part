@@ -1,0 +1,7 @@
+
+####################################################################
+## project executable
+####################################################################
+
+add_executable([[PROJECT_NAME_LOWER]]_exe [[PROJECT_NAME_LOWER]]_main.cc)
+set_property(TARGET "[[PROJECT_NAME_LOWER]]_exe" PROPERTY OUTPUT_NAME "[[PROJECT_NAME_LOWER]]")
