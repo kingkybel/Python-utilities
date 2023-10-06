@@ -2,8 +2,10 @@ import os
 import sys
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = f"{this_dir}/.."
-sys.path.insert(0, parent_dir)
+dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
+if not os.path.isdir(dk_lib_dir):
+    raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
+sys.path.insert(0, dk_lib_dir)
 
 from lib.overrides import overrides
 from threading import Thread

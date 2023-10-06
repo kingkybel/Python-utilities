@@ -1,11 +1,16 @@
+#!/bin/env python3
+
 import os
 import shutil
 import sys
 import unittest
 from pathlib import Path
 
-parent_path = f"{os.path.dirname(os.path.abspath(__file__))}/.."
-sys.path.insert(0, parent_path)
+this_dir = os.path.dirname(os.path.abspath(__file__))
+dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
+if not os.path.isdir(dk_lib_dir):
+    raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
+sys.path.insert(0, dk_lib_dir)
 
 from lib.file_system_object import make_path_list, glob_path_patterns, GlobMode, mkdir, remove, touch, pushdir, current_dir, \
     popdir

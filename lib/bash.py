@@ -1,4 +1,13 @@
 import os
+from os import PathLike
+import sys
+
+this_dir = os.path.dirname(os.path.abspath(__file__))
+dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
+if not os.path.isdir(dk_lib_dir):
+    raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
+sys.path.insert(0, dk_lib_dir)
+
 import pty
 import re
 import select
@@ -7,11 +16,9 @@ import subprocess
 import sys
 import termios
 import tty
-import pwd
 import urllib.request
 from getpass import getuser
 from multiprocessing import cpu_count
-from os import PathLike
 from shutil import which
 from socket import gethostname
 

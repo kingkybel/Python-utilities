@@ -1,14 +1,22 @@
 import glob
-import os
-import shutil
-import psutil
 import grp
+import os
 import pwd
+import shutil
+import sys
+import psutil
 from datetime import datetime
 from distutils.dir_util import copy_tree
 from enum import auto
 from os import PathLike
 from pathlib import Path
+
+this_dir = os.path.dirname(os.path.abspath(__file__))
+dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
+if not os.path.isdir(dk_lib_dir):
+    raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
+sys.path.insert(0, dk_lib_dir)
+
 from lib.basic_functions import is_empty_string, valid_absolute_path
 from lib.extended_enum import ExtendedFlag, ExtendedEnum, always_match
 from lib.logger import error, log_warning, log_command

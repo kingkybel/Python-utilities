@@ -1,9 +1,14 @@
+#!/bin/env python3
+
 import os
 import sys
 import unittest
 
-parent_path = f"{os.path.dirname(os.path.abspath(__file__))}/.."
-sys.path.insert(0, parent_path)
+this_dir = os.path.dirname(os.path.abspath(__file__))
+dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
+if not os.path.isdir(dk_lib_dir):
+    raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
+sys.path.insert(0, dk_lib_dir)
 
 from lib.string_utils import squeeze_chars, matches_any, normalise_sentence, roman_to_integer, is_roman_numeral
 from lib.logger import LogLevels, set_logger
@@ -34,8 +39,9 @@ class BasicFunctionsTests(unittest.TestCase):
         self.assertTrue(matches_any("string to test", patterns=["STRING to test", "s.*"]))
 
     def test_clean_sentence_string(self):
-        sentence = """This website! includes information ,about Project Gutenberg™ to hear about new eBooks."""
-        expected_clean_sentence = """This website! includes information ,about Project Gutenberg™ to hear about new eBooks."""
+        sentence = "This website! includes information ,about Project Gutenberg™ to hear about new eBooks."
+        expected_clean_sentence = \
+            "This website ! includes information , about Project Gutenberg™ to hear about new eBooks ."
         result = normalise_sentence(sentence=sentence)
         self.assertEqual(result, expected_clean_sentence)
 

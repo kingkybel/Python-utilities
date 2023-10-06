@@ -1,10 +1,14 @@
+#!/bin/env python3
+
 import argparse
 import os
 import re
 import sys
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
-dk_lib_dir = os.path.abspath(f"{this_dir}/..")
+dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
+if not os.path.isdir(dk_lib_dir):
+    raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
 from lib.bash import get_logged_in_user

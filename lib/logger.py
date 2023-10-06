@@ -1,9 +1,16 @@
 import datetime
 import logging
+import os
 import os.path
+import sys
 from os import PathLike
-
 from colorama import Fore, Style
+
+this_dir = os.path.dirname(os.path.abspath(__file__))
+dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
+if not os.path.isdir(dk_lib_dir):
+    raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
+sys.path.insert(0, dk_lib_dir)
 
 from lib.basic_functions import is_empty_string, now_string
 from lib.extended_enum import ExtendedEnum
