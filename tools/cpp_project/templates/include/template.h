@@ -12,7 +12,7 @@ namespace ns_[[PROJECT_NAME_LOWER]]
 // uncomment the following line if you want to gdb-debug the class (templates are not debuggable)
 //#define GDB_DEBUGGING
 #ifdef GDB_DEBUGGING
-// hash defines of types to use. Modify as required.
+// type definitions of types to use. Modify as required.
 [[TEMPLATE_ARGS_HASH_DEFINES]]
 #else
 template<[[TEMPLATE_ARGS_DEF]]>

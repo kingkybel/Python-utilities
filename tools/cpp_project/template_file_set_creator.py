@@ -36,6 +36,11 @@ class TemplateFileSetCreator(ABCFileSetCreator):
                 error(f"Type '{typename}' is not a valid C++ identifier")
         self.__template_name = name_and_type[0]
         self.__typenames = typenames
+        self.__concrete_types_to_rotate = [("std::size_t", "4711UL"),
+                                           ("double", "3.1415"),
+                                           ("std::int32_t", "666"),
+                                           ("char", "'c'"),
+                                           ("float", "-112.233")]
 
     @overrides(ABCFileSetCreator)
     def get_tag_replacements(self) -> dict[str, str]:
@@ -48,7 +53,12 @@ class TemplateFileSetCreator(ABCFileSetCreator):
             "[[TEMPLATE_ARGS_MEMBERS]]": self.__make_template_args_members(),
             "[[TEMPLATE_CLASS_CONSTRUCTOR_ARGS]]": self.__make_template_class_constructor_args(),
             "[[TEMPLATE_CLASS_CONSTRUCTOR_INIT]]": self.__make_template_class_constructor_init(),
-            "[[TEMPLATE_INCLUDES]]": f'#include "{self.__template_name.lower()}.h"'
+            "[[TEMPLATE_INCLUDES]]": f'#include "{self.__template_name.lower()}.h"',
+            "[[TEMPLATE_ARGS_VARIABLES]]": self.__make_template_args_variables(concrete=False),
+            "[[TEMPLATE_SPECIALISATION]]": self.__make_template_specialisation(concrete=False),
+            "[[TEMPLATE_VARIABLES_IN_CALL]]": self.__make_template_variables_in_call(),
+            "[[TEMPLATE_ARGS_VARIABLES_CONCRETE]]": self.__make_template_args_variables(concrete=True),
+            "[[TEMPLATE_SPECIALISATION_CONCRETE]]": self.__make_template_specialisation(concrete=True),
         }
 
     @overrides(ABCFileSetCreator)
@@ -74,27 +84,18 @@ class TemplateFileSetCreator(ABCFileSetCreator):
             if len(self.__typenames) > 1 and i > 0:
                 template_args += "\n         "
             template_args += f"typename {type_str}"
-            if i < num_types-1:
+            if i < num_types - 1:
                 template_args += ","
         return template_args
 
     def __make_template_args_hash_defines(self) -> str:
         hash_defines = ""
         num_types = len(self.__typenames)
-        types_to_rotate = ["std::size_t", "double", "std::int32_t", "char"]
         for i in range(num_types):
+            tmpl_type = self.__concrete_types_to_rotate[i % len(self.__concrete_types_to_rotate)]
             type_str = self.__typenames[i]
-            hash_defines += f"typedef {types_to_rotate[i%len(types_to_rotate)]} {type_str};\n"
+            hash_defines += f"typedef {tmpl_type[0]} {type_str};\n"
         return hash_defines
-
-    def __make_template_args_members(self) -> str:
-        members = ""
-        num_types = len(self.__typenames)
-        for i in range(num_types):
-            type_str = self.__typenames[i]
-            members += f"    {type_str} {type_str.lower()}_val_;\n"
-
-        return members
 
     def __make_template_class_constructor_args(self) -> str:
         constructor_args = ""
@@ -106,7 +107,7 @@ class TemplateFileSetCreator(ABCFileSetCreator):
             if len(self.__typenames) > 1 and i > 0:
                 constructor_args += "\n" + indent
             constructor_args += f"{type_str} {type_str.lower()}_val"
-            if i < num_types-1:
+            if i < num_types - 1:
                 constructor_args += ","
 
         return constructor_args
@@ -126,3 +127,51 @@ class TemplateFileSetCreator(ABCFileSetCreator):
             constructor_init += f"{type_str.lower()}_val_({type_str.lower()}_val)"
 
         return constructor_init
+
+    def __make_template_args_members(self) -> str:
+        members = ""
+        num_types = len(self.__typenames)
+        for i in range(num_types):
+            type_str = self.__typenames[i]
+            members += f"    {type_str} {type_str.lower()}_val_;\n"
+
+        return members
+
+    def __make_template_args_variables(self, concrete: bool) -> str:
+        variable_definitions = ""
+        num_types = len(self.__typenames)
+        for i in range(num_types):
+            concrete_type = self.__concrete_types_to_rotate[i % len(self.__concrete_types_to_rotate)]
+            var_name = f"{self.__typenames[i].lower()}_var"
+            if concrete:
+                type_str = concrete_type[0]
+            else:
+                type_str = self.__typenames[i]
+            variable_definitions += f"    {type_str} {var_name}{{{concrete_type[1]}}};\n"
+
+        return variable_definitions
+
+    def __make_template_specialisation(self, concrete: bool) -> str:
+        template_args = ""
+        num_types = len(self.__typenames)
+        for i in range(num_types):
+            if concrete:
+                concrete_type = self.__concrete_types_to_rotate[i % len(self.__concrete_types_to_rotate)]
+                type_str = concrete_type[0]
+            else:
+                type_str = self.__typenames[i]
+            template_args += type_str
+            if i < num_types - 1:
+                template_args += ", "
+        return template_args
+
+    def __make_template_variables_in_call(self) -> str:
+        variable_definitions = ""
+        num_types = len(self.__typenames)
+        for i in range(num_types):
+            tmpl_type = self.__concrete_types_to_rotate[i % len(self.__concrete_types_to_rotate)]
+            variable_definitions += f"{self.__typenames[i].lower()}_var"
+            if i < num_types - 1:
+                variable_definitions += ", "
+
+        return variable_definitions
