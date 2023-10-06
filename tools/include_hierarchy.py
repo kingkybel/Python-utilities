@@ -7,6 +7,7 @@ this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/..")
 sys.path.insert(0, dk_lib_dir)
 
+from lib.bash import get_logged_in_user
 from lib.file_system_object import find, FileSystemObjectType
 from lib.file_utils import read_file
 from lib.json_object import JsonObject
@@ -42,7 +43,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--root_dir", "-r",
-        default=f"/home/dieter/Repos/CPP/CPP-utilities",
+        default=f"/home/{get_logged_in_user()}/Repos/CPP/CPP-utilities",
         type=str,
         help='Location of include, build/bin and build/lib folders')
 
@@ -73,4 +74,3 @@ if __name__ == "__main__":
     print(sorted_hierarchy)
     jsonHierarchy = JsonObject(json_obj=sorted_hierarchy)
     print(jsonHierarchy.to_str(4))
-
