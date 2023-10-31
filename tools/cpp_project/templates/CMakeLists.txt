@@ -82,5 +82,5 @@ link_directories(
 set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=* -p ${CMAKE_SOURCE_DIR}/build")
 
 add_subdirectory(src)
-add_subdirectory(test)
+[[CMAKE_INCLUDE_SUBDIR_TEST]]
 

@@ -58,10 +58,7 @@ class CmakeFileSetCreator(ABCFileSetCreator):
             FileNameMapper(template_file=f"{self.tpl_src_dir()}/CMakeLists.txt",
                            target_file=f"{self.src_dir()}/CMakeLists.txt",
                            comment_style=CommentStyle.DOCKER))
-        file_list.append(
-            FileNameMapper(template_file=f"{self.tpl_test_dir()}/CMakeLists.txt",
-                           target_file=f"{self.test_dir()}/CMakeLists.txt",
-                           comment_style=CommentStyle.DOCKER))
+
         file_list.append(
             FileNameMapper(template_file=f"{self.tpl_services_dir()}/CMakeLists.txt",
                            target_file=f"{self.services_dir()}/CMakeLists.txt",
@@ -79,6 +76,11 @@ class CmakeFileSetCreator(ABCFileSetCreator):
             file_list.append(
                 FileNameMapper(template_file=f"{self.tpl_grpc_dir()}/cmake/common.cmake",
                                target_file=f"{self.grpc_dir()}/cmake/common.cmake",
+                               comment_style=CommentStyle.DOCKER))
+        if len(self.__grpc_service_config_strings) + len(self.__class_names) + len(self.__templates) > 0:
+            file_list.append(
+                FileNameMapper(template_file=f"{self.tpl_test_dir()}/CMakeLists.txt",
+                               target_file=f"{self.test_dir()}/CMakeLists.txt",
                                comment_style=CommentStyle.DOCKER))
         return file_list
 
@@ -99,6 +101,7 @@ class CmakeFileSetCreator(ABCFileSetCreator):
         tag_dict["[[DOCKER_BUILD_COMMAND]]"] = self.__make_docker_build_command()
         tag_dict["[[CMAKE_GRPC_COMMON_DEFS]]"] = ""
         tag_dict["[[CMAKE_GRPC_COMMON_LIBS]]"] = ""
+        tag_dict["[[CMAKE_INCLUDE_SUBDIR_TEST]]"] = "add_subdirectory(test)"
 
         if len(self.__class_names) > 0:
             tag_dict["[[CMAKE_INCLUDE_CLASSES_SUB_DIR]]"] = "add_subdirectory(classes)"
@@ -121,6 +124,9 @@ class CmakeFileSetCreator(ABCFileSetCreator):
 
         if len(self.__class_names) == 0 and len(self.__grpc_service_config_strings) == 0:
             tag_dict["[[CMAKE_SERVICES_PROJECT_PART]]"] = read_file(f"{self.tpl_services_dir()}/CMake_project.part")
+
+        if len(self.__grpc_service_config_strings) + len(self.__class_names) + len(self.__templates) == 0:
+            tag_dict["[[CMAKE_INCLUDE_SUBDIR_TEST]]"] = ""
 
         return tag_dict
 

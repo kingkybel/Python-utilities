@@ -7,7 +7,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/build/bin/run_[[PROJECT_NAME_LOWER]]_tests",
       "args": [
-         "--gtest_filter=[[PROJECT_NAME]].[[PROJECT_NAME]]_test"
+        "--gtest_filter=[[PROJECT_NAME]].[[PROJECT_NAME]]_test"
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
@@ -22,7 +22,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "make current project"
+      "preLaunchTask": "make (debug) current project"
     },
     {
       "name": "[[PROJECT_NAME]]: g++ build and debug main",
@@ -43,7 +43,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "make current project"
+      "preLaunchTask": "make (debug) current project"
     },
     {
       "type": "bashdb",

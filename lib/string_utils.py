@@ -1,11 +1,12 @@
 import itertools
+import keyword
+import os
 import random
 import re
 import string
-import keyword
-from colorama import Style, Fore, init as colorama_init
-import os
 import sys
+
+from colorama import Style, Fore, init as colorama_init
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")

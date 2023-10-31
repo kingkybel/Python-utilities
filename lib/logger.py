@@ -4,6 +4,7 @@ import os
 import os.path
 import sys
 from os import PathLike
+
 from colorama import Fore, Style
 
 this_dir = os.path.dirname(os.path.abspath(__file__))

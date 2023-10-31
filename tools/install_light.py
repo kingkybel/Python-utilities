@@ -12,6 +12,7 @@ sys.path.insert(0, dk_lib_dir)
 
 from lib.bash import get_logged_in_user, assert_is_root
 from lib.file_system_object import mkdir, find, FileSystemObjectType, symbolic_link, cp, chown
+from lib.string_utils import input_value
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -46,9 +47,15 @@ if __name__ == "__main__":
     prj_sub = ""
     if found_args.project is not None:
         prj_sub = f"/{found_args.project}"
+    else:
+        accept_empty_prj_sub = input_value(var_name="accept_empty_prj_sub",
+                                           var_type=bool,
+                                           help_str="Accept empty project sub-directory? ")
+        if not accept_empty_prj_sub:
+            exit(0)
 
     local_inc_dir = mkdir(f"{found_args.local_dir}/include{prj_sub}", expect_1=True)
-    inc_dir = mkdir(f"{found_args.install_dir}/include{prj_sub}",  expect_1=True, allow_system_paths=True)
+    inc_dir = mkdir(f"{found_args.install_dir}/include{prj_sub}", expect_1=True, allow_system_paths=True)
 
     local_lib_dir = mkdir(f"{found_args.local_dir}/lib{prj_sub}", expect_1=True)
     lib_dir = mkdir(f"{found_args.install_dir}/lib{prj_sub}", expect_1=True, allow_system_paths=True)
@@ -77,4 +84,4 @@ if __name__ == "__main__":
         target = f"{local_bin_dir}/{os.path.basename(exe)}"
         cp(exe, target)
         chown(target, user)
-        symbolic_link(existing_path=target,  new_link=bin_dir, overwrite_link=True, allow_system_paths=True)
+        symbolic_link(existing_path=target, new_link=bin_dir, overwrite_link=True, allow_system_paths=True)

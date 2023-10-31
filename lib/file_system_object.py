@@ -239,7 +239,7 @@ def symbolic_link(existing_path: (str | PathLike),
             error(f"Cannot link empty path to {new_link}")
         force = ""
         if overwrite_link and (os.path.exists(new_link) or os.path.islink(new_link)):
-            remove(new_link, allow_system_paths=allow_system_paths)
+            remove(new_link, allow_system_paths=allow_system_paths, force=True)
             force = "-f "
         log_command(f"ln {force}-s {existing_path} {new_link}")
         symlink = Path(new_link)
@@ -444,7 +444,7 @@ def chown(paths: (str | PathLike | list[str | PathLike]),
           dryrun: bool = False):
     if group is None:
         group = user
-    log_command(f"chmod {user}:{group} {paths}", dryrun=dryrun)
+    log_command(f"chown {user}:{group} {paths}", dryrun=dryrun)
     paths = glob_path_patterns(paths)
     for path in paths:
         uid = pwd.getpwnam(user).pw_uid

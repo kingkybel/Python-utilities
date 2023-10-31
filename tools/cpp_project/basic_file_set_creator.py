@@ -22,7 +22,6 @@ class BasicFileSetCreator(ABCFileSetCreator):
         super().__init__(project_path)
         self.__add_docker = add_docker
 
-
     @overrides(ABCFileSetCreator)
     def get_file_map_list(self) -> list[FileNameMapper]:
         file_list = list()
@@ -36,7 +35,6 @@ class BasicFileSetCreator(ABCFileSetCreator):
                       (".clang-format", CommentStyle.BASH),
                       (".clang-tidy", CommentStyle.BASH),
                       ("Doxyfile", CommentStyle.BASH)]:
-
             file_list.append(
                 FileNameMapper(template_file=f"{self.tpl_dir()}/{tmplt[0]}",
                                target_file=f"{self.project_path()}/{tmplt[0]}",

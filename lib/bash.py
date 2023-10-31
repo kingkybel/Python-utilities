@@ -1,6 +1,6 @@
 import os
-from os import PathLike
 import sys
+from os import PathLike
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")

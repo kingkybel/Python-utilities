@@ -12,8 +12,8 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
-from lib.file_system_object import make_path_list, glob_path_patterns, GlobMode, mkdir, remove, touch, pushdir, current_dir, \
-    popdir
+from lib.file_system_object import make_path_list, glob_path_patterns, GlobMode, mkdir, remove, touch, pushdir, \
+    current_dir, popdir
 from lib.logger import LogLevels, set_logger
 
 
