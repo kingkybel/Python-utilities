@@ -1,0 +1,880 @@
+{
+  "type": "record",
+  "name": "PosOrderSnapshot",
+  "namespace": "uk.co.kingkybel.group.ms.pos.order.snapshot.model",
+  "fields": [
+    {
+      "name": "ticketReference",
+      "type": {
+        "type": "string",
+        "avro.java.string": "String"
+      }
+    },
+    {
+      "name": "worksOrder",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "contractNumber",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "employeeNumber",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "digitalReference",
+      "type": [
+        "null",
+        {
+          "type": "record",
+          "name": "DigitalReference",
+          "fields": [
+            {
+              "name": "digitalOrderReference",
+              "type": {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            },
+            {
+              "name": "consignmentId",
+              "type": {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            }
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "orderType",
+      "type": {
+        "type": "enum",
+        "name": "OrderType",
+        "symbols": [
+          "COLLECTION",
+          "DELIVERED",
+          "DIRECT"
+        ]
+      }
+    },
+    {
+      "name": "brandId",
+      "type": {
+        "type": "string",
+        "avro.java.string": "String"
+      }
+    },
+    {
+      "name": "channel",
+      "type": {
+        "type": "string",
+        "avro.java.string": "String"
+      }
+    },
+    {
+      "name": "customerOrderRef",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "customerSiteRef",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "siteContactName",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "siteContactNumber",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "siteDeliveryInstructions",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "ticketStatus",
+      "type": {
+        "type": "enum",
+        "name": "TicketStatus",
+        "symbols": [
+          "CREATED",
+          "WORKSLIP_PRINTED",
+          "READY_FOR_COLLECTION",
+          "COLLECTED",
+          "DELIVERY_NOTE_PRINTED",
+          "DELIVERY_CONFIRMED",
+          "DELIVERY_NOTE_ADJUSTED",
+          "AUTHORISED_ADJUSTED",
+          "INVOICED",
+          "CANCELLED",
+          "CLOSED"
+        ]
+      }
+    },
+    {
+      "name": "statusTimestamp",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "orderCreationDate",
+      "type": {
+        "type": "string",
+        "avro.java.string": "String"
+      }
+    },
+    {
+      "name": "estimatedDeliveryDate",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "orderDeliveryDate",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "branch",
+      "type": {
+        "type": "record",
+        "name": "Branch",
+        "fields": [
+          {
+            "name": "branchId",
+            "type": {
+              "type": "string",
+              "avro.java.string": "String"
+            }
+          },
+          {
+            "name": "name",
+            "type": [
+              "null",
+              {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            ],
+            "default": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "goodsAmount",
+      "type": {
+        "type": "string",
+        "avro.java.string": "String",
+        "java-class": "java.math.BigDecimal"
+      }
+    },
+    {
+      "name": "deliveryCharge",
+      "type": {
+        "type": "string",
+        "avro.java.string": "String",
+        "java-class": "java.math.BigDecimal"
+      }
+    },
+    {
+      "name": "orderTotal",
+      "type": {
+        "type": "string",
+        "avro.java.string": "String",
+        "java-class": "java.math.BigDecimal"
+      }
+    },
+    {
+      "name": "orderVatAmount",
+      "type": {
+        "type": "string",
+        "avro.java.string": "String",
+        "java-class": "java.math.BigDecimal"
+      }
+    },
+    {
+      "name": "contactMobileNumber",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "siteAccessInstructions",
+      "type": [
+        "null",
+        {
+          "type": "array",
+          "items": {
+            "type": "record",
+            "name": "SiteAccessInstruction",
+            "fields": [
+              {
+                "name": "accessType",
+                "type": {
+                  "type": "enum",
+                  "name": "AccessType",
+                  "symbols": [
+                    "MAIN_ROAD",
+                    "SCHOOL",
+                    "HGV_PERMISSIBLE",
+                    "OVERHEAD_OBSTRUCTION",
+                    "SUBTERRANEAN",
+                    "OTHER"
+                  ]
+                }
+              },
+              {
+                "name": "applicable",
+                "type": "boolean"
+              },
+              {
+                "name": "comments",
+                "type": [
+                  "null",
+                  {
+                    "type": "string",
+                    "avro.java.string": "String"
+                  }
+                ],
+                "default": null
+              }
+            ],
+            "default": null
+          }
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "orderItems",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "OrderItem",
+          "fields": [
+            {
+              "name": "productCode",
+              "type": {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            },
+            {
+              "name": "priceObtainedCode",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "avro.java.string": "String"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "vatRate",
+              "type": {
+                "type": "string",
+                "avro.java.string": "String",
+                "java-class": "java.math.BigDecimal"
+              }
+            },
+            {
+              "name": "productDescription",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "avro.java.string": "String"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "quantity",
+              "type": {
+                "type": "string",
+                "avro.java.string": "String",
+                "java-class": "java.math.BigDecimal"
+              }
+            },
+            {
+              "name": "quantityUom",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "avro.java.string": "String"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "price",
+              "type": {
+                "type": "string",
+                "avro.java.string": "String",
+                "java-class": "java.math.BigDecimal"
+              }
+            },
+            {
+              "name": "priceUom",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "avro.java.string": "String"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "subTotal",
+              "type": {
+                "type": "string",
+                "avro.java.string": "String",
+                "java-class": "java.math.BigDecimal"
+              }
+            },
+            {
+              "name": "vatAmount",
+              "type": {
+                "type": "string",
+                "avro.java.string": "String",
+                "java-class": "java.math.BigDecimal"
+              }
+            },
+            {
+              "name": "percentageDiscount",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "avro.java.string": "String",
+                  "java-class": "java.math.BigDecimal"
+                }
+              ],
+              "default": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "relatedDocuments",
+      "type": [
+        "null",
+        {
+          "type": "array",
+          "items": {
+            "type": "record",
+            "name": "RelatedDocument",
+            "fields": [
+              {
+                "name": "type",
+                "type": {
+                  "type": "enum",
+                  "name": "RelatedDocumentType",
+                  "symbols": [
+                    "REFUND",
+                    "RETURN",
+                    "CREDIT",
+                    "RETURN_REFUND",
+                    "RETURN_CREDIT"
+                  ]
+                }
+              },
+              {
+                "name": "reference",
+                "type": {
+                  "type": "string",
+                  "avro.java.string": "String"
+                }
+              },
+              {
+                "name": "createdTimestamp",
+                "type": [
+                  "null",
+                  {
+                    "type": "string",
+                    "avro.java.string": "String"
+                  }
+                ],
+                "default": null
+              },
+              {
+                "name": "totalGoodsAmount",
+                "type": {
+                  "type": "string",
+                  "avro.java.string": "String",
+                  "java-class": "java.math.BigDecimal"
+                }
+              },
+              {
+                "name": "totalVat",
+                "type": {
+                  "type": "string",
+                  "avro.java.string": "String",
+                  "java-class": "java.math.BigDecimal"
+                }
+              },
+              {
+                "name": "total",
+                "type": {
+                  "type": "string",
+                  "avro.java.string": "String",
+                  "java-class": "java.math.BigDecimal"
+                }
+              },
+              {
+                "name": "lines",
+                "type": {
+                  "type": "array",
+                  "items": {
+                    "type": "record",
+                    "name": "OrderLine",
+                    "fields": [
+                      {
+                        "name": "productCode",
+                        "type": {
+                          "type": "string",
+                          "avro.java.string": "String"
+                        }
+                      },
+                      {
+                        "name": "productDescription",
+                        "type": [
+                          "null",
+                          {
+                            "type": "string",
+                            "avro.java.string": "String"
+                          }
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "quantity",
+                        "type": {
+                          "type": "string",
+                          "avro.java.string": "String",
+                          "java-class": "java.math.BigDecimal"
+                        }
+                      },
+                      {
+                        "name": "quantityUom",
+                        "type": [
+                          "null",
+                          {
+                            "type": "string",
+                            "avro.java.string": "String"
+                          }
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "price",
+                        "type": {
+                          "type": "string",
+                          "avro.java.string": "String",
+                          "java-class": "java.math.BigDecimal"
+                        }
+                      },
+                      {
+                        "name": "priceUom",
+                        "type": [
+                          "null",
+                          {
+                            "type": "string",
+                            "avro.java.string": "String"
+                          }
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "handlingPercentage",
+                        "type": {
+                          "type": "string",
+                          "avro.java.string": "String",
+                          "java-class": "java.math.BigDecimal"
+                        }
+                      },
+                      {
+                        "name": "subTotal",
+                        "type": {
+                          "type": "string",
+                          "avro.java.string": "String",
+                          "java-class": "java.math.BigDecimal"
+                        }
+                      },
+                      {
+                        "name": "vatAmount",
+                        "type": {
+                          "type": "string",
+                          "avro.java.string": "String",
+                          "java-class": "java.math.BigDecimal"
+                        }
+                      },
+                      {
+                        "name": "reasonCode",
+                        "type": {
+                          "type": "string",
+                          "avro.java.string": "String"
+                        }
+                      },
+                      {
+                        "name": "reasonDescription",
+                        "type": [
+                          "null",
+                          {
+                            "type": "string",
+                            "avro.java.string": "String"
+                          }
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "reasonSubCode",
+                        "type": [
+                          "null",
+                          {
+                            "type": "string",
+                            "avro.java.string": "String"
+                          }
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "reasonSubDescription",
+                        "type": [
+                          "null",
+                          {
+                            "type": "string",
+                            "avro.java.string": "String"
+                          }
+                        ],
+                        "default": null
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "deliveryAddress",
+      "type": [
+        "null",
+        {
+          "type": "record",
+          "name": "Address",
+          "fields": [
+            {
+              "name": "line1",
+              "type": {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            },
+            {
+              "name": "line2",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "avro.java.string": "String"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "line3",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "avro.java.string": "String"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "town",
+              "type": {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            },
+            {
+              "name": "postcode",
+              "type": {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            }
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "payments",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "Payment",
+          "fields": [
+            {
+              "name": "paymentType",
+              "type": {
+                "type": "enum",
+                "name": "PaymentType",
+                "symbols": [
+                  "CARD",
+                  "CASH",
+                  "CHEQUE",
+                  "ACCOUNT",
+                  "OTHER"
+                ]
+              }
+            },
+            {
+              "name": "cardPaymentScheme",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "avro.java.string": "String"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "cardPaymentToken",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "avro.java.string": "String"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "cardExpiryDate",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "avro.java.string": "String"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "cardHolderName",
+              "type": [
+                "null",
+                {
+                  "type": "string",
+                  "avro.java.string": "String"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "cardBillingAddress",
+              "type": [
+                "null",
+                "Address"
+              ],
+              "default": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "customer",
+      "type": {
+        "type": "record",
+        "name": "Customer",
+        "fields": [
+          {
+            "name": "accountId",
+            "type": [
+              "null",
+              {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            ],
+            "default": null
+          },
+          {
+            "name": "accountType",
+            "type": {
+              "type": "enum",
+              "name": "AccountType",
+              "symbols": [
+                "TCC",
+                "ACC",
+                "GUEST"
+              ]
+            }
+          },
+          {
+            "name": "firstName",
+            "type": [
+              "null",
+              {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            ],
+            "default": null
+          },
+          {
+            "name": "surname",
+            "type": [
+              "null",
+              {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            ],
+            "default": null
+          },
+          {
+            "name": "emailAddress",
+            "type": [
+              "null",
+              {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            ],
+            "default": null
+          },
+          {
+            "name": "contactMobileNumber",
+            "type": [
+              "null",
+              {
+                "type": "string",
+                "avro.java.string": "String"
+              }
+            ],
+            "default": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "success",
+      "type": [
+        "null",
+        "boolean"
+      ],
+      "default": null
+    },
+    {
+      "name": "message",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        }
+      ],
+      "default": null
+    }
+  ]
+}

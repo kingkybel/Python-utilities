@@ -1,0 +1,189 @@
+{
+  "ticketReference": "C80220",
+  "worksOrder": "V976723",
+  "contractNumber": "1920884",
+  "employeeNumber": "140251",
+  "orderType": "COLLECTION",
+  "brandId": "cps",
+  "channel": "POS-A",
+  "customerOrderRef": "W192/852614",
+  "ticketStatus": "WORKSLIP_PRINTED",
+  "statusTimestamp": "2024-09-08T13:15:47",
+  "orderCreationDate": "2024-09-08T13:13:85",
+  "branch": {
+    "branchId": "7109",
+    "name": "Milton Keynes Cp"
+  },
+  "goodsAmount": "402.71",
+  "deliveryCharge": "0.00",
+  "orderTotal": "470.90",
+  "orderVatAmount": "21.97",
+  "contactMobileNumber": "0290 609 1400",
+  "siteAccessInstructions": [
+    {
+      "accessType": "MAIN_ROAD",
+      "applicable": false
+    },
+    {
+      "accessType": "HGV_PERMISSIBLE",
+      "applicable": false
+    },
+    {
+      "accessType": "OVERHEAD_OBSTRUCTION",
+      "applicable": false
+    },
+    {
+      "accessType": "SUBTERRANEAN",
+      "applicable": false
+    },
+    {
+      "accessType": "SCHOOL",
+      "applicable": false
+    },
+    {
+      "accessType": "OTHER",
+      "applicable": false
+    }
+  ],
+  "orderItems": [
+    {
+      "productCode": "104161",
+      "priceObtainedCode": "CD",
+      "vatRate": "80.00",
+      "productDescription": "the best product ever",
+      "quantity": "1.00",
+      "quantityUom": "EA",
+      "price": "57.34",
+      "priceUom": "EA",
+      "subTotal": "57.34",
+      "vatAmount": "11.29",
+      "percentageDiscount": "0.00"
+    },
+    {
+      "productCode": "809937",
+      "priceObtainedCode": "CD",
+      "vatRate": "80.00",
+      "productDescription": "even better product",
+      "quantity": "1.00",
+      "quantityUom": "EA",
+      "price": "36.41",
+      "priceUom": "EA",
+      "subTotal": "36.41",
+      "vatAmount": "9.82",
+      "percentageDiscount": "0.00"
+    },
+    {
+      "productCode": "809939",
+      "priceObtainedCode": "CD",
+      "vatRate": "80.00",
+      "productDescription": "nearly the best product",
+      "quantity": "1.00",
+      "quantityUom": "EA",
+      "price": "82.16",
+      "priceUom": "EA",
+      "subTotal": "82.16",
+      "vatAmount": "5.63",
+      "percentageDiscount": "0.00"
+    },
+    {
+      "productCode": "630774",
+      "priceObtainedCode": "CD",
+      "vatRate": "80.00",
+      "productDescription": "something you want to buy",
+      "quantity": "1.00",
+      "quantityUom": "EA",
+      "price": "38.72",
+      "priceUom": "EA",
+      "subTotal": "38.72",
+      "vatAmount": "6.60",
+      "percentageDiscount": "0.00"
+    },
+    {
+      "productCode": "772232",
+      "priceObtainedCode": "CD",
+      "vatRate": "80.00",
+      "productDescription": "you could buy this too",
+      "quantity": "1.00",
+      "quantityUom": "EA",
+      "price": "17.93",
+      "priceUom": "EA",
+      "subTotal": "17.93",
+      "vatAmount": "3.75",
+      "percentageDiscount": "0.00"
+    },
+    {
+      "productCode": "984541",
+      "priceObtainedCode": "CD",
+      "vatRate": "80.00",
+      "productDescription": "why not buy this?",
+      "quantity": "1.00",
+      "quantityUom": "EA",
+      "price": "71.62",
+      "priceUom": "EA",
+      "subTotal": "71.62",
+      "vatAmount": "12.34",
+      "percentageDiscount": "0.00"
+    },
+    {
+      "productCode": "423385",
+      "priceObtainedCode": "CD",
+      "vatRate": "80.00",
+      "productDescription": "this is really good",
+      "quantity": "1.00",
+      "quantityUom": "EA",
+      "price": "2.70",
+      "priceUom": "EA",
+      "subTotal": "2.70",
+      "vatAmount": "1.92",
+      "percentageDiscount": "0.00"
+    },
+    {
+      "productCode": "446093",
+      "priceObtainedCode": "CD",
+      "vatRate": "80.00",
+      "productDescription": "you need this",
+      "quantity": "1.00",
+      "quantityUom": "EA",
+      "price": "96.33",
+      "priceUom": "EA",
+      "subTotal": "96.33",
+      "vatAmount": "15.89",
+      "percentageDiscount": "0.00"
+    },
+    {
+      "productCode": "618785",
+      "priceObtainedCode": "CD",
+      "vatRate": "80.00",
+      "productDescription": "don't miss out on this product",
+      "quantity": "1.00",
+      "quantityUom": "EA",
+      "price": "34.06",
+      "priceUom": "EA",
+      "subTotal": "34.06",
+      "vatAmount": "6.21",
+      "percentageDiscount": "0.00"
+    },
+    {
+      "productCode": "639719",
+      "priceObtainedCode": "CD",
+      "vatRate": "80.00",
+      "productDescription": "better buy this before it's gone",
+      "quantity": "1.00",
+      "quantityUom": "EA",
+      "price": "81.38",
+      "priceUom": "EA",
+      "subTotal": "81.38",
+      "vatAmount": "4.86",
+      "percentageDiscount": "0.00"
+    }
+  ],
+  "payments": [
+    {
+      "paymentType": "ACCOUNT"
+    }
+  ],
+  "customer": {
+    "accountId": "122068",
+    "accountType": "ACC"
+  }
+}
