@@ -92,3 +92,5 @@ function prompt() {
 }
 
 prompt
+
+. /.venv/bin/activate

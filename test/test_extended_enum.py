@@ -68,11 +68,11 @@ class ExtendedEnumTests(unittest.TestCase):
                     case SimpleEnum.SIMPLE3:
                         return "ccc"
 
-        self.assertEquals(SimpleEnum.SIMPLE1, SimpleEnum.from_string("1"))
-        self.assertEquals(SimpleEnum.SIMPLE1, SimpleEnum.from_string("s1"))
-        self.assertEquals(SimpleEnum.SIMPLE1, SimpleEnum.from_string("e1"))
-        self.assertEquals(SimpleEnum.SIMPLE1, SimpleEnum.from_string("a"))
-        self.assertEquals(SimpleEnum.SIMPLE1, SimpleEnum.from_string("aaa"))
+        self.assertEqual(SimpleEnum.SIMPLE1, SimpleEnum.from_string("1"))
+        self.assertEqual(SimpleEnum.SIMPLE1, SimpleEnum.from_string("s1"))
+        self.assertEqual(SimpleEnum.SIMPLE1, SimpleEnum.from_string("e1"))
+        self.assertEqual(SimpleEnum.SIMPLE1, SimpleEnum.from_string("a"))
+        self.assertEqual(SimpleEnum.SIMPLE1, SimpleEnum.from_string("aaa"))
 
     def test_flag_from_string(self):
         class SimpleFlag(ExtendedFlag):
@@ -89,11 +89,11 @@ class ExtendedEnumTests(unittest.TestCase):
                     case SimpleFlag.SIMPLE3:
                         return "ccc"
 
-        self.assertEquals(SimpleFlag.SIMPLE1, SimpleFlag.from_string("1"))
-        self.assertEquals(SimpleFlag.SIMPLE1, SimpleFlag.from_string("s1"))
-        self.assertEquals(SimpleFlag.SIMPLE1, SimpleFlag.from_string("e1"))
-        self.assertEquals(SimpleFlag.SIMPLE1, SimpleFlag.from_string("a"))
-        self.assertEquals(SimpleFlag.SIMPLE1, SimpleFlag.from_string("aaa"))
+        self.assertEqual(SimpleFlag.SIMPLE1, SimpleFlag.from_string("1"))
+        self.assertEqual(SimpleFlag.SIMPLE1, SimpleFlag.from_string("s1"))
+        self.assertEqual(SimpleFlag.SIMPLE1, SimpleFlag.from_string("e1"))
+        self.assertEqual(SimpleFlag.SIMPLE1, SimpleFlag.from_string("a"))
+        self.assertEqual(SimpleFlag.SIMPLE1, SimpleFlag.from_string("aaa"))
 
     def test_enum_from_string_with_string_conversion(self):
         class SimpleEnum(ExtendedEnum):
@@ -110,10 +110,10 @@ class ExtendedEnumTests(unittest.TestCase):
                     case SimpleEnum.SIMPLE3:
                         return "ccc"
 
-        self.assertEquals(SimpleEnum.SIMPLE1, SimpleEnum.from_string("a"))
-        self.assertEquals(SimpleEnum.SIMPLE1, SimpleEnum.from_string("x"))
-        self.assertEquals(SimpleEnum.SIMPLE1, SimpleEnum.from_string("1"))
-        self.assertEquals(SimpleEnum.SIMPLE1, SimpleEnum.from_string("e1"))
+        self.assertEqual(SimpleEnum.SIMPLE1, SimpleEnum.from_string("a"))
+        self.assertEqual(SimpleEnum.SIMPLE1, SimpleEnum.from_string("x"))
+        self.assertEqual(SimpleEnum.SIMPLE1, SimpleEnum.from_string("1"))
+        self.assertEqual(SimpleEnum.SIMPLE1, SimpleEnum.from_string("e1"))
 
     def test_enum_no_match(self):
         class SimpleEnum(ExtendedEnum):

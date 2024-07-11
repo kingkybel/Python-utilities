@@ -73,7 +73,7 @@ class FileSystemObjectTests(unittest.TestCase):
         self.assertListEqual(["/tmp/test-glob"], glob_path_patterns("/tmp/test-glob"))
         self.assertListEqual(["/tmp/test-glob"], glob_path_patterns("/tmp/*-glob"))
         self.assertListEqual([dir2], glob_path_patterns("/tmp/*-glob/*/*2"))
-        self.assertListEqual([dir1, dir2], glob_path_patterns("/tmp/*-glob/sub/sub*"))
+        self.assertListEqual([dir1, dir2], sorted(glob_path_patterns("/tmp/*-glob/sub/sub*")))
 
         expected = [dir1, dir2]
         expected.sort()

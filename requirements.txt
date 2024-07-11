@@ -1,0 +1,6 @@
+colorama==0.4.6
+confluent-kafka==2.5.0
+fastavro==1.9.5
+networkx==3.3
+psutil==6.0.0
+pygccxml==2.5.0
