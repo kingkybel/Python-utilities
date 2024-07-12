@@ -1,6 +1,13 @@
 # How to install Kafka
+## Using docker
+```bash
+# set the Kafka version you want to use
+KAFKA_VERSION=3.7.1
+docker run -p 9092:9092 apache/kafka:${KAFKA_VERSION}
+```
 ## Installation
 ```bash
+# set the Kafka version you want to use
 KAFKA_VERSION=3.7.1
 KAFKA_RELEASE=2.13
 sudo apt update

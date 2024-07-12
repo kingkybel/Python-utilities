@@ -1,11 +1,12 @@
 #!/bin/env python3
 
+import argparse
 import json
 from os import PathLike
 import fastavro
 from fastavro.schema import load_schema
 from fastavro import writer, reader
-from confluent_kafka import Producer, Consumer, KafkaError
+from confluent_kafka import Producer, Consumer, KafkaError, TopicPartition
 from io import BytesIO
 from xml.etree.ElementTree import Element, tostring, SubElement
 
@@ -77,14 +78,14 @@ def produce_to_kafka(producer, topic, avro_data):
     print(f"Produced data to topic '{topic}'")
 
 
-def consume_from_kafka(consumer, avro_schema: str | list | dict):
+def consume_from_kafka(consumer, avro_schema: str | list | dict, topic: str):
     """
     Consume a Kafka message on Kafka.
     :param consumer: the consumer
     :param avro_schema: the AVRO schema to use for the deserialization
     :return:
     """
-    consumer.subscribe(['avro_topic'])
+    consumer.subscribe([topic])
     while True:
         msg = consumer.poll(timeout=1.0)
         if msg is None:
@@ -104,46 +105,48 @@ def consume_from_kafka(consumer, avro_schema: str | list | dict):
         break
 
 
-def json_to_xml(json_obj, line_padding=""):
-    """Converts JSON object to XML string.
-
-    Args:
-        json_obj (dict): The JSON object to convert.
-        line_padding (str): Line padding for formatting (used for nested elements).
-
-    Returns:
-        str: The XML string representation of the JSON object.
+def query_and_resend_message(consumer_conf,
+                             producer_conf,
+                             topic: str,
+                             partition: int,
+                             offset: int,
+                             avro_schema: str | list | dict):
     """
+    Query a Kafka message at a specific partition and offset and resend it.
+    :param consumer_conf: Configuration for the Kafka consumer.
+    :param producer_conf: Configuration for the Kafka producer.
+    :param topic: Topic to query and resend the message from.
+    :param partition: Partition to query.
+    :param offset: Offset to query.
+    :param avro_schema: Avro schema for deserialization.
+    """
+    consumer = Consumer(consumer_conf)
+    consumer.assign([TopicPartition(topic, partition, offset)])
+    msg = consumer.poll(timeout=10.0)
+    if msg is None:
+        print(f"No message found at partition {partition} and offset {offset}.")
+        return
+    if msg.error():
+        print(f"Error querying message: {msg.error()}")
+        return
 
-    def dict_to_xml(tag, d):
-        elem = Element(tag)
-        if isinstance(d, dict):
-            for key, val in d.items():
-                child = SubElement(elem, key)
-                if isinstance(val, dict):
-                    child.extend(dict_to_xml(key, val))
-                elif isinstance(val, list):
-                    for sub_dict in val:
-                        child.extend(dict_to_xml(key, sub_dict))
-                else:
-                    child.text = str(val)
-        else:
-            elem.text = str(d)
-        return elem
+    avro_data = msg.value()
+    deserialized_data = deserialize_from_avro(avro_data, avro_schema)
+    print(f"Queried and deserialized data: {deserialized_data}")
 
-    root_tag = list(json_obj.keys())[0]
-    root_elem = dict_to_xml(root_tag, json_obj[root_tag])
-    return tostring(root_elem).decode()
+    producer = Producer(producer_conf)
+    produce_to_kafka(producer, topic, avro_data)
+    consumer.close()
 
 
 def main(json_file_path: PathLike | str,
-         topic: str | list | dict,
+         topic: str,
          avro_schema_file_path: PathLike | str,
-         kafka_bootstrap_servers: str):
+         kafka_bootstrap_servers: str,
+         partition: int = None,
+         offset: int = None):
     # Load the JSON document
     json_data = load_json(json_file_path)
-
-    print(json_to_xml(json_data))
 
     # Load the Avro schema
     avro_schema = load_avro_schema(avro_schema_file_path)
@@ -172,13 +175,53 @@ def main(json_file_path: PathLike | str,
         'auto.offset.reset': 'earliest'
     }
     consumer = Consumer(consumer_conf)
-    consume_from_kafka(consumer, avro_schema)
+    consume_from_kafka(consumer, avro_schema, topic)
     consumer.close()
+
+    # If partition and offset are provided, query and resend the message
+    if partition is not None and offset is not None:
+        query_and_resend_message(consumer_conf, producer_conf, topic, partition, offset, avro_schema)
 
 
 if __name__ == '__main__':
-    json_file_path = 'data.json'
-    topic = 'some.to.pic'
-    avro_schema_file_path = 'schema.avsc'
-    kafka_bootstrap_servers = 'localhost:9092'
-    main(json_file_path, topic, avro_schema_file_path, kafka_bootstrap_servers)
+    parser = argparse.ArgumentParser(description='Checking, producing and consuming of AVRO messages')
+    parser.add_argument("--schema-file", "-s",
+                        default="schema.avsc",
+                        type=str,
+                        help=f'Root directory for the project, default "schema.avsc"')
+    parser.add_argument("--data-file", "-d",
+                        default="data.json",
+                        type=str,
+                        help='Json file containing the message to check against the schema/produce on Kafka,"'
+                             '" default "data.json"')
+    parser.add_argument("--topic", "-t",
+                        type=str,
+                        default="some.topic.of.mine",
+                        nargs='+',
+                        help='topics to subscribe/post to, default "some.topic.of.mine"')
+    parser.add_argument("--partition", "-p",
+                        type=int,
+                        default=0,
+                        help='Partition where to find a resend message, default: 0')
+    parser.add_argument("--offset", "-o",
+                        type=int,
+                        default=0,
+                        help='offset of the message to resend, default: 0')
+    parser.add_argument("--resend", "-r",
+                        default=False,
+                        action='store_true',
+                        help='resend message at partition (--partition) and offset (--offset)')
+    parser.add_argument("--kafka-server", "-k",
+                        default='localhost:9092',
+                        type=str,
+                        help='Kafka server to connect to, default "localhost:9092"')
+
+    found_args = parser.parse_args()
+
+    avro_schema_file_path = found_args.schema_file
+    json_file_path = found_args.data_file
+    topic = found_args.topic
+    kafka_bootstrap_servers = found_args.kafka_server
+    partition = found_args.partition
+    offset = found_args.offset
+    main(json_file_path, topic, avro_schema_file_path, kafka_bootstrap_servers, partition, offset)
