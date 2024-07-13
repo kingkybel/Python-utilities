@@ -48,6 +48,9 @@ class JsonObject:
             json_str = "{}"
         self.json_ = json.loads(json_str)
 
+    def get_json(self):
+        return self.json_
+
     @classmethod
     def convert_sets_to_vectors(cls, obj):
         if isinstance(obj, set):
