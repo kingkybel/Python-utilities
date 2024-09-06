@@ -352,9 +352,13 @@ def find(paths: (str | PathLike | list),
                     if matches:
                         file_path = valid_absolute_path(f"{dir_name}/{file}",
                                                         allow_system_paths=allow_system_paths)
-                        file_type = FileSystemObjectType.from_file_system_object(file_path)
-                        if file_type & file_type_filter == file_type:
-                            augmented_path_list.append((file_path, file_type.value, depth))
+                        if exclude_patterns is not None:
+                            if matches_any(search_string=file_path, patterns=exclude_patterns):
+                                matches = False
+                        if matches:
+                            file_type = FileSystemObjectType.from_file_system_object(file_path)
+                            if file_type & file_type_filter == file_type:
+                                augmented_path_list.append((file_path, file_type.value, depth))
 
         if sort_field != FindSortField.NONE:
             sort_index = sort_field.value - 1

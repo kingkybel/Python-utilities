@@ -220,6 +220,7 @@ class JsonObject:
                 self.__set_not_forced(keys, value)
 
     def __set_forced(self, keys: list[str], value: (bool | int | float | str | list | dict)):
+        # if the root element is the wrong type then make this an empty root element of the correct type
         if isinstance(keys[0], JsonIndexKey) and not isinstance(self.json_, list):
             self.json_ = list()
         elif isinstance(keys[0], JsonStringKey) and not isinstance(self.json_, dict):
