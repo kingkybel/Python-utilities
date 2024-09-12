@@ -24,8 +24,16 @@
 # @author: Dieter J Kybelksties
 
 import argparse
+import os
+import sys
 
-from lib.logger import error
+this_dir = os.path.dirname(os.path.abspath(__file__))
+dk_lib_dir = os.path.abspath(f"{this_dir}/../../../Python-utilities")
+if not os.path.isdir(dk_lib_dir):
+    raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
+sys.path.insert(0, dk_lib_dir)
+
+from lib.logger import error, log_info
 from tools.AVRO.avro_kafka import AvroKafka
 
 
@@ -43,8 +51,8 @@ def parse_and_validate_arguments():
     command_group.add_argument("--prod-con", "-P",
                                default=False,
                                action='store_true',
-                               help='Run a producer->consumer chain for the given message "'
-                                    '"(--data-file, --schema-file, --topic)')
+                               help='Run a producer->consumer chain for the given message '
+                                    '(--data-file, --schema-file, --topic)')
     parser.add_argument("--schema-file", "-s",
                         default="schema.avsc",
                         type=str,
@@ -74,6 +82,7 @@ def parse_and_validate_arguments():
     args = parser.parse_args()
 
     if not args.resend and not args.check_avro and not args.prod_con:
+        log_info(parser.format_help())
         error("No command given: choose from --resend, --check-avro or --prod-con")
 
     if not args.schema_file:
