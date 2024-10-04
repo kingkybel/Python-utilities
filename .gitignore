@@ -1,3 +1,6 @@
 /.idea
 /venv
 __pycache__
+*.log
+launch.json
+get_branch_details1.py 
