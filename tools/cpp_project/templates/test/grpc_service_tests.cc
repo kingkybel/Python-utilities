@@ -1,6 +1,6 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
-[[GRPC_SERVICE_TEST_HASH_INCLUDES]]
+{{cookiecutter.grpc_service_test_hash_includes}}
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <iostream>
@@ -9,9 +9,9 @@
 #include <vector>
 
 using namespace std;
-[[USING_NAMESPACE]]
+{{cookiecutter.using_namespace}}
 
-class [[PROJECT_NAME]][[PROTO_NAME]]ServiceTest : public ::testing::Test
+class {{cookiecutter.project_name}}{{cookiecutter.proto_name}}ServiceTest : public ::testing::Test
 {
     protected:
     void SetUp() override
@@ -23,7 +23,7 @@ class [[PROJECT_NAME]][[PROTO_NAME]]ServiceTest : public ::testing::Test
     }
 };
 
-TEST_F([[PROJECT_NAME]][[PROTO_NAME]]ServiceTest, [[SERVICE_NAME]]_[[REQUEST]]_test)
+TEST_F({{cookiecutter.project_name}}{{cookiecutter.proto_name}}ServiceTest, {{cookiecutter.service_name}}_{{cookiecutter.request}}_test)
 {
     ASSERT_EQ(false, true);
 }

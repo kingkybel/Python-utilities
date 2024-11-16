@@ -1,8 +1,8 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
 cmake_minimum_required(VERSION 3.8)
 
-project([[PROJECT_NAME]] C CXX)
+project({{cookiecutter.project_name}} C CXX)
 
 if(CMAKE_BUILD_TYPE STREQUAL "")
   set(CMAKE_BUILD_TYPE RelWithDebInfo)
@@ -66,7 +66,7 @@ find_library(SSL_LIB NAMES libssl.a ssl)
 find_library(PTHREAD_LIB NAMES libpthread.a pthread)
 find_package(Boost 1.83.0 REQUIRED)
 
-[[CMAKE_GRPC_COMMON_DEFS]]
+{{cookiecutter.cmake_grpc_common_defs}}
 
 include_directories(
   ${Boost_INCLUDE_DIRS}
@@ -76,11 +76,11 @@ link_directories(
   BEFORE SYSTEM ${CMAKE_SOURCE_DIR}/build/lib
   /usr/local/lib
   ${Boost_LIBRARY_DIR_RELEASE}
-[[CMAKE_GRPC_COMMON_LIBS]]
+{{cookiecutter.cmake_grpc_common_libs}}
   system)
 
 set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=* -p ${CMAKE_SOURCE_DIR}/build")
 
 add_subdirectory(src)
-[[CMAKE_INCLUDE_SUBDIR_TEST]]
+{{cookiecutter.cmake_include_subdir_test}}
 

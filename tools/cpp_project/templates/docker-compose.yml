@@ -1,10 +1,10 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
 version: '3'
 services:
-  [[PROJECT_NAME_LOWER]]:
-    image: [[PROJECT_NAME_LOWER]]:${VERSION}
+  {{cookiecutter.project_name_lower}}:
+    image: {{cookiecutter.project_name_lower}}:${VERSION}
     build:
       context: .
       dockerfile: Dockerfile
-    command: -c ./[[PROJECT_NAME_LOWER]]
+    command: -c ./{{cookiecutter.project_name_lower}}

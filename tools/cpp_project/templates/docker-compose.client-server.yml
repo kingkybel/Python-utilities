@@ -1,20 +1,20 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 version: '3'
 services:
-  [[SERVICE_NAME_WITH_MESSAGING_TYPE]]_server:
-    image: [[SERVICE_NAME_WITH_MESSAGING_TYPE]]_server:${VERSION}
+  {{cookiecutter.service_name_with_messaging_type}}_server:
+    image: {{cookiecutter.service_name_with_messaging_type}}_server:${VERSION}
     build:
       context: .
-      dockerfile: Dockerfile.[[SERVICE_NAME_LOWER]]_server
+      dockerfile: Dockerfile.{{cookiecutter.service_name_lower}}_server
     ports:
       - ${PORT}:${PORT}
-    command: -c "./[[SERVICE_NAME_LOWER]]_[[MESSAGING_TYPE]]_server --port ${PORT}"
-  [[SERVICE_NAME_LOWER]]_[[MESSAGING_TYPE]]client:
-    image: [[SERVICE_NAME_WITH_MESSAGING_TYPE]]_client:${VERSION}
+    command: -c "./{{cookiecutter.service_name_lower}}_{{cookiecutter.messaging_type}}_server --port ${PORT}"
+  {{cookiecutter.service_name_lower}}_{{cookiecutter.messaging_type}}client:
+    image: {{cookiecutter.service_name_with_messaging_type}}_client:${VERSION}
     build:
       context: .
-      dockerfile: Dockerfile.[[SERVICE_NAME_LOWER]]_client
-    command: -c "./[[SERVICE_NAME_WITH_MESSAGING_TYPE]]_client --server [[SERVICE_NAME_WITH_MESSAGING_TYPE]]_server --port ${PORT}"
+      dockerfile: Dockerfile.{{cookiecutter.service_name_lower}}_client
+    command: -c "./{{cookiecutter.service_name_with_messaging_type}}_client --server {{cookiecutter.service_name_with_messaging_type}}_server --port ${PORT}"
     depends_on:
-      - [[SERVICE_NAME_WITH_MESSAGING_TYPE]]_server
+      - {{cookiecutter.service_name_with_messaging_type}}_server
       

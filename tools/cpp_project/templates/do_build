@@ -1,11 +1,11 @@
 #!/usr/bin/bash
 
-[[LICENCE]]
+{{cookiecutter.licence}}
 
 [[ "${0}" != "${BASH_SOURCE[0]}" ]] && THIS_FILE="${BASH_SOURCE[0]}" || THIS_FILE="${0}"
 THIS_DIR=$(realpath "$(dirname ${THIS_FILE})")
 
-[ -f "${THIS_DIR}/build/bin/[[PROJECT_NAME_LOWER]]" ] || {
+[ -f "${THIS_DIR}/build/bin/{{cookiecutter.project_name_lower}}" ] || {
     mkdir -p "${THIS_DIR}/build"
     pushd "${THIS_DIR}/build"
     cmake .. || {
@@ -37,5 +37,5 @@ THIS_DIR=$(realpath "$(dirname ${THIS_FILE})")
     popd
 }
 
-[[DOCKER_BUILD_COMMAND]]
+{{cookiecutter.docker_build_command}}
 

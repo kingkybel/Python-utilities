@@ -1,5 +1,5 @@
-[[LICENCE]]
-#include "[[SERVICE_NAME_LOWER]]_service.h"
+{{cookiecutter.licence}}
+#include "{{cookiecutter.service_name_lower}}_service.h"
 
 #include <csignal>
 #include <cstdlib>
@@ -7,11 +7,11 @@
 #include <thread>
 #include <iostream>
 
-[[USING_NAMESPACE]]
+{{cookiecutter.using_namespace}}
 
 std::thread server_thread;
 
-auto service = [[SERVICE_NAME]]ServiceImpl{};
+auto service = {{cookiecutter.service_name}}ServiceImpl{};
 
 void signalHandler(int signum)
 {
@@ -20,8 +20,8 @@ void signalHandler(int signum)
 
 int main(int argc, char** argv)
 {
-    // default to serving on 0.0.0.0:[[PORT]]
-    std::string port = "[[PORT]]";
+    // default to serving on 0.0.0.0:{{cookiecutter.port}}
+    std::string port = "{{cookiecutter.port}}";
     for(int count = 0; count < argc; count++)
     {
         if(std::string(argv[count]) == "--port" || std::string(argv[count]) == "-p")

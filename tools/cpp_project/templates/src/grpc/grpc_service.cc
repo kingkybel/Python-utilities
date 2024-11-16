@@ -1,7 +1,7 @@
-[[LICENCE]]
-#include "[[SERVICE_NAME_LOWER]]_service.h"
+{{cookiecutter.licence}}
+#include "{{cookiecutter.service_name_lower}}_service.h"
 
-#include "[[PROTO_NAME_LOWER]].grpc.pb.h"
+#include "{{cookiecutter.proto_name_lower}}.grpc.pb.h"
 
 #include <grpcpp/ext/proto_server_reflection_plugin.h>
 #include <grpcpp/grpcpp.h>
@@ -12,20 +12,20 @@
 #include <string>
 #include <thread>
 
-namespace ns_[[PROJECT_NAME_LOWER]]
+namespace ns_{{cookiecutter.project_name_lower}}
 {
 
-grpc::Status [[SERVICE_NAME]]ServiceImpl::Handle[[REQUEST]]Request(
+grpc::Status {{cookiecutter.service_name}}ServiceImpl::Handle{{cookiecutter.request}}Request(
         grpc::ServerContext* context,
-        const [[PROTO_NAME_LOWER]]::[[REQUEST]]RequestMessage* request,
-        [[PROTO_NAME_LOWER]]::[[REQUEST]]ReplyMessage* reply)
+        const {{cookiecutter.proto_name_lower}}::{{cookiecutter.request}}RequestMessage* request,
+        {{cookiecutter.proto_name_lower}}::{{cookiecutter.request}}ReplyMessage* reply)
 {
     std::string prefix{"Dispatched "};
     reply->set_reply_string(prefix + request->request_string());
     return grpc::Status::OK;
 }
 
-std::thread [[SERVICE_NAME]]ServiceImpl::Run(uint16_t port)
+std::thread {{cookiecutter.service_name}}ServiceImpl::Run(uint16_t port)
 {
     grpc::EnableDefaultHealthCheckService(true);
     grpc::reflection::InitProtoReflectionServerBuilderPlugin();
@@ -51,10 +51,10 @@ std::thread [[SERVICE_NAME]]ServiceImpl::Run(uint16_t port)
     return std::thread{[&](){this->started_ = true; this->server_->Wait();}};
 }
 
-void [[SERVICE_NAME]]ServiceImpl::ShutDown()
+void {{cookiecutter.service_name}}ServiceImpl::ShutDown()
 {
     if(server_ != nullptr && started_)
         server_->Shutdown();
 }
 
-};  // namespace ns_[[PROJECT_NAME_LOWER]]
+};  // namespace ns_{{cookiecutter.project_name_lower}}

@@ -1,9 +1,9 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
-#ifndef [[SERVICE_NAME_UPPER]]_ASYNCH_SERVICE_H_INCLUDED
-#define [[SERVICE_NAME_UPPER]]_ASYNCH_SERVICE_H_INCLUDED
+#ifndef {{cookiecutter.service_name_upper}}_ASYNCH_SERVICE_H_INCLUDED
+#define {{cookiecutter.service_name_upper}}_ASYNCH_SERVICE_H_INCLUDED
 
-#include "[[PROTO_NAME_LOWER]].grpc.pb.h"
+#include "{{cookiecutter.proto_name_lower}}.grpc.pb.h"
 
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
@@ -15,13 +15,13 @@
 #include <string>
 #include <thread>
 
-namespace ns_[[PROJECT_NAME_LOWER]]
+namespace ns_{{cookiecutter.project_name_lower}}
 {
 
-class [[SERVICE_NAME]]AsynchServiceImpl final
+class {{cookiecutter.service_name}}AsynchServiceImpl final
 {
     public:
-    ~[[SERVICE_NAME]]AsynchServiceImpl();
+    ~{{cookiecutter.service_name}}AsynchServiceImpl();
 
     // There is no shutdown handling in this code.
     void Run(uint16_t port);
@@ -34,14 +34,14 @@ class [[SERVICE_NAME]]AsynchServiceImpl final
         // Take in the "service" instance (in this case representing an asynchronous
         // server) and the completion queue "cq" used for asynchronous communication
         // with the gRPC runtime.
-        CallData([[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]Service::AsyncService* service, grpc::ServerCompletionQueue* cq);
+        CallData({{cookiecutter.proto_name_lower}}::{{cookiecutter.service_name}}Service::AsyncService* service, grpc::ServerCompletionQueue* cq);
 
         void Proceed();
 
         private:
         // The means of communication with the gRPC runtime for an asynchronous
         // server.
-        [[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]Service::AsyncService* service_;
+        {{cookiecutter.proto_name_lower}}::{{cookiecutter.service_name}}Service::AsyncService* service_;
         // The producer-consumer queue where for asynchronous server notifications.
         grpc::ServerCompletionQueue* cq_;
         // Context for the rpc, allowing to tweak aspects of it such as the use
@@ -50,12 +50,12 @@ class [[SERVICE_NAME]]AsynchServiceImpl final
         grpc::ServerContext ctx_;
 
         // What we get from the client.
-        [[PROTO_NAME_LOWER]]::[[REQUEST]]RequestMessage request_;
+        {{cookiecutter.proto_name_lower}}::{{cookiecutter.request}}RequestMessage request_;
         // What we send back to the client.
-        [[PROTO_NAME_LOWER]]::[[REQUEST]]ReplyMessage reply_;
+        {{cookiecutter.proto_name_lower}}::{{cookiecutter.request}}ReplyMessage reply_;
 
         // The means to get back to the client.
-        grpc::ServerAsyncResponseWriter<[[PROTO_NAME_LOWER]]::[[REQUEST]]ReplyMessage> responder_;
+        grpc::ServerAsyncResponseWriter<{{cookiecutter.proto_name_lower}}::{{cookiecutter.request}}ReplyMessage> responder_;
 
         // Let's implement a tiny state machine with the following states.
         enum CallStatus
@@ -71,10 +71,10 @@ class [[SERVICE_NAME]]AsynchServiceImpl final
     void HandleRpcs();
 
     std::unique_ptr<grpc::ServerCompletionQueue> cq_;
-    [[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]Service::AsyncService service_;
+    {{cookiecutter.proto_name_lower}}::{{cookiecutter.service_name}}Service::AsyncService service_;
     std::unique_ptr<grpc::Server> server_;
 };
 
-};  // namespace ns_[[PROJECT_NAME_LOWER]]
+};  // namespace ns_{{cookiecutter.project_name_lower}}
 
-#endif  // [[SERVICE_NAME_UPPER]]_ASYNCH_SERVICE_H_INCLUDED
+#endif  // {{cookiecutter.service_name_upper}}_ASYNCH_SERVICE_H_INCLUDED

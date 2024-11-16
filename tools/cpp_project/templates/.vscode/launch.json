@@ -2,12 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "[[PROJECT_NAME]]: g++ build and debug tests",
+      "name": "{{cookiecutter.project_name}}: g++ build and debug tests",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/bin/run_[[PROJECT_NAME_LOWER]]_tests",
+      "program": "${workspaceFolder}/build/bin/run_{{cookiecutter.project_name_lower}}_tests",
       "args": [
-        "--gtest_filter=[[PROJECT_NAME]].[[PROJECT_NAME]]_test"
+        "--gtest_filter={{cookiecutter.project_name}}.{{cookiecutter.project_name}}_test"
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
@@ -25,10 +25,10 @@
       "preLaunchTask": "make (debug) current project"
     },
     {
-      "name": "[[PROJECT_NAME]]: g++ build and debug main",
+      "name": "{{cookiecutter.project_name}}: g++ build and debug main",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/bin/[[PROJECT_NAME_LOWER]]",
+      "program": "${workspaceFolder}/build/bin/{{cookiecutter.project_name_lower}}",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",

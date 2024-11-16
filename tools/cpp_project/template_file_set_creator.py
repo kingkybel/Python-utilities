@@ -68,20 +68,20 @@ class TemplateFileSetCreator(ABCFileSetCreator):
     @overrides(ABCFileSetCreator)
     def get_tag_replacements(self) -> dict[str, str]:
         return {
-            "[[TEMPLATE_CLASS_NAME]]": self.__template_name,
-            "[[TEMPLATE_CLASS_NAME_LOWER]]": self.__template_name.lower(),
-            "[[TEMPLATE_CLASS_NAME_UPPER]]": self.__template_name.upper(),
-            "[[TEMPLATE_ARGS_DEF]]": self.__make_template_args_def(),
-            "[[TEMPLATE_ARGS_HASH_DEFINES]]": self.__make_template_args_hash_defines(),
-            "[[TEMPLATE_ARGS_MEMBERS]]": self.__make_template_args_members(),
-            "[[TEMPLATE_CLASS_CONSTRUCTOR_ARGS]]": self.__make_template_class_constructor_args(),
-            "[[TEMPLATE_CLASS_CONSTRUCTOR_INIT]]": self.__make_template_class_constructor_init(),
-            "[[TEMPLATE_INCLUDES]]": f'#include "{self.__template_name.lower()}.h"',
-            "[[TEMPLATE_ARGS_VARIABLES]]": self.__make_template_args_variables(concrete=False),
-            "[[TEMPLATE_SPECIALISATION]]": self.__make_template_specialisation(concrete=False),
-            "[[TEMPLATE_VARIABLES_IN_CALL]]": self.__make_template_variables_in_call(),
-            "[[TEMPLATE_ARGS_VARIABLES_CONCRETE]]": self.__make_template_args_variables(concrete=True),
-            "[[TEMPLATE_SPECIALISATION_CONCRETE]]": self.__make_template_specialisation(concrete=True),
+            "{{cookiecutter.template_class_name}}": self.__template_name,
+            "{{cookiecutter.template_class_name_lower}}": self.__template_name.lower(),
+            "{{cookiecutter.template_class_name_upper}}": self.__template_name.upper(),
+            "{{cookiecutter.template_args_def}}": self.__make_template_args_def(),
+            "{{cookiecutter.template_args_hash_defines}}": self.__make_template_args_hash_defines(),
+            "{{cookiecutter.template_args_members}}": self.__make_template_args_members(),
+            "{{cookiecutter.template_class_constructor_args}}": self.__make_template_class_constructor_args(),
+            "{{cookiecutter.template_class_constructor_init}}": self.__make_template_class_constructor_init(),
+            "{{cookiecutter.template_includes}}": f'#include "{self.__template_name.lower()}.h"',
+            "{{cookiecutter.template_args_variables}}": self.__make_template_args_variables(concrete=False),
+            "{{cookiecutter.template_specialisation}}": self.__make_template_specialisation(concrete=False),
+            "{{cookiecutter.template_variables_in_call}}": self.__make_template_variables_in_call(),
+            "{{cookiecutter.template_args_variables_concrete}}": self.__make_template_args_variables(concrete=True),
+            "{{cookiecutter.template_specialisation_concrete}}": self.__make_template_specialisation(concrete=True),
         }
 
     @overrides(ABCFileSetCreator)

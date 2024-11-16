@@ -1,5 +1,5 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
-[[CMAKE_INCLUDE_CLASSES_SUB_DIR]]
-[[CMAKE_INCLUDE_GRPC_SUB_DIR]]
-[[CMAKE_INCLUDE_SERVICES_SUB_DIR]]
+{{cookiecutter.cmake_include_classes_sub_dir}}
+{{cookiecutter.cmake_include_grpc_sub_dir}}
+{{cookiecutter.cmake_include_services_sub_dir}}

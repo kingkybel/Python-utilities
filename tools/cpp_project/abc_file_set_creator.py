@@ -51,14 +51,14 @@ class ABCFileSetCreator(ABC):
         self.__project_path = valid_absolute_path(project_path)
         self.__project_name = os.path.basename(self.__project_path)
         self.__common_replacements = {
-            "[[PROJECT_NAME]]": self.__project_name,
-            "[[PROJECT_NAME_UPPER]]": self.__project_name.upper(),
-            "[[PROJECT_NAME_LOWER]]": self.__project_name.lower(),
-            "[[USING_NAMESPACE]]": f"using namespace ns_{self.__project_name.lower()};",
-            "[[AUTHOR]]": str(ABCFileSetCreator.git_config["user.name"]),
-            "[[EMAIL]]": str(ABCFileSetCreator.git_config["user.email"]),
-            "[[TODAY]]": now_date(),
-            "[[YEAR]]": now_year()}
+            "{{cookiecutter.project_name}}": self.__project_name,
+            "{{cookiecutter.project_name_upper}}": self.__project_name.upper(),
+            "{{cookiecutter.project_name_lower}}": self.__project_name.lower(),
+            "{{cookiecutter.using_namespace}}": f"using namespace ns_{self.__project_name.lower()};",
+            "{{cookiecutter.author}}": str(ABCFileSetCreator.git_config["user.name"]),
+            "{{cookiecutter.email}}": str(ABCFileSetCreator.git_config["user.email"]),
+            "{{cookiecutter.today}}": now_date(),
+            "{{cookiecutter.year}}": now_year()}
         self.__licence = self.licence()
 
     @abstractmethod
@@ -112,7 +112,7 @@ class ABCFileSetCreator(ABC):
         for file_map in file_maps:
             content = read_file(file_map.template_file())
             log_info(f"template={file_map.template_file()}")
-            self.__common_replacements["[[LICENCE]]"] = \
+            self.__common_replacements["{{cookiecutter.licence}}"] = \
                 self.commented_licence_string(licence_text=self.__licence,
                                               comment_style=file_map.comment_style(),
                                               filename=file_map.target_file())

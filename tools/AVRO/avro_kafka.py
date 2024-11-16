@@ -129,8 +129,6 @@ class AvroKafka:
                                  offset: int):
         """
         Query a Kafka message at a specific partition and offset and resend it.
-        :param consumer_conf: Configuration for the Kafka consumer.
-        :param producer_conf: Configuration for the Kafka producer.
         :param topic: Topic to query and resend the message from.
         :param partition: Partition to query.
         :param offset: Offset to query.

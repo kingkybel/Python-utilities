@@ -171,21 +171,21 @@ class GrpcFileSetCreator(ABCFileSetCreator):
         java_domain += self.project_name().lower()
 
         return {
-            "[[JAVA_DOMAIN]]": java_domain,
-            "[[PROTO_NAME]]": self.proto(),
-            "[[PROTO_NAME_LOWER]]": self.proto().lower(),
-            "[[PROTO_NAME_UPPER]]": self.proto().upper(),
-            "[[SERVICE_NAME]]": self.service(),
-            "[[SERVICE_NAME_LOWER]]": self.service().lower(),
-            "[[SERVICE_NAME_UPPER]]": self.service().upper(),
-            "[[SERVICE_NAME_WITH_MESSAGING_TYPE]]": self.service_with_type(),
-            "[[REQUEST]]": self.request(),
-            "[[REQUEST_LOWER]]": self.request().lower(),
-            "[[REQUEST_UPPER]]": self.request().upper(),
-            "[[MESSAGING_TYPE]]": self.msging_type(),
-            "[[PORT]]": self.port(),
-            "[[GRPC_CLIENT_TEST_HASH_INCLUDES]]": f'#include "{self.client_h()}"\n',
-            "[[GRPC_SERVICE_TEST_HASH_INCLUDES]]": f'#include "{self.service_h()}"\n',
+            "{{cookiecutter.java_domain}}": java_domain,
+            "{{cookiecutter.proto_name}}": self.proto(),
+            "{{cookiecutter.proto_name_lower}}": self.proto().lower(),
+            "{{cookiecutter.proto_name_upper}}": self.proto().upper(),
+            "{{cookiecutter.service_name}}": self.service(),
+            "{{cookiecutter.service_name_lower}}": self.service().lower(),
+            "{{cookiecutter.service_name_upper}}": self.service().upper(),
+            "{{cookiecutter.service_name_with_messaging_type}}": self.service_with_type(),
+            "{{cookiecutter.request}}": self.request(),
+            "{{cookiecutter.request_lower}}": self.request().lower(),
+            "{{cookiecutter.request_upper}}": self.request().upper(),
+            "{{cookiecutter.messaging_type}}": self.msging_type(),
+            "{{cookiecutter.port}}": self.port(),
+            "{{cookiecutter.grpc_client_test_hash_includes}}": f'#include "{self.client_h()}"\n',
+            "{{cookiecutter.grpc_service_test_hash_includes}}": f'#include "{self.service_h()}"\n',
         }
 
     def proto(self):

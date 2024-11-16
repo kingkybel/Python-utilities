@@ -110,46 +110,46 @@ class CmakeFileSetCreator(ABCFileSetCreator):
     @overrides(ABCFileSetCreator)
     def get_tag_replacements(self) -> dict[str, str]:
         tag_dict = dict()
-        tag_dict["[[CMAKE_INCLUDE_CLASSES_SUB_DIR]]"] = ""
-        tag_dict["[[CMAKE_CLASS_LIB_TARGETS]]"] = ""
-        tag_dict["[[CMAKE_INCLUDE_GRPC_SUB_DIR]]"] = ""
-        tag_dict["[[CMAKE_INCLUDE_SERVICES_SUB_DIR]]"] = "add_subdirectory(services)"
-        tag_dict["[[CMAKE_SERVICES_PROJECT_PART]]"] = ""
-        tag_dict["[[CMAKE_SERVICES_GRPC_PART]]"] = ""
-        tag_dict["[[CMAKE_GRPC_SERVICES]]"] = ""
-        tag_dict["[[TEST_EXE_LINK_LIBRARIES]]"] = self.__make_test_link_libraries()
-        tag_dict["[[TEST_SOURCE_FILES]]"] = self.__make_test_source_files()
-        tag_dict["[[CMAKE_TEST_INCLUDE_DIRS]]"] = ""
-        tag_dict["[[CMAKE_TEST_EXE_LINK_LIBRARIES]]"] = self.__make_cmake_test_exe_link_libraries()
-        tag_dict["[[DOCKER_BUILD_COMMAND]]"] = self.__make_docker_build_command()
-        tag_dict["[[CMAKE_GRPC_COMMON_DEFS]]"] = ""
-        tag_dict["[[CMAKE_GRPC_COMMON_LIBS]]"] = ""
-        tag_dict["[[CMAKE_INCLUDE_SUBDIR_TEST]]"] = "add_subdirectory(test)"
+        tag_dict["{{cookiecutter.cmake_include_classes_sub_dir}}"] = ""
+        tag_dict["{{cookiecutter.cmake_class_lib_targets}}"] = ""
+        tag_dict["{{cookiecutter.cmake_include_grpc_sub_dir}}"] = ""
+        tag_dict["{{cookiecutter.cmake_include_services_sub_dir}}"] = "add_subdirectory(services)"
+        tag_dict["{{cookiecutter.cmake_services_project_part}}"] = ""
+        tag_dict["{{cookiecutter.cmake_services_grpc_part}}"] = ""
+        tag_dict["{{cookiecutter.cmake_grpc_services}}"] = ""
+        tag_dict["{{cookiecutter.test_exe_link_libraries}}"] = self.__make_test_link_libraries()
+        tag_dict["{{cookiecutter.test_source_files}}"] = self.__make_test_source_files()
+        tag_dict["{{cookiecutter.cmake_test_include_dirs}}"] = ""
+        tag_dict["{{cookiecutter.cmake_test_exe_link_libraries}}"] = self.__make_cmake_test_exe_link_libraries()
+        tag_dict["{{cookiecutter.docker_build_command}}"] = self.__make_docker_build_command()
+        tag_dict["{{cookiecutter.cmake_grpc_common_defs}}"] = ""
+        tag_dict["{{cookiecutter.cmake_grpc_common_libs}}"] = ""
+        tag_dict["{{cookiecutter.cmake_include_subdir_test}}"] = "add_subdirectory(test)"
 
         if len(self.__class_names) > 0:
-            tag_dict["[[CMAKE_INCLUDE_CLASSES_SUB_DIR]]"] = "add_subdirectory(classes)"
-            tag_dict["[[CMAKE_CLASS_LIB_TARGETS]]"] = self.__make_class_lib_targets()
+            tag_dict["{{cookiecutter.cmake_include_classes_sub_dir}}"] = "add_subdirectory(classes)"
+            tag_dict["{{cookiecutter.cmake_class_lib_targets}}"] = self.__make_class_lib_targets()
 
         if len(self.__grpc_service_config_strings) > 0:
-            tag_dict["[[CMAKE_INCLUDE_GRPC_SUB_DIR]]"] = "add_subdirectory(grpc)"
-            tag_dict["[[CMAKE_GENERATE_CPP_FROM_PROTOS]]"] = self.__make_generate_from_proto()
-            tag_dict["[[CMAKE_SERVICES_GRPC_PART]]"] = self.__make_services_grpc_part()
-            tag_dict["[[CMAKE_GRPC_SERVICES]]"] = self.__make_cmake_grpc_services()
-            tag_dict["[[CMAKE_TEST_INCLUDE_DIRS]]"] = \
+            tag_dict["{{cookiecutter.cmake_include_grpc_sub_dir}}"] = "add_subdirectory(grpc)"
+            tag_dict["{{cookiecutter.cmake_generate_cpp_from_protos}}"] = self.__make_generate_from_proto()
+            tag_dict["{{cookiecutter.cmake_services_grpc_part}}"] = self.__make_services_grpc_part()
+            tag_dict["{{cookiecutter.cmake_grpc_services}}"] = self.__make_cmake_grpc_services()
+            tag_dict["{{cookiecutter.cmake_test_include_dirs}}"] = \
                 f'target_include_directories("run_{self.project_name().lower()}_tests" PRIVATE ${{PROTO_CPP_SRC_DIR}})'
-            tag_dict["[[CMAKE_GRPC_COMMON_DEFS]]"] = "set(PROTO_CPP_SRC_DIR ${CMAKE_SOURCE_DIR}/src/proto_cpp)\n" \
+            tag_dict["{{cookiecutter.cmake_grpc_common_defs}}"] = "set(PROTO_CPP_SRC_DIR ${CMAKE_SOURCE_DIR}/src/proto_cpp)\n" \
                                                      "include(${CMAKE_SOURCE_DIR}/src/grpc/cmake/common.cmake)"
-            tag_dict["[[CMAKE_GRPC_COMMON_LIBS]]"] = "  absl::flags\n" \
+            tag_dict["{{cookiecutter.cmake_grpc_common_libs}}"] = "  absl::flags\n" \
                                                      "  absl::flags_parse\n" \
                                                      "  ${_REFLECTION}\n" \
                                                      "  ${_GRPC_GRPCPP}\n" \
                                                      "  ${_PROTOBUF_LIBPROTOBUF}"
 
         if len(self.__class_names) == 0 and len(self.__grpc_service_config_strings) == 0:
-            tag_dict["[[CMAKE_SERVICES_PROJECT_PART]]"] = read_file(f"{self.tpl_services_dir()}/CMake_project.part")
+            tag_dict["{{cookiecutter.cmake_services_project_part}}"] = read_file(f"{self.tpl_services_dir()}/CMake_project.part")
 
         if len(self.__grpc_service_config_strings) + len(self.__class_names) + len(self.__templates) == 0:
-            tag_dict["[[CMAKE_INCLUDE_SUBDIR_TEST]]"] = ""
+            tag_dict["{{cookiecutter.cmake_include_subdir_test}}"] = ""
 
         return tag_dict
 
@@ -184,7 +184,7 @@ class CmakeFileSetCreator(ABCFileSetCreator):
             if len(self.__grpc_service_config_strings) > 1:
                 services_str += "\n        "
             services_str += grpc_config.service_with_type().lower()
-        grpc_part = grpc_part.replace("[[CMAKE_GRPC_SERVICES]]", services_str)
+        grpc_part = grpc_part.replace("{{cookiecutter.cmake_grpc_services}}", services_str)
         return grpc_part
 
     def __make_test_link_libraries(self) -> str:
@@ -252,13 +252,13 @@ class CmakeFileSetCreator(ABCFileSetCreator):
                 grpc_config = GrpcFileSetCreator(project_path=self.project_path(),
                                                  proto_service_request_str=grpc_service_config_string,
                                                  port=-1)
-                docker_cmds += f"docker-compose " \
+                docker_cmds += f"docker compose " \
                                f"--file docker-compose.{grpc_config.service().lower()}.yml " \
                                f"--env-file .{grpc_config.service().lower()}.env " \
                                f"build\n"
 
             if is_empty_string(docker_cmds):
-                docker_cmds += f"docker-compose build\n"
+                docker_cmds += f"docker compose build\n"
 
         return docker_cmds
 

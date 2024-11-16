@@ -1,8 +1,8 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
-#include "[[SERVICE_NAME_LOWER]]_async_service.h"
+#include "{{cookiecutter.service_name_lower}}_async_service.h"
 
-#include "[[PROTO_NAME_LOWER]].grpc.pb.h"
+#include "{{cookiecutter.proto_name_lower}}.grpc.pb.h"
 
 #include <grpc/support/log.h>
 #include <grpcpp/grpcpp.h>
@@ -12,10 +12,10 @@
 #include <string>
 #include <thread>
 
-namespace ns_[[PROJECT_NAME_LOWER]]
+namespace ns_{{cookiecutter.project_name_lower}}
 {
 
-[[SERVICE_NAME]]AsynchServiceImpl::~[[SERVICE_NAME]]AsynchServiceImpl()
+{{cookiecutter.service_name}}AsynchServiceImpl::~{{cookiecutter.service_name}}AsynchServiceImpl()
 {
     server_->Shutdown();
     // Always shutdown the completion queue after the server.
@@ -23,7 +23,7 @@ namespace ns_[[PROJECT_NAME_LOWER]]
 }
 
 // There is no shutdown handling in this code.
-void [[SERVICE_NAME]]AsynchServiceImpl::Run(uint16_t port)
+void {{cookiecutter.service_name}}AsynchServiceImpl::Run(uint16_t port)
 {
     std::stringstream ss;
     ss << "0.0.0.0:" << port;
@@ -49,8 +49,8 @@ void [[SERVICE_NAME]]AsynchServiceImpl::Run(uint16_t port)
 // Take in the "service" instance (in this case representing an asynchronous
 // server) and the completion queue "cq" used for asynchronous communication
 // with the gRPC runtime.
-[[SERVICE_NAME]]AsynchServiceImpl::CallData::CallData(
-    [[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]Service::AsyncService* service,
+{{cookiecutter.service_name}}AsynchServiceImpl::CallData::CallData(
+    {{cookiecutter.proto_name_lower}}::{{cookiecutter.service_name}}Service::AsyncService* service,
     grpc::ServerCompletionQueue* cq)
 : service_(service)
 , cq_(cq)
@@ -61,7 +61,7 @@ void [[SERVICE_NAME]]AsynchServiceImpl::Run(uint16_t port)
     Proceed();
 }
 
-void [[SERVICE_NAME]]AsynchServiceImpl::CallData::Proceed()
+void {{cookiecutter.service_name}}AsynchServiceImpl::CallData::Proceed()
 {
     if(status_ == CREATE)
     {
@@ -69,11 +69,11 @@ void [[SERVICE_NAME]]AsynchServiceImpl::CallData::Proceed()
         status_ = PROCESS;
 
         // As part of the initial CREATE state, we *request* that the system
-        // start processing Handle[[REQUEST]]Request requests. In this request, "this" acts are
+        // start processing Handle{{cookiecutter.request}}Request requests. In this request, "this" acts are
         // the tag uniquely identifying the request (so that different CallData
         // instances can serve different requests concurrently), in this case
         // the memory address of this CallData instance.
-        service_->RequestHandle[[REQUEST]]Request(&ctx_, &request_, &responder_, cq_, cq_, this);
+        service_->RequestHandle{{cookiecutter.request}}Request(&ctx_, &request_, &responder_, cq_, cq_, this);
     }
     else if(status_ == PROCESS)
     {
@@ -83,7 +83,7 @@ void [[SERVICE_NAME]]AsynchServiceImpl::CallData::Proceed()
         new CallData(service_, cq_);
 
         // The actual processing.
-        std::string prefix("[[SERVICE_NAME]]AsynchService handled '");
+        std::string prefix("{{cookiecutter.service_name}}AsynchService handled '");
         reply_.set_reply_string(prefix + request_.request_string() + "'");
 
         // And we are done! Let the gRPC runtime know we've finished, using the
@@ -101,7 +101,7 @@ void [[SERVICE_NAME]]AsynchServiceImpl::CallData::Proceed()
 }
 
 // This can be run in multiple threads if needed.
-void [[SERVICE_NAME]]AsynchServiceImpl::HandleRpcs()
+void {{cookiecutter.service_name}}AsynchServiceImpl::HandleRpcs()
 {
     // Spawn a new CallData instance to serve new clients.
     new CallData(&service_, cq_.get());
@@ -120,4 +120,4 @@ void [[SERVICE_NAME]]AsynchServiceImpl::HandleRpcs()
     }
 }
 
-};  // namespace ns_[[PROJECT_NAME_LOWER]]
+};  // namespace ns_{{cookiecutter.project_name_lower}}

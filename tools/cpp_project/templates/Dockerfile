@@ -1,4 +1,4 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
 FROM ubuntu:latest
 
@@ -9,6 +9,6 @@ RUN rm /tmp/bash_aliases_for_docker
 # Copy project files and build the project
 WORKDIR /app
 
-COPY ./build/bin/[[PROJECT_NAME_LOWER]] .
+COPY ./build/bin/{{cookiecutter.project_name_lower}} .
 
 ENTRYPOINT ["bash"]

@@ -1,13 +1,12 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
-add_executable(run_[[PROJECT_NAME_LOWER]]_tests
-               run_[[PROJECT_NAME_LOWER]]_tests.cc
-[[TEST_SOURCE_FILES]])
+add_executable(run_{{cookiecutter.project_name_lower}}_tests
+               run_{{cookiecutter.project_name_lower}}_tests.cc
+{{cookiecutter.test_source_files}})
 
-[[CMAKE_TEST_INCLUDE_DIRS]]
-target_link_libraries(run_[[PROJECT_NAME_LOWER]]_tests gtest gtest_main)
-[[CMAKE_TEST_EXE_LINK_LIBRARIES]]
+{{cookiecutter.cmake_test_include_dirs}}
+{{cookiecutter.cmake_test_exe_link_libraries}}
 
-add_test(NAME [[PROJECT_NAME_LOWER]]_tests COMMAND run_[[PROJECT_NAME_LOWER]]_tests)
+add_test(NAME {{cookiecutter.project_name_lower}}_tests COMMAND run_{{cookiecutter.project_name_lower}}_tests)
 include(Dart)
 

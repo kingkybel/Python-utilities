@@ -33,8 +33,13 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
-from lib.logger import error, log_info
+from lib.logger import error, log_warning
 from tools.AVRO.avro_kafka import AvroKafka
+
+
+def argument_error(error_message: str, parser: argparse.ArgumentParser):
+    log_warning(f"Argument error:\n{parser.format_help()}")
+    error(error_message)
 
 
 def parse_and_validate_arguments():
@@ -52,16 +57,15 @@ def parse_and_validate_arguments():
                                default=False,
                                action='store_true',
                                help='Run a producer->consumer chain for the given message '
-                                    '(--data-file, --schema-file, --topic)')
+                                    '(needs: --data-file, --schema-file, --topic)')
     parser.add_argument("--schema-file", "-s",
                         default="schema.avsc",
                         type=str,
-                        help=f'Root directory for the project, default "schema.avsc"')
+                        help=f'Schema file to check against, default "schema.avsc"')
     parser.add_argument("--data-file", "-d",
                         default="data.json",
                         type=str,
-                        help='Json file containing the message to check against the schema/produce on Kafka,"'
-                             '" default "data.json"')
+                        help='Json file containing the message, default "data.json"')
     parser.add_argument("--topic", "-t",
                         type=str,
                         default="some.topic.of.mine",
@@ -82,23 +86,22 @@ def parse_and_validate_arguments():
     args = parser.parse_args()
 
     if not args.resend and not args.check_avro and not args.prod_con:
-        log_info(parser.format_help())
-        error("No command given: choose from --resend, --check-avro or --prod-con")
+        argument_error("No command given: choose from --resend, --check-avro or --prod-con", parser)
 
     if not args.schema_file:
-        error("No schema given: requires a --schema")
+        argument_error("No schema given: requires a --schema", parser)
     if not args.data_file:
-        error("No data-file given: requires a --data-file")
+        argument_error("No data-file given: requires a --data-file", parser)
     if args.resend:
         if not args.topic:
-            error("No topic given: resending a message requires a --topic")
+            argument_error("No topic given: resending a message requires a --topic", parser)
         if args.partition is None:
-            error("No partition given: resending a message requires a --partition")
+            argument_error("No partition given: resending a message requires a --partition", parser)
         if args.offset is None:
-            error("No offset given: resending a message requires an --offset")
+            argument_error("No offset given: resending a message requires an --offset", parser)
     if args.prod_con:
         if not args.topic:
-            error("No topic given: producing/consuming a message requires a --topic")
+            argument_error("No topic given: producing/consuming a message requires a --topic", parser)
 
     return args
 

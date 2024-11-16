@@ -258,7 +258,7 @@ class JsonObject:
                     index = len(iterator) - 1
                 else:
                     index = cur_key.index
-                    for i in range(len(iterator), int(index) + 1):
+                    for j in range(len(iterator), int(index) + 1):
                         iterator.append(blank_object_type())
 
                 if is_last:

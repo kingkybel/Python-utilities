@@ -1,8 +1,8 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
-#include "[[SERVICE_NAME_LOWER]]_async_client2.h"
+#include "{{cookiecutter.service_name_lower}}_async_client2.h"
 
-#include "[[PROTO_NAME_LOWER]].grpc.pb.h"
+#include "{{cookiecutter.proto_name_lower}}.grpc.pb.h"
 
 #include <grpc/support/log.h>
 #include <grpcpp/grpcpp.h>
@@ -11,19 +11,19 @@
 #include <string>
 #include <thread>
 
-namespace ns_[[PROJECT_NAME_LOWER]]
+namespace ns_{{cookiecutter.project_name_lower}}
 {
 
-[[SERVICE_NAME]]Client::[[SERVICE_NAME]]Client(std::shared_ptr<grpc::Channel> channel)
-: stub_([[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]Service::NewStub(channel))
+{{cookiecutter.service_name}}Client::{{cookiecutter.service_name}}Client(std::shared_ptr<grpc::Channel> channel)
+: stub_({{cookiecutter.proto_name_lower}}::{{cookiecutter.service_name}}Service::NewStub(channel))
 {
 }
 
 // Assembles the client's payload and sends it to the server.
-void [[SERVICE_NAME]]Client::Handle[[REQUEST]]Request(const std::string& user)
+void {{cookiecutter.service_name}}Client::Handle{{cookiecutter.request}}Request(const std::string& user)
 {
     // Data we are sending to the server.
-    [[PROTO_NAME_LOWER]]::[[REQUEST]]RequestMessage request;
+    {{cookiecutter.proto_name_lower}}::{{cookiecutter.request}}RequestMessage request;
     request.set_request_string(user);
 
     // Call object to store rpc data
@@ -47,7 +47,7 @@ void [[SERVICE_NAME]]Client::Handle[[REQUEST]]Request(const std::string& user)
 
 // Loop while listening for completed responses.
 // Prints out the response from the server.
-void [[SERVICE_NAME]]Client::AsyncCompleteRpc()
+void {{cookiecutter.service_name}}Client::AsyncCompleteRpc()
 {
     void* got_tag;
     bool  ok = false;
@@ -63,7 +63,7 @@ void [[SERVICE_NAME]]Client::AsyncCompleteRpc()
         GPR_ASSERT(ok);
 
         if(call->status.ok())
-            std::cout << "Answer to [[REQUEST]] received: " << call->reply.reply_string() << std::endl;
+            std::cout << "Answer to {{cookiecutter.request}} received: " << call->reply.reply_string() << std::endl;
         else
             std::cout << "RPC failed" << std::endl;
 
@@ -72,4 +72,4 @@ void [[SERVICE_NAME]]Client::AsyncCompleteRpc()
     }
 }
 
-};  // namespace ns_[[PROJECT_NAME_LOWER]]
+};  // namespace ns_{{cookiecutter.project_name_lower}}

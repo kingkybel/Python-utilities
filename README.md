@@ -12,3 +12,17 @@ pip install networkx
 pip install fastavro
 pip install pygccxml
 ```
+
+# Installation
+
+```bash
+# might need to install poetry first (here for debian)!
+ sudo apt install python3-poetry
+```
+```bash
+# build the wheel
+poetry build
+
+# install the wheel
+pip install dist/tools-0.1.0-py3-none-any.whl
+```

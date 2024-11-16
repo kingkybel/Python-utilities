@@ -1,7 +1,7 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
-#include "[[SERVICE_NAME_LOWER]]_async_client.h"
-#include "[[PROTO_NAME_LOWER]].grpc.pb.h"
+#include "{{cookiecutter.service_name_lower}}_async_client.h"
+#include "{{cookiecutter.proto_name_lower}}.grpc.pb.h"
 
 #include <grpc/support/log.h>
 #include <grpcpp/grpcpp.h>
@@ -9,13 +9,13 @@
 #include <memory>
 #include <string>
 
-[[USING_NAMESPACE]]
+{{cookiecutter.using_namespace}}
 
 int main(int argc, char** argv)
 {
-    // default target to localhost:[[PORT]]
+    // default target to localhost:{{cookiecutter.port}}
     std::string server = "localhost";
-    std::string port = "[[PORT]]";
+    std::string port = "{{cookiecutter.port}}";
     for(int count = 0; count < argc; count++)
     {
         if(std::string(argv[count]) == "--server" || std::string(argv[count]) == "-s")
@@ -36,10 +36,10 @@ int main(int argc, char** argv)
 
     // We indicate that the channel isn't authenticated (use of
     // InsecureChannelCredentials()).
-    [[SERVICE_NAME]]AsyncClient [[SERVICE_NAME_LOWER]](grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
+    {{cookiecutter.service_name}}AsyncClient {{cookiecutter.service_name_lower}}(grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
     std::string answer_string("some answer to the request");
-    std::string reply = [[SERVICE_NAME_LOWER]].Handle[[REQUEST]]Request(answer_string);  // The actual RPC call!
-    std::cout << "Answer to [[REQUEST]] received: " << reply << std::endl;
+    std::string reply = {{cookiecutter.service_name_lower}}.Handle{{cookiecutter.request}}Request(answer_string);  // The actual RPC call!
+    std::cout << "Answer to {{cookiecutter.request}} received: " << reply << std::endl;
 
     return 0;
 }

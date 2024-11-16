@@ -1,6 +1,6 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
-[[TEMPLATE_INCLUDES]]
+{{cookiecutter.template_includes}}
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -10,9 +10,9 @@
 #include <vector>
 
 using namespace std;
-[[USING_NAMESPACE]]
+{{cookiecutter.using_namespace}}
 
-class [[PROJECT_NAME]]_[[TEMPLATE_CLASS_NAME]]_Test : public ::testing::Test
+class {{cookiecutter.project_name}}_{{cookiecutter.template_class_name}}_Test : public ::testing::Test
 {
     protected:
     void SetUp() override
@@ -24,24 +24,24 @@ class [[PROJECT_NAME]]_[[TEMPLATE_CLASS_NAME]]_Test : public ::testing::Test
     }
 };
 
-// if gdb/interactive debugging of the template is required then #define GDB_DEBUGGING in [[TEMPLATE_CLASS_NAME]].h
+// if gdb/interactive debugging of the template is required then #define GDB_DEBUGGING in {{cookiecutter.template_class_name}}.h
 #ifndef GDB_DEBUGGING
 
 // Use actual template for production code testing
-TEST_F([[PROJECT_NAME]]_[[TEMPLATE_CLASS_NAME]]_Test, [[TEMPLATE_CLASS_NAME]]_simple_test)
+TEST_F({{cookiecutter.project_name}}_{{cookiecutter.template_class_name}}_Test, {{cookiecutter.template_class_name}}_simple_test)
 {
-[[TEMPLATE_ARGS_VARIABLES_CONCRETE]]
-    [[TEMPLATE_CLASS_NAME]]<[[TEMPLATE_SPECIALISATION_CONCRETE]]> [[TEMPLATE_CLASS_NAME]]_var{[[TEMPLATE_VARIABLES_IN_CALL]]};
+{{cookiecutter.template_args_variables_concrete}}
+    {{cookiecutter.template_class_name}}<{{cookiecutter.template_specialisation_concrete}}> {{cookiecutter.template_class_name}}_var{{{cookiecutter.template_variables_in_call}}};
     ASSERT_EQ(false, true);
 }
 
 #else
 
 // Use non-templated version for interactive debugging
-TEST_F([[PROJECT_NAME]]_[[TEMPLATE_CLASS_NAME]]_Test, [[TEMPLATE_CLASS_NAME]]_simple_test)
+TEST_F({{cookiecutter.project_name}}_{{cookiecutter.template_class_name}}_Test, {{cookiecutter.template_class_name}}_simple_test)
 {
-[[TEMPLATE_ARGS_VARIABLES]]
-    [[TEMPLATE_CLASS_NAME]] [[TEMPLATE_CLASS_NAME]]_var{[[TEMPLATE_VARIABLES_IN_CALL]]};
+{{cookiecutter.template_args_variables}}
+    {{cookiecutter.template_class_name}} {{cookiecutter.template_class_name}}_var{{{cookiecutter.template_variables_in_call}}};
     ASSERT_EQ(false, true);
 }
 

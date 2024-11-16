@@ -1,38 +1,38 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
-#ifndef [[TEMPLATE_CLASS_NAME_UPPER]]_H_INCLUDED
-#define [[TEMPLATE_CLASS_NAME_UPPER]]_H_INCLUDED
+#ifndef {{cookiecutter.template_class_name_upper}}_H_INCLUDED
+#define {{cookiecutter.template_class_name_upper}}_H_INCLUDED
 
 #include <type_traits>
 #include <cstdint>
 
-namespace ns_[[PROJECT_NAME_LOWER]]
+namespace ns_{{cookiecutter.project_name_lower}}
 {
 
 // uncomment the following line if you want to gdb-debug the class (templates are not debuggable)
 //#define GDB_DEBUGGING
 #ifdef GDB_DEBUGGING
 // type definitions of types to use. Modify as required.
-[[TEMPLATE_ARGS_HASH_DEFINES]]
+{{cookiecutter.template_args_hash_defines}}
 #else
-template<[[TEMPLATE_ARGS_DEF]]>
+template<{{cookiecutter.template_args_def}}>
 #endif
-class [[TEMPLATE_CLASS_NAME]]
+class {{cookiecutter.template_class_name}}
 {
 private:
-[[TEMPLATE_ARGS_MEMBERS]]
+{{cookiecutter.template_args_members}}
 
 public:
     /**
-     * @brief constructor of [[TEMPLATE_CLASS_NAME]]
+     * @brief constructor of {{cookiecutter.template_class_name}}
      */
-    [[TEMPLATE_CLASS_NAME]]([[TEMPLATE_CLASS_CONSTRUCTOR_ARGS]])[[TEMPLATE_CLASS_CONSTRUCTOR_INIT]]
+    {{cookiecutter.template_class_name}}({{cookiecutter.template_class_constructor_args}}){{cookiecutter.template_class_constructor_init}}
     {
         // Implement the constructor here
     }
 };
 
-};  // namespace ns_[[PROJECT_NAME_LOWER]]
+};  // namespace ns_{{cookiecutter.project_name_lower}}
 
-#endif  // [[TEMPLATE_CLASS_NAME_UPPER]]_H_INCLUDED
+#endif  // {{cookiecutter.template_class_name_upper}}_H_INCLUDED
 

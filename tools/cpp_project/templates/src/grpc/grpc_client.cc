@@ -1,38 +1,38 @@
-[[LICENCE]]
-#include "[[SERVICE_NAME_LOWER]]_client.h"
+{{cookiecutter.licence}}
+#include "{{cookiecutter.service_name_lower}}_client.h"
 
-#include "[[PROTO_NAME_LOWER]].grpc.pb.h"
+#include "{{cookiecutter.proto_name_lower}}.grpc.pb.h"
 
 #include <grpcpp/grpcpp.h>
 #include <iostream>
 #include <memory>
 #include <string>
 
-namespace ns_[[PROJECT_NAME_LOWER]]
+namespace ns_{{cookiecutter.project_name_lower}}
 {
 
-[[SERVICE_NAME]]Client::[[SERVICE_NAME]]Client(std::shared_ptr<grpc::Channel> channel)
-: stub_([[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]Service::NewStub(channel))
+{{cookiecutter.service_name}}Client::{{cookiecutter.service_name}}Client(std::shared_ptr<grpc::Channel> channel)
+: stub_({{cookiecutter.proto_name_lower}}::{{cookiecutter.service_name}}Service::NewStub(channel))
 {
 }
 
 // Assembles the client's payload, sends it and presents the response back
 // from the server.
-std::string [[SERVICE_NAME]]Client::Handle[[REQUEST]]Request(const std::string& request_str)
+std::string {{cookiecutter.service_name}}Client::Handle{{cookiecutter.request}}Request(const std::string& request_str)
 {
     // Data we are sending to the server.
-    [[PROTO_NAME_LOWER]]::[[REQUEST]]RequestMessage request;
+    {{cookiecutter.proto_name_lower}}::{{cookiecutter.request}}RequestMessage request;
     request.set_request_string(request_str);
 
     // Container for the data we expect from the server.
-    [[PROTO_NAME_LOWER]]::[[REQUEST]]ReplyMessage reply;
+    {{cookiecutter.proto_name_lower}}::{{cookiecutter.request}}ReplyMessage reply;
 
     // Context for the client. It could be used to convey extra information to
     // the server and/or tweak certain RPC behaviors.
     grpc::ClientContext context;
 
     // The actual RPC.
-    grpc::Status status = stub_->Handle[[REQUEST]]Request(&context, request, &reply);
+    grpc::Status status = stub_->Handle{{cookiecutter.request}}Request(&context, request, &reply);
 
     // Act upon its status.
     if(status.ok())
@@ -46,4 +46,4 @@ std::string [[SERVICE_NAME]]Client::Handle[[REQUEST]]Request(const std::string& 
     }
 }
 
-};  // namespace ns_[[PROJECT_NAME_LOWER]]
+};  // namespace ns_{{cookiecutter.project_name_lower}}

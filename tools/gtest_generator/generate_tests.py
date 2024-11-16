@@ -1,19 +1,20 @@
+#!/usr/bin/env python3
 import os
 import argparse
 from pygccxml import parser, declarations
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='Generate Google Test suites for C++ project.')
-    parser.add_argument('--project-folder', type=str, required=True, help='Path to the C++ project folder')
-    return parser.parse_args()
+    arg_parser = argparse.ArgumentParser(description='Generate Google Test suites for C++ project.')
+    arg_parser.add_argument('--project-folder', type=str, required=True, help='Path to the C++ project folder')
+    return arg_parser.parse_args()
 
 
 def find_cpp_files(directory):
     cpp_files = []
     for root, _, files in os.walk(directory):
         for file in files:
-            if file.endswith('.cpp') or file.endswith('.h'):
+            if file.endswith('.h'):
                 cpp_files.append(os.path.join(root, file))
     return cpp_files
 
@@ -50,28 +51,26 @@ def main():
         print('No C++ source files found.')
         return
 
-    castxml_path = 'castxml'
-    if not os.path.exists(castxml_path):
-        castxml_path = '/usr/bin/castxml'  # Adjust this path if necessary
-
+    castxml_path = '/usr/bin/castxml'
     if not os.path.exists(castxml_path):
         print(f"Error: castxml not found at {castxml_path}")
         return
 
     print(f"Using castxml at {castxml_path}")
     print(include_folder)
+
     # Configure the C++ parser
     cxx_config = parser.xml_generator_configuration_t(
         xml_generator_path=castxml_path,
         xml_generator='castxml',
         include_paths=[include_folder],
-        ccflags = ["-std=c++17"]
+        cflags='-std=c++17'
     )
 
     decls = []
     for file in all_files:
         try:
-            parsed = parser.parse(files=[file], config=cxx_config)
+            parsed = parser.parse([file], cxx_config)
             decls += parsed.declarations
         except Exception as e:
             print(f"Error parsing {file}: {e}")
@@ -87,7 +86,7 @@ def main():
     if gtest_suites:
         output_file = os.path.join(project_folder, 'test_generated.cpp')
         with open(output_file, 'w') as f:
-            f.write(f"#include <gtest/gtest.h>\n")
+            f.write("#include <gtest/gtest.h>\n")
             f.write("#include <iostream>\n")
             f.write("#include <string>\n")
             for file in include_files:

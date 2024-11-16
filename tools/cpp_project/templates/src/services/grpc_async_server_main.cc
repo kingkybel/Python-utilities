@@ -1,16 +1,16 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
-#include "[[SERVICE_NAME_LOWER]]_async_service.h"
+#include "{{cookiecutter.service_name_lower}}_async_service.h"
 
 #include <cstdlib>
 #include <string>
 
-[[USING_NAMESPACE]]
+{{cookiecutter.using_namespace}}
 
 int main(int argc, char** argv)
 {
-    // default to serving on 0.0.0.0:[[PORT]]
-    std::string port = "[[PORT]]";
+    // default to serving on 0.0.0.0:{{cookiecutter.port}}
+    std::string port = "{{cookiecutter.port}}";
     for(int count = 0; count < argc; count++)
     {
         if(std::string(argv[count]) == "--port" || std::string(argv[count]) == "-p")
@@ -20,7 +20,7 @@ int main(int argc, char** argv)
         }
     }
 
-    [[SERVICE_NAME]]AsynchServiceImpl server;
+    {{cookiecutter.service_name}}AsynchServiceImpl server;
     server.Run(std::atoi(port.c_str()));
 
     return 0;

@@ -1,4 +1,4 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>

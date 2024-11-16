@@ -1,28 +1,28 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "[[JAVA_DOMAIN]].[[PROTO_NAME_LOWER]]";
-option java_outer_classname = "[[PROTO_NAME]]Proto";
+option java_package = "{{cookiecutter.java_domain}}.{{cookiecutter.proto_name_lower}}";
+option java_outer_classname = "{{cookiecutter.proto_name}}Proto";
 
-package [[PROTO_NAME_LOWER]];
+package {{cookiecutter.proto_name_lower}};
 
-// The [[SERVICE_NAME]] service definition.
-service [[SERVICE_NAME]]Service {
-  // Handles a [[REQUEST]] request
-  rpc Handle[[REQUEST]]Request ([[REQUEST]]RequestMessage) returns ([[REQUEST]]ReplyMessage) {}
+// The {{cookiecutter.service_name}} service definition.
+service {{cookiecutter.service_name}}Service {
+  // Handles a {{cookiecutter.request}} request
+  rpc Handle{{cookiecutter.request}}Request ({{cookiecutter.request}}RequestMessage) returns ({{cookiecutter.request}}ReplyMessage) {}
 
-  // Handles a [[REQUEST]] stream request.
-  rpc Handle[[REQUEST]]StreamRequest ([[REQUEST]]RequestMessage) returns (stream [[REQUEST]]ReplyMessage) {}
+  // Handles a {{cookiecutter.request}} stream request.
+  rpc Handle{{cookiecutter.request}}StreamRequest ({{cookiecutter.request}}RequestMessage) returns (stream {{cookiecutter.request}}ReplyMessage) {}
 }
 
-// The request containing the [[REQUEST]]'s specifics.
-message [[REQUEST]]RequestMessage {
+// The request containing the {{cookiecutter.request}}'s specifics.
+message {{cookiecutter.request}}RequestMessage {
   string request_string = 1;
 }
 
-// The response to the [[REQUEST]] produced by [[SERVICE_NAME]]Service.
-message [[REQUEST]]ReplyMessage {
+// The response to the {{cookiecutter.request}} produced by {{cookiecutter.service_name}}Service.
+message {{cookiecutter.request}}ReplyMessage {
   string reply_string = 1;
 }

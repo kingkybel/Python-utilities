@@ -67,7 +67,7 @@ def match_one_alternative(partial: str,
     :param delimiter: delimiter used to split the alternatives string into a list.
     :param predicate: a unary predicate, this can be used to select only from a subset of the alternatives.
     :param flags: regular expression flags.
-    :param consecutive_only: If true, then the characters in the partial have to be consecutive. Otherwise only their
+    :param consecutive_only: If true, then the characters in the partial have to be consecutive, otherwise only their
                              order is important.
     :return: returns a tuple:
                         — one alternative string or None.

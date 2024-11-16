@@ -53,10 +53,10 @@ class ClassFileSetCreator(ABCFileSetCreator):
     @overrides(ABCFileSetCreator)
     def get_tag_replacements(self) -> dict[str, str]:
         return {
-            "[[CLASS_NAME]]": self.__class_name,
-            "[[CLASS_NAME_LOWER]]": self.__class_name.lower(),
-            "[[CLASS_NAME_UPPER]]": self.__class_name.upper(),
-            "[[CLASS_HASH_INCLUDE]]": f'#include "{self.__class_name.lower()}.h"\n'}
+            "{{cookiecutter.class_name}}": self.__class_name,
+            "{{cookiecutter.class_name_lower}}": self.__class_name.lower(),
+            "{{cookiecutter.class_name_upper}}": self.__class_name.upper(),
+            "{{cookiecutter.class_hash_include}}": f'#include "{self.__class_name.lower()}.h"\n'}
 
     @overrides(ABCFileSetCreator)
     def get_file_map_list(self) -> list[FileNameMapper]:

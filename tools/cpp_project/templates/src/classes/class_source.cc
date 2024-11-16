@@ -1,6 +1,6 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
-#include "[[CLASS_NAME_LOWER]].h"
+#include "{{cookiecutter.class_name_lower}}.h"
 
 #include <iostream>
 #include <map>
@@ -8,22 +8,22 @@
 #include <utility>
 #include <vector>
 
-namespace ns_[[PROJECT_NAME_LOWER]]
+namespace ns_{{cookiecutter.project_name_lower}}
 {
 
-[[CLASS_NAME]]::[[CLASS_NAME]](size_t sz /* = 0UL */)
+{{cookiecutter.class_name}}::{{cookiecutter.class_name}}(size_t sz /* = 0UL */)
 : sz_(sz)
 {
     // implementation of (default-)constructor
 }
 
-[[CLASS_NAME]]::[[CLASS_NAME]](const [[CLASS_NAME]] &rhs)
+{{cookiecutter.class_name}}::{{cookiecutter.class_name}}(const {{cookiecutter.class_name}} &rhs)
 : sz_(rhs.sz_)
 {
     // implementation of copy-constructor
 }
 
-[[CLASS_NAME]]& [[CLASS_NAME]]::operator =(const [[CLASS_NAME]] &rhs)
+{{cookiecutter.class_name}}& {{cookiecutter.class_name}}::operator =(const {{cookiecutter.class_name}} &rhs)
 {
     if(&rhs != this)
     {
@@ -34,23 +34,23 @@ namespace ns_[[PROJECT_NAME_LOWER]]
     return *this;
 }
 
-[[CLASS_NAME]]::[[CLASS_NAME]]([[CLASS_NAME]] &&rhs) noexcept
+{{cookiecutter.class_name}}::{{cookiecutter.class_name}}({{cookiecutter.class_name}} &&rhs) noexcept
 : sz_(std::exchange(rhs.sz_, 0UL))     // explicit move of a member of non-class type
 //, cls_obj_(std::move(rhs.cls_obj_)), // explicit move of a member of class type
 {
     // implementation of move-constructor
 }
 
-[[CLASS_NAME]]& [[CLASS_NAME]]::operator =(const [[CLASS_NAME]] &&rhs)
+{{cookiecutter.class_name}}& {{cookiecutter.class_name}}::operator =(const {{cookiecutter.class_name}} &&rhs)
 {
      sz_ = std::move(rhs.sz_);
      return *this;
 }
 
-[[CLASS_NAME]]::~[[CLASS_NAME]]()
+{{cookiecutter.class_name}}::~{{cookiecutter.class_name}}()
 {
     // implementation of destructor
 }
 
-};  // namespace ns_[[PROJECT_NAME_LOWER]]
+};  // namespace ns_{{cookiecutter.project_name_lower}}
 

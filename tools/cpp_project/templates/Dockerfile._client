@@ -1,4 +1,4 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
 FROM ubuntu:22.04
 
@@ -9,6 +9,6 @@ RUN rm /tmp/bash_aliases_for_docker
 # Copy project files and build the project
 WORKDIR /app
 
-COPY ./build/bin/[[SERVICE_NAME_WITH_MESSAGING_TYPE]]_client .
+COPY ./build/bin/{{cookiecutter.service_name_with_messaging_type}}_client .
 
 ENTRYPOINT ["bash"]

@@ -3,5 +3,5 @@
 ## project executable
 ####################################################################
 
-add_executable([[PROJECT_NAME_LOWER]]_exe [[PROJECT_NAME_LOWER]]_main.cc)
-set_property(TARGET "[[PROJECT_NAME_LOWER]]_exe" PROPERTY OUTPUT_NAME "[[PROJECT_NAME_LOWER]]")
+add_executable({{cookiecutter.project_name_lower}}_exe {{cookiecutter.project_name_lower}}_main.cc)
+set_property(TARGET "{{cookiecutter.project_name_lower}}_exe" PROPERTY OUTPUT_NAME "{{cookiecutter.project_name_lower}}")

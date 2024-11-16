@@ -91,7 +91,7 @@ def write_file(filename: (str | PathLike),
     :param filename: filename to read.
     :param content: string or list of strings to write.
     :param mode: one of 'a': append, 'w': write
-    :param allow_system_paths: whether or not system paths are allowed
+    :param allow_system_paths: whether system paths are allowed
     :param dryrun: if set to True, then do not execute but just output a comment describing the command.
     :return:
     """

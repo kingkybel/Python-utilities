@@ -1,4 +1,4 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
 ####################################################################
 ## gRPC - libraries
@@ -6,17 +6,17 @@
 
 file(MAKE_DIRECTORY ${PROTO_CPP_SRC_DIR})
 
-[[CMAKE_GENERATE_CPP_FROM_PROTOS]]
+{{cookiecutter.cmake_generate_cpp_from_protos}}
 
 ##############################################
 # Put all gRPC/proto functions into a library
-add_library([[PROJECT_NAME_LOWER]]_grpc_proto STATIC ${PROTO_FILES_HEADERS} ${PROTO_FILES_SOURCES})
-target_link_libraries([[PROJECT_NAME_LOWER]]_grpc_proto PUBLIC
+add_library({{cookiecutter.project_name_lower}}_grpc_proto STATIC ${PROTO_FILES_HEADERS} ${PROTO_FILES_SOURCES})
+target_link_libraries({{cookiecutter.project_name_lower}}_grpc_proto PUBLIC
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF})
 
-foreach(service_target [[CMAKE_GRPC_SERVICES]])
+foreach(service_target {{cookiecutter.cmake_grpc_services}})
 
   ###############################
   # server functionality library
@@ -24,7 +24,7 @@ foreach(service_target [[CMAKE_GRPC_SERVICES]])
   set_property(TARGET "${service_target}_service_lib" PROPERTY OUTPUT_NAME "${service_target}_service")
   target_include_directories("${service_target}_service_lib" PUBLIC ${PROTO_CPP_SRC_DIR})
   target_link_libraries("${service_target}_service_lib"
-    [[PROJECT_NAME_LOWER]]_grpc_proto
+    {{cookiecutter.project_name_lower}}_grpc_proto
     "${service_target}_server")
 
   ###############################
@@ -33,6 +33,6 @@ foreach(service_target [[CMAKE_GRPC_SERVICES]])
   set_property(TARGET "${service_target}_client_lib" PROPERTY OUTPUT_NAME "${service_target}_client")
   target_include_directories("${service_target}_client_lib" PUBLIC ${PROTO_CPP_SRC_DIR})
   target_link_libraries("${service_target}_client_lib"
-    [[PROJECT_NAME_LOWER]]_grpc_proto)
+    {{cookiecutter.project_name_lower}}_grpc_proto)
 
 endforeach()

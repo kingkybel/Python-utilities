@@ -1,6 +1,6 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
-[[CLASS_HASH_INCLUDE]]
+{{cookiecutter.class_hash_include}}
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <iostream>
@@ -9,9 +9,9 @@
 #include <vector>
 
 using namespace std;
-[[USING_NAMESPACE]]
+{{cookiecutter.using_namespace}}
 
-class [[PROJECT_NAME]]_[[CLASS_NAME]]_Test : public ::testing::Test
+class {{cookiecutter.project_name}}_{{cookiecutter.class_name}}_Test : public ::testing::Test
 {
     protected:
     void SetUp() override
@@ -23,7 +23,7 @@ class [[PROJECT_NAME]]_[[CLASS_NAME]]_Test : public ::testing::Test
     }
 };
 
-TEST_F([[PROJECT_NAME]]_[[CLASS_NAME]]_Test, [[CLASS_NAME]]_simple_test)
+TEST_F({{cookiecutter.project_name}}_{{cookiecutter.class_name}}_Test, {{cookiecutter.class_name}}_simple_test)
 {
     ASSERT_EQ(false, true);
 }

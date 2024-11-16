@@ -5,6 +5,7 @@
 KAFKA_VERSION=3.7.1
 docker run -p 9092:9092 apache/kafka:${KAFKA_VERSION}
 ```
+
 ## Installation
 ```bash
 # set the Kafka version you want to use
@@ -74,10 +75,12 @@ bin/kafka-topics.sh --list --bootstrap-server localhost:9092
 ## Send and Receive a Message in Kafka
 Producer:
 ```bash
-bin/kafka-console-producer.sh --broker-list localhost:9092 --topic sampleTopic
-```
+bin/kafka-console-producer.sh --broker-list localhost:9092 --topic sample.to.pic
+`````
 When prompted add a message.
+
 Consumer:
 ```bash
-bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic sampleTopic --from-beginning
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic sample.to.pic --from-beginning
 ```
+

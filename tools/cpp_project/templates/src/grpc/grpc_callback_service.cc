@@ -1,8 +1,8 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
-#include "[[SERVICE_NAME_LOWER]]_callback_service.h"
+#include "{{cookiecutter.service_name_lower}}_callback_service.h"
 
-#include "[[PROTO_NAME_LOWER]].grpc.pb.h"
+#include "{{cookiecutter.proto_name_lower}}.grpc.pb.h"
 
 #include <grpcpp/ext/proto_server_reflection_plugin.h>
 #include <grpcpp/grpcpp.h>
@@ -12,16 +12,16 @@
 #include <string>
 #include <sstream>
 
-namespace ns_[[PROJECT_NAME_LOWER]]
+namespace ns_{{cookiecutter.project_name_lower}}
 {
 
 // Logic and data behind the server's behavior.
-grpc::ServerUnaryReactor* [[SERVICE_NAME]]CallbackServiceImpl::Handle[[REQUEST]]Request(
+grpc::ServerUnaryReactor* {{cookiecutter.service_name}}CallbackServiceImpl::Handle{{cookiecutter.request}}Request(
     grpc::CallbackServerContext* context,
-    const [[PROTO_NAME_LOWER]]::[[REQUEST]]RequestMessage* request,
-    [[PROTO_NAME_LOWER]]::[[REQUEST]]ReplyMessage* reply)
+    const {{cookiecutter.proto_name_lower}}::{{cookiecutter.request}}RequestMessage* request,
+    {{cookiecutter.proto_name_lower}}::{{cookiecutter.request}}ReplyMessage* reply)
 {
-    std::string prefix("[[SERVICE_NAME]] just handled ");
+    std::string prefix("{{cookiecutter.service_name}} just handled ");
     reply->set_reply_string(prefix + request->request_string());
 
     grpc::ServerUnaryReactor* reactor = context->DefaultReactor();
@@ -29,12 +29,12 @@ grpc::ServerUnaryReactor* [[SERVICE_NAME]]CallbackServiceImpl::Handle[[REQUEST]]
     return reactor;
 }
 
-void [[SERVICE_NAME]]CallbackServiceImpl::RunServer(uint16_t port)
+void {{cookiecutter.service_name}}CallbackServiceImpl::RunServer(uint16_t port)
 {
     std::stringstream ss;
     ss << "0.0.0.0:" << port;
     std::string server_address = ss.str();
-    [[SERVICE_NAME]]CallbackServiceImpl service;
+    {{cookiecutter.service_name}}CallbackServiceImpl service;
 
     grpc::EnableDefaultHealthCheckService(true);
     grpc::reflection::InitProtoReflectionServerBuilderPlugin();
@@ -53,4 +53,4 @@ void [[SERVICE_NAME]]CallbackServiceImpl::RunServer(uint16_t port)
     server->Wait();
 }
 
-};  // namespace ns_[[PROJECT_NAME_LOWER]]
+};  // namespace ns_{{cookiecutter.project_name_lower}}

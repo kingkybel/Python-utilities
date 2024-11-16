@@ -1,4 +1,4 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
-[[CMAKE_SERVICES_PROJECT_PART]]
-[[CMAKE_SERVICES_GRPC_PART]]
+{{cookiecutter.cmake_services_project_part}}
+{{cookiecutter.cmake_services_grpc_part}}

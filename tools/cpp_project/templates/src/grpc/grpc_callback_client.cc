@@ -1,7 +1,7 @@
-[[LICENCE]]
-#include "[[SERVICE_NAME_LOWER]]_callback_client.h"
+{{cookiecutter.licence}}
+#include "{{cookiecutter.service_name_lower}}_callback_client.h"
 
-#include "[[PROTO_NAME_LOWER]].grpc.pb.h"
+#include "{{cookiecutter.proto_name_lower}}.grpc.pb.h"
 
 #include <condition_variable>
 #include <grpcpp/grpcpp.h>
@@ -10,24 +10,24 @@
 #include <mutex>
 #include <string>
 
-namespace ns_[[PROJECT_NAME_LOWER]]
+namespace ns_{{cookiecutter.project_name_lower}}
 {
 
-[[SERVICE_NAME]]CallbackClient::[[SERVICE_NAME]]CallbackClient(std::shared_ptr<grpc::Channel> channel)
-: stub_([[PROTO_NAME_LOWER]]::[[SERVICE_NAME]]Service::NewStub(channel))
+{{cookiecutter.service_name}}CallbackClient::{{cookiecutter.service_name}}CallbackClient(std::shared_ptr<grpc::Channel> channel)
+: stub_({{cookiecutter.proto_name_lower}}::{{cookiecutter.service_name}}Service::NewStub(channel))
 {
 }
 
 // Assembles the client's payload, sends it and presents the response back
 // from the server.
-std::string [[SERVICE_NAME]]CallbackClient::Handle[[REQUEST]]Request(const std::string& user)
+std::string {{cookiecutter.service_name}}CallbackClient::Handle{{cookiecutter.request}}Request(const std::string& user)
 {
     // Data we are sending to the server.
-    [[PROTO_NAME_LOWER]]::[[REQUEST]]RequestMessage request;
+    {{cookiecutter.proto_name_lower}}::{{cookiecutter.request}}RequestMessage request;
     request.set_request_string(user);
 
     // Container for the data we expect from the server.
-    [[PROTO_NAME_LOWER]]::[[REQUEST]]ReplyMessage reply;
+    {{cookiecutter.proto_name_lower}}::{{cookiecutter.request}}ReplyMessage reply;
 
     // Context for the client. It could be used to convey extra information to
     // the server and/or tweak certain RPC behaviors.
@@ -38,7 +38,7 @@ std::string [[SERVICE_NAME]]CallbackClient::Handle[[REQUEST]]Request(const std::
     std::condition_variable cv;
     bool                    done = false;
     grpc::Status            status;
-    stub_->async()->Handle[[REQUEST]]Request(&context,
+    stub_->async()->Handle{{cookiecutter.request}}Request(&context,
                              &request,
                              &reply,
                              [&mu, &cv, &done, &status](grpc::Status s)
@@ -67,4 +67,4 @@ std::string [[SERVICE_NAME]]CallbackClient::Handle[[REQUEST]]Request(const std::
     }
 }
 
-};  // namespace ns_[[PROJECT_NAME_LOWER]]
+};  // namespace ns_{{cookiecutter.project_name_lower}}

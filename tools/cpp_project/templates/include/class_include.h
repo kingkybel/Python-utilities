@@ -1,25 +1,25 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
-#ifndef [[CLASS_NAME_UPPER]]_H_INCLUDED
-#define [[CLASS_NAME_UPPER]]_H_INCLUDED
+#ifndef {{cookiecutter.class_name_upper}}_H_INCLUDED
+#define {{cookiecutter.class_name_upper}}_H_INCLUDED
 
 #include <iostream>
 #include <map>
 #include <set>
 #include <vector>
 
-namespace ns_[[PROJECT_NAME_LOWER]]
+namespace ns_{{cookiecutter.project_name_lower}}
 {
 
-class [[CLASS_NAME]]
+class {{cookiecutter.class_name}}
 {
 public:
-    explicit [[CLASS_NAME]](size_t sz = 1UL);
-    [[CLASS_NAME]](const [[CLASS_NAME]] &rhs);
-    [[CLASS_NAME]]& operator =(const [[CLASS_NAME]] &rhs);
-    [[CLASS_NAME]]([[CLASS_NAME]] &&rhs) noexcept;
-    [[CLASS_NAME]]& operator =(const [[CLASS_NAME]] &&rhs);
-    virtual ~[[CLASS_NAME]]();
+    explicit {{cookiecutter.class_name}}(size_t sz = 1UL);
+    {{cookiecutter.class_name}}(const {{cookiecutter.class_name}} &rhs);
+    {{cookiecutter.class_name}}& operator =(const {{cookiecutter.class_name}} &rhs);
+    {{cookiecutter.class_name}}({{cookiecutter.class_name}} &&rhs) noexcept;
+    {{cookiecutter.class_name}}& operator =(const {{cookiecutter.class_name}} &&rhs);
+    virtual ~{{cookiecutter.class_name}}();
 
     // Add your public interface here
 
@@ -28,6 +28,6 @@ private:
     size_t sz_ = 1UL;
 };
 
-};  // namespace ns_[[PROJECT_NAME_LOWER]]
+};  // namespace ns_{{cookiecutter.project_name_lower}}
 
-#endif // [[CLASS_NAME_UPPER]]_H_INCLUDED
+#endif // {{cookiecutter.class_name_upper}}_H_INCLUDED

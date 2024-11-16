@@ -1,4 +1,4 @@
-[[LICENCE]]
+{{cookiecutter.licence}}
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -8,9 +8,9 @@
 #include <vector>
 
 using namespace std;
-[[USING_NAMESPACE]]
+{{cookiecutter.using_namespace}}
 
-class [[PROJECT_NAME]]_Test : public ::testing::Test
+class {{cookiecutter.project_name}}_Test : public ::testing::Test
 {
     protected:
     void SetUp() override
@@ -22,7 +22,7 @@ class [[PROJECT_NAME]]_Test : public ::testing::Test
     }
 };
 
-TEST_F([[PROJECT_NAME]]_Test, simple_test)
+TEST_F({{cookiecutter.project_name}}_Test, simple_test)
 {
     ASSERT_EQ(false, true);
 }
