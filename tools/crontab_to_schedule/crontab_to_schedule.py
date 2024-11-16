@@ -24,7 +24,9 @@
 # @author: Dieter J Kybelksties
 
 import argparse
+import csv
 import os
+import re
 import sys
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
@@ -40,51 +42,61 @@ import matplotlib.pyplot as plt
 from lib.file_utils import read_file
 
 
-def parse_crontab(crontab: str) -> List[Tuple[int, int, str]]:
-    """
-    Parses a crontab string and extracts schedule entries.
 
-    Args:
-        crontab (str): The crontab content as a string.
+def parse_crontab(crontab_lines: list[str]) -> list[dict[str, str]]:
+    """Parses crontab entries into a structured list."""
+    entries = []
+    cron_pattern = re.compile(
+        r"^\s*"
+        r"(\S+)\s+"  # minute
+        r"(\S+)\s+"  # hour
+        r"(\S+)\s+"  # day of month
+        r"(\S+)\s+"  # month
+        r"(\S+)\s+"  # day of week
+        r"(.*)"      # command
+    )
 
-    Returns:
-        list of tuples: List containing (minute, hour, command).
-    """
-    import re
-
-    crontab_line_regex = re.compile(r"^(\d{1,2})\s+(\d{1,2})\s+.*?\s+.*?\s+.*?\s+(.+)$")
-    schedule = []
-
-    for line in crontab.splitlines():
+    for line in crontab_lines:
         line = line.strip()
-        if not line or line.startswith("#"):  # Ignore comments or empty lines
+        if not line or line.startswith("#"):  # Ignore comments and empty lines
             continue
-
-        match = crontab_line_regex.match(line)
+        match = cron_pattern.match(line)
         if match:
-            minute = int(match.group(1))
-            hour = int(match.group(2))
-            command = match.group(3).strip()
-            schedule.append((minute, hour, command))
+            minute, hour, dom, month, dow, command = match.groups()
+            entries.append({
+                "minute": minute,
+                "hour": hour,
+                "day_of_month": dom,
+                "month": month,
+                "day_of_week": dow,
+                "command": command.strip(),
+            })
+        else:
+            log_warning(f"Unrecognized crontab entry: {line}")
+    return entries
 
-    return schedule
+
+def expand_time_field(field: str, max_value: int) -> List[int]:
+    """Expands a time field like '0,15' or '7-18' into a list of integers."""
+    result = set()
+    for part in field.split(","):
+        if "-" in part:  # Range
+            start, end = map(int, part.split("-"))
+            result.update(range(start, end + 1))
+        elif part == "*":  # Wildcard
+            result.update(range(max_value))
+        else:  # Single value
+            result.add(int(part))
+    return sorted(result)
 
 
 def generate_intervals(
-        interval: int,
-        scope: str,
-        reference_date: datetime = None
+    interval: int,
+    scope: str,
+    reference_date: datetime = None
 ) -> List[Tuple[datetime, datetime]]:
     """
     Generates time intervals based on the interval and scope.
-
-    Args:
-        interval (int): Interval size in minutes.
-        scope (str): Time scope, e.g., "day" or "12:00-18:00".
-        reference_date (datetime, optional): Reference date.
-
-    Returns:
-        list of tuples: List of (start_time, end_time) intervals.
     """
     if reference_date is None:
         reference_date = datetime.now()
@@ -117,26 +129,26 @@ def generate_intervals(
     return intervals
 
 
-def collect_jobs(schedule: List[Tuple[int, int, str]], intervals: List[Tuple[datetime, datetime]]) -> List[
-    Tuple[str, List[str]]]:
+def collect_jobs(
+    schedule: list[dict[str, str]],
+    intervals: list[tuple[datetime, datetime]]
+) -> List[Tuple[str, List[str]]]:
     """
     Collects jobs for each interval.
-
-    Args:
-        schedule (list): Parsed crontab schedule as (minute, hour, command).
-        intervals (list): List of (start_time, end_time) intervals.
-
-    Returns:
-        list of tuples: List of (interval_label, jobs).
     """
     jobs_by_interval = []
 
     for start, end in intervals:
         interval_jobs = []
-        for minute, hour, command in schedule:
-            job_time = datetime.combine(start.date(), datetime.min.time()).replace(hour=hour, minute=minute)
-            if start <= job_time < end:
-                interval_jobs.append(command)
+        for entry in schedule:
+            minutes = expand_time_field(entry["minute"], 60)
+            hours = expand_time_field(entry["hour"], 24)
+
+            for hour in hours:
+                for minute in minutes:
+                    job_time = start.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                    if start <= job_time < end:
+                        interval_jobs.append(entry["command"])
         interval_label = f"{start.strftime('%H:%M')} - {end.strftime('%H:%M')}"
         jobs_by_interval.append((interval_label, interval_jobs))
 
@@ -146,10 +158,6 @@ def collect_jobs(schedule: List[Tuple[int, int, str]], intervals: List[Tuple[dat
 def plot_job_intervals(job_intervals: List[Tuple[str, List[str]]], title: str):
     """
     Plots the number of jobs per interval.
-
-    Args:
-        job_intervals (list of tuples): List of (interval_label, jobs).
-        title (str): Title of the graph.
     """
     interval_labels = [interval for interval, _ in job_intervals]
     job_counts = [len(jobs) for _, jobs in job_intervals]
@@ -159,39 +167,56 @@ def plot_job_intervals(job_intervals: List[Tuple[str, List[str]]], title: str):
     plt.xlabel("Time Intervals")
     plt.ylabel("Number of Jobs")
     plt.title(title)
-    plt.xticks(rotation=90)
+    # Show every nth label to avoid clutter
+    n = max(1, len(interval_labels) // 10)
+    plt.xticks(range(0, len(interval_labels), n), interval_labels[::n], rotation=90)
     plt.tight_layout()
     plt.show()
+
+
+def write_to_csv(file_path: str, rows: List[List[str]], headers: List[str]):
+    """Writes rows to a CSV file with the given headers."""
+    with open(file_path, mode="w", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(headers)
+        writer.writerows(rows)
 
 
 # Example Usage
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Create a graph and schedule from crontab.')
-    parser.add_argument("--crontab-file", "-c",
-                        default=f"{this_dir}/crontab.csv",
-                        help=f'file with crontab entries, defaults to "{this_dir}/crontab.csv"')
-    parser.add_argument("--interval", "-i",
-                        default=1,
-                        help=f"interval size in minutes, defaults to {1}")
-    parser.add_argument("--scope", "-s",
-                        default="day",
-                        help=f"scope of the schedule, day/week/month/12:00-15:00/..., defaults to day")
-    parser.add_argument("--reference-date", "-r",
-                        default=None,
-                        help=f"reference date in format 'YYYY-mm-dd', defaults to {datetime.now().date()}")
+    parser = argparse.ArgumentParser(description="Create a graph and schedule from crontab.")
+    parser.add_argument(
+        "--crontab-file", "-c",
+        default=f"{this_dir}/crontab.csv",
+        help=f'File with crontab entries, defaults to "{this_dir}/crontab.csv"'
+    )
+    parser.add_argument("--interval", "-i", type=int, default=1, help="Interval size in minutes, defaults to 1")
+    parser.add_argument("--scope", "-s", default="day", help="Scope of the schedule, e.g., day/12:00-18:00")
+    parser.add_argument(
+        "--reference-date", "-r",
+        default=None,
+        help=f"Reference date in format 'YYYY-mm-dd', defaults to {datetime.now().date()}"
+    )
+    parser.add_argument("--schedule-output", "-so", default="minute_schedule.csv", help="Output CSV for schedule.")
+    parser.add_argument("--job-counts-output", "-jo", default="job_counts.csv", help="Output CSV for job counts.")
 
     args = parser.parse_args()
 
-    crontab_content = read_file(args.crontab_file)
-    interval = int(args.interval)
+    try:
+        crontab_content = read_file(args.crontab_file)
+    except FileNotFoundError:
+        error(f"Crontab file '{args.crontab_file}' not found.")
+        sys.exit(1)
+
+    interval = args.interval
     scope = args.scope
     reference_date = datetime.now()
     if args.reference_date is not None:
-        reference_date = datetime.strptime(args.reference_date,"%Y-%m-%d")
+        reference_date = datetime.strptime(args.reference_date, "%Y-%m-%d")
 
     # Parse the crontab
-    schedule = parse_crontab(crontab_content)
+    schedule = parse_crontab(crontab_content.splitlines())
 
     # Generate time intervals
     intervals = generate_intervals(interval, scope, reference_date=reference_date)
@@ -199,9 +224,17 @@ if __name__ == "__main__":
     # Collect jobs in intervals
     job_intervals = collect_jobs(schedule=schedule, intervals=intervals)
 
+    # Write the schedule to a CSV
+    schedule_rows = [[interval, ", ".join(jobs)] for interval, jobs in job_intervals]
+    write_to_csv(args.schedule_output, schedule_rows, ["Interval", "Jobs"])
+
+    # Write job counts to a separate CSV
+    job_count_rows = [[interval, len(jobs)] for interval, jobs in job_intervals]
+    write_to_csv(args.job_counts_output, job_count_rows, ["Interval", "Number of Jobs"])
+
     # Plot the intervals
     plot_job_intervals(job_intervals, title=f"Jobs per {interval}-Minute Interval ({scope})")
-
-    # Print job intervals
-    for interval_label, jobs in job_intervals:
-        print(f"{interval_label}: {len(jobs)} jobs")
+    #
+    # # Print job intervals
+    # for interval_label, jobs in job_intervals:
+    #     print(f"{interval_label}: {len(jobs)} jobs")
