@@ -25,9 +25,13 @@
 
 import argparse
 import csv
+import json
 import os
 import re
 import sys
+import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
+from typing import List, Tuple
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../../Python-utilities")
@@ -36,11 +40,7 @@ if not os.path.isdir(dk_lib_dir):
 sys.path.insert(0, dk_lib_dir)
 
 from lib.logger import error, log_warning
-from datetime import datetime, timedelta
-from typing import List, Tuple
-import matplotlib.pyplot as plt
 from lib.file_utils import read_file
-
 
 
 def parse_crontab(crontab_lines: list[str]) -> list[dict[str, str]]:
@@ -53,7 +53,7 @@ def parse_crontab(crontab_lines: list[str]) -> list[dict[str, str]]:
         r"(\S+)\s+"  # day of month
         r"(\S+)\s+"  # month
         r"(\S+)\s+"  # day of week
-        r"(.*)"      # command
+        r"(.*)"  # command
     )
 
     for line in crontab_lines:
@@ -91,9 +91,9 @@ def expand_time_field(field: str, max_value: int) -> List[int]:
 
 
 def generate_intervals(
-    interval: int,
-    scope: str,
-    reference_date: datetime = None
+        interval: int,
+        scope: str,
+        reference_date: datetime = None
 ) -> List[Tuple[datetime, datetime]]:
     """
     Generates time intervals based on the interval and scope.
@@ -130,8 +130,8 @@ def generate_intervals(
 
 
 def collect_jobs(
-    schedule: list[dict[str, str]],
-    intervals: list[tuple[datetime, datetime]]
+        schedule: list[dict[str, str]],
+        intervals: list[tuple[datetime, datetime]]
 ) -> List[Tuple[str, List[str]]]:
     """
     Collects jobs for each interval.
@@ -182,24 +182,61 @@ def write_to_csv(file_path: str, rows: List[List[str]], headers: List[str]):
         writer.writerows(rows)
 
 
+def write_to_json(job_intervals, output_file):
+    """
+    Writes job intervals to a JSON file in the specified format.
+
+    Args:
+        job_intervals (list): List of (interval_label, jobs) tuples.
+        output_file (str): Path to the output JSON file.
+    """
+    # Create the JSON structure
+    json_data = [
+        {
+            "time": interval,
+            "numberOfJobs": len(jobs),
+            "jobs": jobs
+        }
+        for interval, jobs in job_intervals
+    ]
+
+    # Sort the data by numberOfJobs in descending order
+    json_data.sort(key=lambda entry: entry["numberOfJobs"], reverse=True)
+
+    # Write to the JSON file
+    with open(output_file, "w", encoding="utf-8") as json_file:
+        json.dump(json_data, json_file, indent=4)
+
+
 # Example Usage
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Create a graph and schedule from crontab.")
     parser.add_argument(
         "--crontab-file", "-c",
-        default=f"{this_dir}/crontab.csv",
-        help=f'File with crontab entries, defaults to "{this_dir}/crontab.csv"'
+        default=f"crontab.txt",
+        help=f'File with crontab entries, defaults to "crontab.csv"'
     )
-    parser.add_argument("--interval", "-i", type=int, default=1, help="Interval size in minutes, defaults to 1")
-    parser.add_argument("--scope", "-s", default="day", help="Scope of the schedule, e.g., day/12:00-18:00")
-    parser.add_argument(
-        "--reference-date", "-r",
-        default=None,
-        help=f"Reference date in format 'YYYY-mm-dd', defaults to {datetime.now().date()}"
-    )
-    parser.add_argument("--schedule-output", "-so", default="minute_schedule.csv", help="Output CSV for schedule.")
-    parser.add_argument("--job-counts-output", "-jo", default="job_counts.csv", help="Output CSV for job counts.")
+    parser.add_argument("--interval", "-i",
+                        type=int,
+                        default=1,
+                        help="Interval size in minutes, defaults to 1")
+    parser.add_argument("--scope", "-s",
+                        default="day",
+                        help="Scope of the schedule, e.g., day/12:00-18:00")
+    parser.add_argument("--reference-date", "-r",
+                        default=None,
+                        help=f"Reference date in format 'YYYY-mm-dd', defaults to {datetime.now().date()}")
+    parser.add_argument("--timeline-output", "-t",
+                        default="timeline.csv",
+                        help="Output timeline for jobs.")
+    parser.add_argument("--job-counts-output", "-j",
+                        default="job_counts.csv",
+                        help="Output CSV for job counts.")
+    parser.add_argument("--plot", "-p",
+                        default=False,
+                        action="store_true",
+                        help="display a plot of number of jobs per time interval.")
 
     args = parser.parse_args()
 
@@ -225,16 +262,17 @@ if __name__ == "__main__":
     job_intervals = collect_jobs(schedule=schedule, intervals=intervals)
 
     # Write the schedule to a CSV
-    schedule_rows = [[interval, ", ".join(jobs)] for interval, jobs in job_intervals]
+    schedule_rows = [[interval] + jobs for interval, jobs in job_intervals]
+
     write_to_csv(args.schedule_output, schedule_rows, ["Interval", "Jobs"])
+
+    # Write to a JSON file
+    write_to_json(job_intervals=job_intervals, output_file=f"{this_dir}/job_schedule.json")
 
     # Write job counts to a separate CSV
     job_count_rows = [[interval, len(jobs)] for interval, jobs in job_intervals]
     write_to_csv(args.job_counts_output, job_count_rows, ["Interval", "Number of Jobs"])
 
-    # Plot the intervals
-    plot_job_intervals(job_intervals, title=f"Jobs per {interval}-Minute Interval ({scope})")
-    #
-    # # Print job intervals
-    # for interval_label, jobs in job_intervals:
-    #     print(f"{interval_label}: {len(jobs)} jobs")
+    if args.plot:
+        # Plot the intervals
+        plot_job_intervals(job_intervals, title=f"Jobs per {interval}-Minute Interval ({scope})")
