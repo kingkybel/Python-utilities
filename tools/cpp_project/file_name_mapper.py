@@ -113,6 +113,7 @@ class FileNameMapper:
         if isinstance(comment_style, str):
             comment_style = CommentStyle.from_string(comment_style)
         self.__comment_style = comment_style
+        # pylint: disable=unused-private-member
         self.__tag_replacements = {}
 
     def template_file(self) -> str:

@@ -58,7 +58,7 @@ class FindSortField(ExtendedEnum):
 
 class FileSystemObjectType(ExtendedFlag):
     NONE = 0
-    FILE = auto()
+    FILE = 1
     EMPTY_DIR = auto()
     NOT_EMPTY_DIR = auto()
     STALE_LINK = auto()
@@ -207,8 +207,8 @@ def touch(paths: (str | PathLike | list),
             if os.path.islink(path) or os.path.isdir(path):
                 set_file_last_modified(path, dt=datetime.now())
             else:
-                f = open(path, "a")
-                f.close()
+                with open(path, "a", encoding="utf-8") as f:
+                    f.close()
             touched.append(path)
     else:
         return 0, []

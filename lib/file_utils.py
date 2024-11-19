@@ -68,17 +68,18 @@ def generate_incremental_filename(filename: (str | PathLike), allow_system_paths
     return valid_absolute_path(full_path, allow_system_paths=allow_system_paths)
 
 
-def read_file(filename: (str | PathLike), dryrun: bool = False) -> str:
+def read_file(filename: (str | PathLike), encoding: str = "utf-8", dryrun: bool = False) -> str:
     """
     Read a text file and return the contents as string.
-    :param filename: filename to read.
-    :param dryrun: if set to True, then do not execute but just output a comment describing the command.
+    :param: filename: filename to read.
+    :param: encoding: the encoding to use for reading the file.
+    :param: dryrun: if set to True, then do not execute but just output a comment describing the command.
     :return: the contents of the file as string.
     """
     content = ""
     log_command(f"read_file {filename}", extra_comment=f"Python command in {__file__}", dryrun=dryrun)
     if not dryrun:
-        with open(filename, "r") as file:
+        with open(filename, "r", encoding=encoding) as file:
             content = file.read()
     return content
 
@@ -87,6 +88,7 @@ def write_file(filename: (str | PathLike),
                content: (str | list[str]) = None,
                mode: str = "w",
                allow_system_paths: bool = False,
+               encoding: str = "utf-8",
                dryrun: bool = False):
     """
     Write the given content to the given filename.
@@ -94,6 +96,7 @@ def write_file(filename: (str | PathLike),
     :param: content: string or list of strings to write.
     :param: mode: one of 'a': append, 'w': write
     :param: allow_system_paths: whether system paths are allowed
+    :param: encoding: the encoding to use for writing.
     :param: dryrun: if set to True, then do not execute but just output a comment describing the command.
     """
     filename = valid_absolute_path(filename, allow_system_paths=allow_system_paths)
@@ -107,15 +110,17 @@ def write_file(filename: (str | PathLike),
         if is_empty_string(content):
             content = ""
         if isinstance(content, str):
-            content = [content]
-        if len(content) > 0:
-            last = content[len(content) - 1]
+            content_ = [content]
+        else:
+            content_ = content
+        if len(content_) > 0:
+            last = content_[len(content_) - 1]
             # add line feeds to lines 0 .. len(contents) - 2
-            content = [l + "\n" for l in content[:len(content) - 1]]
+            content_ = [l + "\n" for l in content_[:len(content_) - 1]]
             # no line-feed at the last line
-            content.append(last)
-        with open(filename, mode) as file:
-            file.writelines(content)
+            content_.append(last)
+        with open(filename, mode, encoding=encoding) as file:
+            file.writelines(content_)
 
 
 def extract_dict_from_string(content: (str | list[str])):

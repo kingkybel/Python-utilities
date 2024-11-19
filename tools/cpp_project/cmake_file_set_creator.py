@@ -26,8 +26,6 @@ import os
 import sys
 from os import PathLike
 
-from tools.cpp_project.template_file_set_creator import TemplateFileSetCreator
-
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../../Python-utilities")
 if not os.path.isdir(dk_lib_dir):
@@ -41,6 +39,8 @@ from lib.basic_functions import is_empty_string
 from tools.cpp_project.grpc_file_set_creator import GrpcFileSetCreator
 from tools.cpp_project.file_name_mapper import FileNameMapper, CommentStyle
 from tools.cpp_project.abc_file_set_creator import ABCFileSetCreator
+from tools.cpp_project.template_file_set_creator import TemplateFileSetCreator
+
 
 
 class CmakeFileSetCreator(ABCFileSetCreator):

@@ -85,7 +85,7 @@ def main():
 
     if gtest_suites:
         output_file = os.path.join(project_folder, 'test_generated.cpp')
-        with open(output_file, 'w') as f:
+        with open(output_file, 'w', encoding="utf-8") as f:
             f.write("#include <gtest/gtest.h>\n")
             f.write("#include <iostream>\n")
             f.write("#include <string>\n")

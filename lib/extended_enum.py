@@ -34,8 +34,7 @@ if not os.path.isdir(dk_lib_dir):
 sys.path.insert(0, dk_lib_dir)
 
 # pylint: disable=wrong-import-position
-from lib.basic_functions import is_empty_string
-from lib.exceptions import StringUtilError, ExtendedEnumError
+from lib.exceptions import ExtendedEnumError
 
 
 class EnumListType(Flag):
@@ -44,7 +43,7 @@ class EnumListType(Flag):
     NAME = auto()
     STR = auto()
 
-
+# pylint: disable=unused-argument
 def always_match(any_obj):
     """
     Predicate that always matches for any object of any type.
@@ -54,63 +53,51 @@ def always_match(any_obj):
     return True
 
 
-def match_one_alternative(partial: str,
-                          alternatives: (str | list[str]),
-                          delimiter: str = "|",
-                          predicate=always_match,
-                          flags: re.RegexFlag = re.IGNORECASE,
-                          consecutive_only: bool = False) -> tuple[(str | None), int, list]:
+def match_one_alternative(
+        partial: str,
+        alternatives: str | list[str],
+        delimiter: str = "|",
+        predicate=lambda x: True,
+        flags: re.RegexFlag = re.IGNORECASE,
+        consecutive_only: bool = False,
+) -> tuple[str | None, int, list[str]]:
     """
-    Matches a string to a unique alternative
-    :param: partial: a partial string to be matched to any of the alternatives.
-    :param: alternatives: if given as string, then use the delimiter to split it into a list of alternatives,
-                         otherwise use the given list of strings.
-    :param: delimiter: delimiter used to split the alternatives string into a list.
-    :param: predicate: a unary predicate, this can be used to select only from a subset of the alternatives.
-    :param: flags: regular expression flags.
-    :param: consecutive_only: If true, then the characters in the partial have to be consecutive, otherwise only their
-                             order is important.
-    :return: returns a tuple:
-                        — one alternative string or None.
-                        — a return code (0 means success).
-                        — a list of all matches.
+    Matches a string to a unique alternative.
+
+    :param: partial: A partial string to match against alternatives.
+    :param: alternatives: A string (split by `delimiter`) or a list of strings to match against.
+    :param: delimiter: Delimiter to split the alternatives string if it's not a list.
+    :param: predicate: A function to filter alternatives.
+    :param: flags: Regular expression flags.
+    :param: consecutive_only: If True, characters in `partial` must be consecutive; otherwise, order suffices.
+    :return: A tuple:
+        - Matched alternative (or None if no unique match exists).
+        - Return code: 0 (success), -1 (failure).
+        - List of all matching alternatives.
     """
-    if is_empty_string(partial):
-        raise StringUtilError("Cannot match an empty partial to an alternative (all would match)")
+    if not partial:
+        raise ValueError("Partial string cannot be empty.")
+
+    # Convert `alternatives` to a list if it's a string.
     if isinstance(alternatives, str):
         alternatives = alternatives.split(delimiter)
-    for i in range(0, len(alternatives)):
-        if is_empty_string(alternatives[i]):
-            raise StringUtilError(f"Alternative '{i}' in {alternatives} is empty. Cannot match.")
 
-    if not consecutive_only:
-        new_partial = ""
-        for i, v in enumerate(partial):
-            new_partial += v
-            if i < len(partial) - 1:
-                new_partial += ".*"
+    # Check for empty alternatives.
+    empty_alts = [alt for alt in alternatives if not alt]
+    if empty_alts:
+        raise ValueError(f"Alternatives contain empty strings: {empty_alts}")
 
-        partial = new_partial
+    # Construct the search pattern.
+    partial_pattern = ".*".join(re.escape(char) for char in partial) if not consecutive_only else re.escape(partial)
+    regex = re.compile(f".*{partial_pattern}.*", flags)
 
-    filtered_matches = []
-    for alternative in alternatives:
-        if isinstance(alternative, (ExtendedEnum, ExtendedFlag)):
-            alt_value = alternative.value
-        else:
-            alt_value = alternative
-        if flags is None:
-            alternative_re = re.compile(pattern=f".*{partial}.*")
-        else:
-            alternative_re = re.compile(pattern=f".*{partial}.*", flags=flags)
-        matches = alternative_re.findall(alt_value)
-        if len(matches) > 0:
-            if predicate(alternative):
-                filtered_matches.append(alternative)
+    # Filter and match alternatives.
+    matches = [alt for alt in alternatives if regex.search(alt) and predicate(alt)]
 
-    if len(filtered_matches) != 1:
-        return None, -1, filtered_matches
-
-    return filtered_matches[0], 0, filtered_matches
+    # Determine result based on the number of matches.
+    if len(matches) == 1:
+        return matches[0], 0, matches
+    return None, -1, matches
 
 
 def _list(cls: (Flag | Enum), list_type=EnumListType.ITEM):
@@ -151,10 +138,10 @@ def _from_string(cls: (Flag | Enum), partial: str, predicate=always_match):
         tried_alternatives.append((alternatives, duplicates))
 
     error_message = f"Cannot match partial '{partial}' to unique enum-value\n"
-    for i in range(0, len(tried_alternatives)):
+    for i, tried_alternative in enumerate(tried_alternatives):
         dupe = "-no match-"
-        if len(tried_alternatives[i][1]) > 1:
-            dupe = f"multiple matches {tried_alternatives[i][1]}"
+        if len(tried_alternative[1]) > 1:
+            dupe = f"multiple matches {tried_alternative[1]}"
 
         error_message += f"{tried_alternatives[i][0]}:\t{dupe}\n"
     raise ExtendedEnumError(error_message)
@@ -177,6 +164,13 @@ class ExtendedEnum(Enum):
     def from_string(cls, partial: str, predicate=always_match):
         return _from_string(cls=cls, partial=partial, predicate=predicate)
 
+    def __or__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__class__(self.value | other.value)
+        return NotImplemented
+
+    def __ror__(self, other):
+        return self.__or__(other)
 
 class ExtendedFlag(Flag):
     """
@@ -194,3 +188,11 @@ class ExtendedFlag(Flag):
     @classmethod
     def from_string(cls, partial: str, predicate=always_match):
         return _from_string(cls=cls, partial=partial, predicate=predicate)
+
+    def __or__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__class__(self.value | other.value)
+        return NotImplemented
+
+    def __ror__(self, other):
+        return self.__or__(other)

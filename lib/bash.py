@@ -127,6 +127,7 @@ def assert_tools_installed(tools: (str | list[str])):
               "to run this script (or add location to PATH variable)")
 
 
+# pylint: disable=unused-argument
 def check_correct_tool_version(tool: str, version: str) -> bool:
     if not is_tool_installed(tool):
         return False
@@ -247,6 +248,8 @@ def run_interactive_command(cmd: (str | list),
         master_fd, slave_fd = pty.openpty()
 
         try:
+            # this is interactive and has no threads
+            # pylint: disable=subprocess-popen-preexec-fn
             with subprocess.Popen(cmd,
                                   # cwd=cwd,
                                   preexec_fn=os.setsid,

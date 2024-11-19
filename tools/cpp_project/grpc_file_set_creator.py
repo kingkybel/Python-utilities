@@ -79,6 +79,7 @@ class GrpcFileSetCreator(ABCFileSetCreator):
                 self.__request = self.__service
                 if len(proto_service_request) > 3:
                     self.__request = proto_service_request[3]
+        # pylint: disable=unused-private-member
         self.__tag_dict = self.get_tag_replacements()
 
     @overrides(ABCFileSetCreator)
@@ -144,10 +145,10 @@ class GrpcFileSetCreator(ABCFileSetCreator):
             comment_style=CommentStyle.CPP))
 
         if self.__add_docker:
-            for tmplt in [("Dockerfile._server", CommentStyle.DOCKER),
+            for tmplt in (("Dockerfile._server", CommentStyle.DOCKER),
                           ("Dockerfile._client", CommentStyle.DOCKER),
                           ("docker-compose.client-server.yml", CommentStyle.DOCKER),
-                          (".client-server.env", CommentStyle.DOCKER)]:
+                          (".client-server.env", CommentStyle.DOCKER)):
                 target_name = tmplt[0]
                 target_name = target_name.replace(".client-server.", f".{self.service().lower()}.")
                 target_name = target_name.replace("._server", f".{self.service().lower()}_server")

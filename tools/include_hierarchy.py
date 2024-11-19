@@ -90,10 +90,10 @@ if __name__ == "__main__":
         included_files = also_included_by(include, included_files)
 
     hierarchy = {}
-    for include in included_files:
+    for include, inc_by_list in included_files.items():  # Use dict.items() for iteration
         hierarchy[include] = 0
-        for inc_by in included_files[include]:
-            if inc_by not in hierarchy.keys():
+        for inc_by in inc_by_list:  # Iterate directly over the list
+            if inc_by not in hierarchy:  # Avoid .keys() for membership checks
                 hierarchy[inc_by] = 0
             hierarchy[inc_by] += 1
 
