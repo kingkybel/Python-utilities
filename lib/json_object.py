@@ -103,21 +103,21 @@ class JsonObject:
         obj = JsonObject.convert_sets_to_vectors(obj)
         self.from_string(json.dumps(obj))
 
-    def from_file(self, filename: (str | PathLike)):
+    def from_file(self, filename: (str | PathLike), encoding="utf-8"):
         if not os.path.isfile(filename):
             raise JsonGeneralError(f"Cannot load json from file '{filename}': file does not exist")
-        file = open(filename)
-        try:
-            self.json_ = json.load(file)
-        except json.JSONDecodeError:
+        with open(filename, encoding=encoding) as file:
+            try:
+                self.json_ = json.load(file)
+            except json.JSONDecodeError:
+                file.close()
+                raise
             file.close()
-            raise
-        file.close()
 
-    def to_file(self, filename: (str | PathLike), indent: int = 4, dryrun: bool = False):
+    def to_file(self, filename: (str | PathLike), indent: int = 4, encoding:str="utf-8", dryrun: bool = False):
         log_command(f"JsonObject.to_file({filename})", dryrun=dryrun)
         if not dryrun:
-            with open(filename, 'w') as file:
+            with open(filename, 'w', encoding=encoding) as file:
                 json.dump(self.json_, file, indent=indent)
 
     def empty(self, obj=None) -> bool:
@@ -178,10 +178,9 @@ class JsonObject:
                 return default
             raise JsonKeyError(key=0, keys=keys, json_obj=self.json_)
         iterator = self.json_
-        for i in range(0, len(keys)):
+        for i, cur_key in enumerate(keys):
             try:
                 is_last = (i == len(keys) - 1)
-                cur_key = keys[i]
                 if isinstance(cur_key, JsonIndexKey):
                     if not isinstance(iterator, list):
                         if default is not None:
@@ -208,10 +207,10 @@ class JsonObject:
                     if is_last:
                         try:
                             return iterator[cur_key.key]
-                        except KeyError:
+                        except KeyError as e:
                             if default is not None:
                                 return default
-                            raise JsonKeyError(key=i, keys=keys, json_obj=iterator)
+                            raise JsonKeyError(key=i, keys=keys, json_obj=iterator) from e
                     iterator = iterator[cur_key.key]
             except JsonKeyError:
                 raise
@@ -251,10 +250,9 @@ class JsonObject:
         prev_iterator = None
         prev_key = None
         iterator = self.json_
-        for i in range(0, len(keys)):
+        for i, cur_key in enumerate(keys):
             is_first = (i == 0)
             is_last = (i == len(keys) - 1)
-            cur_key = keys[i]
             next_key = None
             next_key_is_list = False
             if not is_last:
@@ -280,7 +278,7 @@ class JsonObject:
                     index = len(iterator) - 1
                 else:
                     index = cur_key.index
-                    for j in range(len(iterator), int(index) + 1):
+                    for _ in range(len(iterator), int(index) + 1):
                         iterator.append(blank_object_type())
 
                 if is_last:
@@ -318,7 +316,7 @@ class JsonObject:
             raise JsonKeyError(key=0, keys=keys, json_obj=self.json_)
         iterator = self.json_
         cur_key = keys[0]
-        for i in range(0, len(keys)):
+        for i, cur_key in enumerate(keys):
             try:
                 is_last = (i == len(keys) - 1)
                 cur_key = keys[i]

@@ -96,8 +96,7 @@ class JsonKeyPath:
             key_path = key_path.split("/")
         if len(key_path) == 0:
             raise JsonPathFormatError(path_string="<EMPTY-PATH!!>")
-        for i in range(0, len(key_path)):
-            partial = key_path[i]
+        for partial in key_path:
             if not isinstance(partial, (str | int)):
                 raise JsonPathFormatError(path_string="/".join(key_path),
                                           extra_info="All elements in key-path list must be of type string or int, "
