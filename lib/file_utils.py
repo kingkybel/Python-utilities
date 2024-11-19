@@ -21,6 +21,7 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import os
 import os.path
 import sys
@@ -32,6 +33,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.bash import assert_tools_installed, run_command
 from lib.basic_functions import valid_absolute_path, is_empty_string
 from lib.file_system_object import mkdir
@@ -88,12 +90,11 @@ def write_file(filename: (str | PathLike),
                dryrun: bool = False):
     """
     Write the given content to the given filename.
-    :param filename: filename to read.
-    :param content: string or list of strings to write.
-    :param mode: one of 'a': append, 'w': write
-    :param allow_system_paths: whether system paths are allowed
-    :param dryrun: if set to True, then do not execute but just output a comment describing the command.
-    :return:
+    :param: filename: filename to read.
+    :param: content: string or list of strings to write.
+    :param: mode: one of 'a': append, 'w': write
+    :param: allow_system_paths: whether system paths are allowed
+    :param: dryrun: if set to True, then do not execute but just output a comment describing the command.
     """
     filename = valid_absolute_path(filename, allow_system_paths=allow_system_paths)
     log_command(f"write_file({filename}, mode='{mode}')",
@@ -118,7 +119,7 @@ def write_file(filename: (str | PathLike),
 
 
 def extract_dict_from_string(content: (str | list[str])):
-    key_val_dict = dict()
+    key_val_dict = {}
     lines = content.split("\n")
     for line in lines:
         key_val = squeeze_chars(source=(line.split("#")[0]), squeeze_set="\t ").split("=")
@@ -146,7 +147,7 @@ def parse_env_file(filename: (str | PathLike), dryrun: bool = False) -> dict[str
     :return: dictionary of key/value pairs.
     """
     content = read_file(filename=filename, dryrun=dryrun)
-    key_val_dict = dict()
+    key_val_dict = {}
     if not dryrun:
         key_val_dict = extract_dict_from_string(content)
     return key_val_dict
@@ -155,7 +156,7 @@ def parse_env_file(filename: (str | PathLike), dryrun: bool = False) -> dict[str
 def get_git_config(path: (str | PathLike) = None,
                    allow_system_paths: bool = False,
                    dryrun: bool = False) -> dict[str, str]:
-    key_val_dict = dict()
+    key_val_dict = {}
     if path is None:
         path = valid_absolute_path(".", allow_system_paths=allow_system_paths)
     assert_tools_installed("git")

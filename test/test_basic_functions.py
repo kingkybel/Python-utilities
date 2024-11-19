@@ -33,6 +33,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.basic_functions import valid_absolute_path
 from lib.logger import LogLevels, set_logger
 
@@ -61,9 +62,10 @@ class BasicFunctionsTests(unittest.TestCase):
 
         for path in unprotected_paths:
             has_thrown = False
-            valid_path = None
+            # valid_path = None
             try:
-                valid_path = valid_absolute_path(path)
+                # valid_path = valid_absolute_path(path)
+                valid_absolute_path(path)
             except SystemError as e:
                 # print(e)
                 has_thrown = True

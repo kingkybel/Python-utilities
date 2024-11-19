@@ -21,6 +21,7 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 from abc import ABC, abstractmethod
 
 

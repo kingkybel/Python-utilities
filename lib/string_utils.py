@@ -21,6 +21,7 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import itertools
 import keyword
 import os
@@ -28,7 +29,6 @@ import random
 import re
 import string
 import sys
-
 from colorama import Style, Fore, init as colorama_init
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
@@ -37,6 +37,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.basic_functions import is_empty_string
 from lib.exceptions import StringUtilError
 
@@ -49,11 +50,11 @@ TRUE_STRINGS = ["true", "t", "yes", "y", "1"]
 def input_value(var_name: str, help_str: str, var_type=str, regex_str=None, constraint: (range | list) = None):
     """
     An interactive prompt to enter a value.
-    :param var_name: The name of the variable to enter. Can be any string.
-    :param help_str: A string describing the desired value-range.
-    :param var_type: the type of the value; one of (int, float, bool, str)
-    :param regex_str: a regular expression that the value must conform to
-    :param constraint: alternatively a list or range of valid values.
+    :param: var_name: The name of the variable to enter. Can be any string.
+    :param: help_str: A string describing the desired value-range.
+    :param: var_type: the type of the value; one of (int, float, bool, str)
+    :param: regex_str: a regular expression that the value must conform to
+    :param: constraint: alternatively a list or range of valid values.
     :return: the entered value in the correct type.
     """
     reval = None
@@ -82,18 +83,16 @@ def input_value(var_name: str, help_str: str, var_type=str, regex_str=None, cons
         elif isinstance(constraint, range):
             if int(reval) not in constraint:
                 reval = None
-        else:
-            if reval not in constraint:
+        elif reval not in constraint:
                 reval = None
 
         if var_type == bool:
             if reval in TRUE_STRINGS:
                 return True
-            else:
-                return False
-        elif var_type == int:
+            return False
+        if var_type == int:
             return int(reval)
-        elif var_type == float:
+        if var_type == float:
             return float(reval)
         return reval
 
@@ -128,7 +127,7 @@ def squeeze_chars(source: str, squeeze_set: str, replace_with: str = ' ') -> str
 def remove_control_chars(text: str) -> str:
     """
     Remove ASCII control characters from a string.
-    :param text: the string containing control characters.
+    :param: text: the string containing control characters.
     :return: the same string without control characters.
     """
     text = text.encode("ascii", "ignore")
@@ -195,8 +194,8 @@ def normalise_sentence(sentence: str,
 def get_random_string(length, letters: str = None) -> str:
     """
     Create a random string of given length.
-    :param length: number of characters.
-    :param letters: characters to choose from.
+    :param: length: number of characters.
+    :param: letters: characters to choose from.
     :return: a random string.
     """
     # choose from all lowercase letter
@@ -208,9 +207,9 @@ def get_random_string(length, letters: str = None) -> str:
 def contains_at_least_n_of(text, specified_words: (str | list[str]) = None, minimum: int = 10) -> bool:
     """
     Check whether a text contains at least `minimum` of the specified words.
-    :param text: the text to check.
-    :param specified_words: a list of words to look for.
-    :param minimum: minimum number of words to be found.
+    :param: text: the text to check.
+    :param: specified_words: a list of words to look for.
+    :param: minimum: minimum number of words to be found.
     :return: True if at least `minimum` words are in tex, False otherwise.
     """
     if specified_words is None:

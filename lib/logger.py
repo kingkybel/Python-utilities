@@ -21,6 +21,7 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import datetime
 import logging
 import os
@@ -36,6 +37,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.basic_functions import is_empty_string, now_string
 from lib.extended_enum import ExtendedEnum
 from lib.overrides import overrides
@@ -73,7 +75,7 @@ class CustomFormatter(logging.Formatter):
     def format(self, record) -> str:
         """
         Overriding the format function in order to handle custom log-levels appropriately.
-        :param record: the logging record.
+        :param: record: the logging record.
         :return: the formatted record as string.
         """
         # remember the original
@@ -95,8 +97,8 @@ class CustomFormatter(logging.Formatter):
     def formatTime(self, record, datefmt=None):
         """
         Higher precision timestamps.
-        :param record: the log-record to format.
-        :param datefmt:  the format string for dates and timestamps.
+        :param: record: the log-record to format.
+        :param: datefmt:  the format string for dates and timestamps.
         :return: the formatted timestamp as string.
         """
         ct = datetime.datetime.fromtimestamp(record.created)
@@ -138,7 +140,7 @@ class ScriptLogger:
     def set_verbosity(self, verbosity: (str | LogLevels) = LogLevels.INFO):
         """
         Set the verbosity (log-level) of the logger.
-        :param verbosity: LogLevels - value.
+        :param: verbosity: LogLevels - value.
         :return: None
         """
         if isinstance(verbosity, str):
@@ -195,9 +197,7 @@ class ScriptLogger:
         if self.do_file_log:
             logging.log(level=LogLevels.COMMAND.logging_level(), msg=f"{command_str}{comment}")
         if self.verbosity.logging_level() <= LogLevels.COMMAND.logging_level():
-            spaces_len = 100 - len(command_str) - len(comment)
-            if spaces_len < 1:
-                spaces_len = 1
+            spaces_len = max(100 - len(command_str) - len(comment), 1)
             spaces = " " * spaces_len
             print(f"{Fore.MAGENTA}{command_str}{Fore.LIGHTBLACK_EX}{spaces}{comment}{Style.RESET_ALL}")
 

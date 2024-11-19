@@ -21,8 +21,11 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import os
 import sys
+import re
+from enum import Flag, Enum, auto
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
@@ -30,9 +33,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
-import re
-from enum import Flag, Enum, auto
-
+# pylint: disable=wrong-import-position
 from lib.basic_functions import is_empty_string
 from lib.exceptions import StringUtilError, ExtendedEnumError
 
@@ -47,7 +48,7 @@ class EnumListType(Flag):
 def always_match(any_obj):
     """
     Predicate that always matches for any object of any type.
-    :param any_obj: placeholder object
+    :param: any_obj: placeholder object
     :return: always true.
     """
     return True
@@ -61,13 +62,13 @@ def match_one_alternative(partial: str,
                           consecutive_only: bool = False) -> tuple[(str | None), int, list]:
     """
     Matches a string to a unique alternative
-    :param partial: a partial string to be matched to any of the alternatives.
-    :param alternatives: if given as string, then use the delimiter to split it into a list of alternatives,
+    :param: partial: a partial string to be matched to any of the alternatives.
+    :param: alternatives: if given as string, then use the delimiter to split it into a list of alternatives,
                          otherwise use the given list of strings.
-    :param delimiter: delimiter used to split the alternatives string into a list.
-    :param predicate: a unary predicate, this can be used to select only from a subset of the alternatives.
-    :param flags: regular expression flags.
-    :param consecutive_only: If true, then the characters in the partial have to be consecutive, otherwise only their
+    :param: delimiter: delimiter used to split the alternatives string into a list.
+    :param: predicate: a unary predicate, this can be used to select only from a subset of the alternatives.
+    :param: flags: regular expression flags.
+    :param: consecutive_only: If true, then the characters in the partial have to be consecutive, otherwise only their
                              order is important.
     :return: returns a tuple:
                         — one alternative string or None.
@@ -91,9 +92,9 @@ def match_one_alternative(partial: str,
 
         partial = new_partial
 
-    filtered_matches = list()
+    filtered_matches = []
     for alternative in alternatives:
-        if isinstance(alternative, ExtendedEnum) or isinstance(alternative, ExtendedFlag):
+        if isinstance(alternative, (ExtendedEnum, ExtendedFlag)):
             alt_value = alternative.value
         else:
             alt_value = alternative
@@ -113,7 +114,7 @@ def match_one_alternative(partial: str,
 
 
 def _list(cls: (Flag | Enum), list_type=EnumListType.ITEM):
-    reval_list = list()
+    reval_list = []
     for item in cls:
         match list_type:
             case EnumListType.ITEM:
@@ -128,14 +129,13 @@ def _list(cls: (Flag | Enum), list_type=EnumListType.ITEM):
 
 
 def _from_string(cls: (Flag | Enum), partial: str, predicate=always_match):
-    alternatives_list = list()
+    alternatives_list = []
     items = _list(cls, EnumListType.ITEM)
     if isinstance(items[0].value, str):
         alternatives_list.append((EnumListType.VALUE, _list(cls, EnumListType.VALUE)))
     alternatives_list.append((EnumListType.NAME, _list(cls, EnumListType.NAME)))
     alternatives_list.append((EnumListType.STR, _list(cls, EnumListType.STR)))
-    found_duplicates = list()
-    tried_alternatives = list()
+    tried_alternatives = []
     for tp, alternatives in alternatives_list:
         matched, reval, duplicates = match_one_alternative(partial=partial,
                                                            alternatives=alternatives,

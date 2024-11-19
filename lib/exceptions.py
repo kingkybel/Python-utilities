@@ -21,6 +21,8 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
+
 class BaseScriptError(Exception):
     def __init__(self, message: str = None):
         if message is None:

@@ -21,18 +21,19 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import glob
 import grp
 import os
 import pwd
 import shutil
 import sys
-import psutil
 from datetime import datetime
-from distutils.dir_util import copy_tree
 from enum import auto
 from os import PathLike
 from pathlib import Path
+from shutil import copytree
+import psutil
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
@@ -40,6 +41,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.basic_functions import is_empty_string, valid_absolute_path
 from lib.extended_enum import ExtendedFlag, ExtendedEnum, always_match
 from lib.logger import error, log_warning, log_command
@@ -79,15 +81,13 @@ class FileSystemObjectType(ExtendedFlag):
             if os.path.isdir(file_system_object):
                 if len((os.listdir(file_system_object))) == 0:
                     return FileSystemObjectType.EMPTY_DIR
-                else:
-                    return FileSystemObjectType.NOT_EMPTY_DIR
+                return FileSystemObjectType.NOT_EMPTY_DIR
             if os.path.islink(file_system_object):
                 return FileSystemObjectType.NOT_STALE_LINK
             if os.path.ismount(file_system_object):
                 return FileSystemObjectType.MOUNT
-        else:
-            if os.path.islink(file_system_object):
-                return FileSystemObjectType.STALE_LINK
+        elif os.path.islink(file_system_object):
+            return FileSystemObjectType.STALE_LINK
         return FileSystemObjectType.NONE
 
     @classmethod
@@ -123,7 +123,7 @@ def make_path_list(paths: (str | PathLike | list)) -> list[str]:
         paths = [paths]
     if len(paths) == 0:
         error("path-list is empty")
-    reval_paths = list()
+    reval_paths = []
     for path in paths:
         if not isinstance(path, (str, PathLike)):
             error(f"paths contains path with invalid type '{path}'({type(path)})")
@@ -135,7 +135,7 @@ def make_path_list(paths: (str | PathLike | list)) -> list[str]:
 
 
 def glob_path_patterns(paths: (str | PathLike | list), glob_mode: GlobMode = GlobMode.FAIL_ON_EMPTY) -> list:
-    results = list()
+    results = []
     paths = make_path_list(paths)
 
     for path in paths:
@@ -181,7 +181,7 @@ def remove(paths: (str | PathLike | list),
 
 def set_file_last_modified(paths: (str | PathLike | list), dt: datetime, dryrun: bool = False) -> list:
     paths = glob_path_patterns(paths, glob_mode=GlobMode.WARN_EMPTY)
-    modified = list()
+    modified = []
     if not dryrun:
         for path in paths:
             dt_epoch = dt.timestamp()
@@ -196,7 +196,7 @@ def touch(paths: (str | PathLike | list),
           dryrun: bool = False):
     paths = glob_path_patterns(paths, glob_mode=glob_mode)
     if not dryrun:
-        touched = list()
+        touched = []
         for path in paths:
             path = valid_absolute_path(path, allow_system_paths=allow_system_paths)
             parent_path = os.path.dirname(path)
@@ -225,7 +225,7 @@ def mkdir(paths: (str | PathLike | list),
           dryrun: bool = False):
     paths = glob_path_patterns(paths, glob_mode=GlobMode.KEEP_EMPTY)
     log_command(f"mkdir {paths}", dryrun=dryrun)
-    created_paths = list()
+    created_paths = []
     if not dryrun:
         for path in paths:
             path = valid_absolute_path(path, allow_system_paths=allow_system_paths)
@@ -238,10 +238,10 @@ def mkdir(paths: (str | PathLike | list),
                 created_paths.append(path)
             except FileExistsError:
                 created_paths.append(path)
-                pass
+
     if len(created_paths) == 1 and expect_1:
         return created_paths[0]
-    elif expect_1:
+    if expect_1:
         error(f"Expected to create exactly one directory but created {len(created_paths)} {created_paths}")
     return created_paths
 
@@ -274,10 +274,10 @@ def current_dir() -> str:
         cwd = os.getcwd()
     except OSError:
         cwd = psutil.Process(os.getpid()).cwd()
-    return valid_absolute_path(cwd, protect_system_patterns=list())
+    return valid_absolute_path(cwd, protect_system_patterns=[])
 
 
-push_stack = list()
+push_stack = []
 
 
 def pushdir(path: (str | PathLike), dryrun: bool = False):
@@ -308,70 +308,110 @@ def find(paths: (str | PathLike | list),
          allow_system_paths: bool = False,
          dryrun: bool = False):
     paths = glob_path_patterns(paths)
-    list_of_non_directories = list()
-    for path in paths:
-        if not os.path.isdir(path):
-            list_of_non_directories.append(path)
-    if len(list_of_non_directories) > 0:
-        error(f"The following paths are not directories {list_of_non_directories}")
+    _validate_paths_are_directories(paths)
 
-    pattern_str = ""
-    if name_patterns is not None:
-        if isinstance(name_patterns, str):
-            pattern_str = f' -name "{name_patterns}"'
-        elif len(name_patterns) > 0:
-            pattern_str = f' -name "{name_patterns[0]}"'
-            for pattern in name_patterns[1:]:
-                pattern_str += f' -o -name "{pattern}"'
+    pattern_str = _build_name_pattern_string(name_patterns)
     file_type_str = f" -type ({file_type_filter})"
     log_command(f"find {' '.join(paths)}{file_type_str}{pattern_str}", dryrun=dryrun)
 
-    result_path_list = list()
-    if not dryrun:
-        augmented_path_list = list()
-        for path in paths:
-            for dir_name, sub_dir_list, file_list in os.walk(path):
-                depth = dir_name.count(os.path.sep)
-                if FileSystemObjectType.DIR & file_type_filter == FileSystemObjectType.DIR:
-                    matches = True
-                    if name_patterns is not None:
-                        matches = matches_any(search_string=path, patterns=name_patterns)
-                    if exclude_patterns is not None:
-                        if matches_any(search_string=path, patterns=exclude_patterns):
-                            matches = False
-                    if matches:
-                        augmented_path_list.append(
-                            (valid_absolute_path(dir_name, allow_system_paths=allow_system_paths),
-                             FileSystemObjectType.DIR.value,
-                             depth))
-                depth += 1
-                for file in file_list:
-                    matches = True
-                    if name_patterns is not None:
-                        matches = matches_any(search_string=file, patterns=name_patterns)
-                    if matches:
-                        file_path = valid_absolute_path(f"{dir_name}/{file}",
-                                                        allow_system_paths=allow_system_paths)
-                        if exclude_patterns is not None:
-                            if matches_any(search_string=file_path, patterns=exclude_patterns):
-                                matches = False
-                        if matches:
-                            file_type = FileSystemObjectType.from_file_system_object(file_path)
-                            if file_type & file_type_filter == file_type:
-                                augmented_path_list.append((file_path, file_type.value, depth))
+    if dryrun:
+        return []
 
-        if sort_field != FindSortField.NONE:
-            sort_index = sort_field.value - 1
-            augmented_path_list.sort(key=lambda i: i[sort_index], reverse=reverse)
-            for item in augmented_path_list:
-                result_path_list.append(item[0])
-        else:
-            if reverse:
-                augmented_path_list.sort(reverse=reverse)
-            for item in augmented_path_list:
-                result_path_list.append(item[0])
+    augmented_path_list = _collect_augmented_paths(
+        paths, file_type_filter, name_patterns, exclude_patterns, allow_system_paths
+    )
+
+    result_path_list = _sort_and_extract_paths(
+        augmented_path_list, sort_field, reverse
+    )
 
     return result_path_list
+
+
+def _validate_paths_are_directories(paths):
+    """Validate that all paths are directories."""
+    list_of_non_directories = [path for path in paths if not os.path.isdir(path)]
+    if list_of_non_directories:
+        error(f"The following paths are not directories {list_of_non_directories}")
+
+
+def _build_name_pattern_string(name_patterns):
+    """Build the name pattern string for the find command."""
+    if not name_patterns:
+        return ""
+    if isinstance(name_patterns, str):
+        return f' -name "{name_patterns}"'
+    return " ".join(f'-name "{pattern}"' + (" -o" if idx < len(name_patterns) - 1 else "")
+                    for idx, pattern in enumerate(name_patterns))
+
+
+def _collect_augmented_paths(paths,
+                             file_type_filter,
+                             name_patterns,
+                             exclude_patterns,
+                             allow_system_paths,
+                             max_dive: int = None):
+    """Collect paths with additional properties such as type and depth."""
+    augmented_path_list = []
+    for path in paths:
+        min_depth = path.count(os.path.sep)
+        # pylint: disable=unused-variable
+        for dir_name, sub_dir_list, file_list in os.walk(path):
+            depth = dir_name.count(os.path.sep)
+            if max_dive is None or (depth - min_depth) < max_dive:
+                path.count(os.path.sep)
+                _process_directory(
+                    dir_name, file_type_filter, name_patterns, exclude_patterns, allow_system_paths, depth,
+                    augmented_path_list
+                )
+                _process_files(
+                    dir_name, file_list, file_type_filter, name_patterns, exclude_patterns, allow_system_paths, depth,
+                    augmented_path_list
+                )
+    return augmented_path_list
+
+
+def _process_directory(dir_name, file_type_filter, name_patterns, exclude_patterns, allow_system_paths, depth, result):
+    """Process directories and add matching ones to the result."""
+    if FileSystemObjectType.DIR & file_type_filter == FileSystemObjectType.DIR:
+        if _matches_filters(dir_name, name_patterns, exclude_patterns):
+            result.append(
+                (valid_absolute_path(dir_name, allow_system_paths=allow_system_paths),
+                 FileSystemObjectType.DIR.value,
+                 depth)
+            )
+
+
+def _process_files(dir_name, file_list, file_type_filter, name_patterns, exclude_patterns, allow_system_paths, depth,
+                   result):
+    """Process files and add matching ones to the result."""
+    for file in file_list:
+        file_path = f"{dir_name}/{file}"
+        if _matches_filters(file, name_patterns, exclude_patterns):
+            full_path = valid_absolute_path(file_path, allow_system_paths=allow_system_paths)
+            file_type = FileSystemObjectType.from_file_system_object(full_path)
+            if file_type & file_type_filter == file_type:
+                result.append((full_path, file_type.value, depth))
+
+
+def _matches_filters(search_string, name_patterns, exclude_patterns):
+    """Check if a string matches the include and exclude patterns."""
+    matches = True
+    if name_patterns:
+        matches = matches_any(search_string=search_string, patterns=name_patterns)
+    if exclude_patterns and matches:
+        matches = not matches_any(search_string=search_string, patterns=exclude_patterns)
+    return matches
+
+
+def _sort_and_extract_paths(augmented_path_list, sort_field, reverse):
+    """Sort the augmented paths and extract the path strings."""
+    if sort_field != FindSortField.NONE:
+        sort_index = sort_field.value - 1
+        augmented_path_list.sort(key=lambda i: i[sort_index], reverse=reverse)
+    else:
+        augmented_path_list.sort(reverse=reverse)
+    return [item[0] for item in augmented_path_list]
 
 
 def is_stale_link(path: (str | PathLike)):
@@ -425,7 +465,6 @@ def cp(paths: (str | PathLike | list), target: (str | PathLike), dryrun: bool = 
     :param paths:
     :param target:
     :param dryrun:
-    :return:
     """
     log_command(f"cp -R {paths} {target}", dryrun=dryrun)
     if not dryrun:
@@ -442,7 +481,7 @@ def cp(paths: (str | PathLike | list), target: (str | PathLike), dryrun: bool = 
                 # make sure there's no dangling link
                 remove(target)
                 mkdir(target)
-                copy_tree(src=path, dst=f"{target}/{os.path.basename(path)}")
+                copytree(src=path, dst=f"{target}/{os.path.basename(path)}")
             elif os.path.isfile(path) and os.path.isdir(target):
                 target_file = f"{target}/{os.path.basename(path)}"
                 if os.path.exists(target_file) or os.path.isdir(target_file):

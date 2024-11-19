@@ -21,6 +21,7 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import os
 import sys
 
@@ -30,6 +31,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.basic_functions import is_empty_string
 from lib.exceptions import JsonPathFormatError, JsonIndexKeyError, JsonStringKeyError, \
     JsonPartialKeyError
@@ -54,7 +56,7 @@ class JsonIndexKey(JsonKey):
                 try:
                     self.index = int(index)
                 except ValueError:
-                    raise JsonIndexKeyError(index)
+                    raise JsonIndexKeyError(index) from ValueError
         else:
             self.index = index
 
@@ -64,7 +66,7 @@ class JsonIndexKey(JsonKey):
     def __str__(self):
         if self.is_start:
             return "[^]"
-        elif self.is_end:
+        if self.is_end:
             return "[$]"
         return f"[{self.index}]"
 
@@ -89,7 +91,7 @@ class JsonStringKey(JsonKey):
 
 class JsonKeyPath:
     def __init__(self, key_path: (str | list) = None):
-        self.list_of_keys = list()
+        self.list_of_keys = []
         if isinstance(key_path, str):
             key_path = key_path.split("/")
         if len(key_path) == 0:
@@ -107,7 +109,7 @@ class JsonKeyPath:
                 else:
                     self.list_of_keys.append(JsonStringKey(str(partial)))
             except JsonPartialKeyError as e:
-                raise JsonPathFormatError(path_string="/".join(key_path), extra_info=e.message)
+                raise JsonPathFormatError(path_string="/".join(key_path), extra_info=e.message) from e
 
     def __str__(self):
         return "/".join([str(key) for key in self.list_of_keys])

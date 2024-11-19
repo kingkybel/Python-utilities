@@ -21,22 +21,15 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import os
 import sys
 from os import PathLike
-
-this_dir = os.path.dirname(os.path.abspath(__file__))
-dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
-if not os.path.isdir(dk_lib_dir):
-    raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
-sys.path.insert(0, dk_lib_dir)
-
 import pty
 import re
 import select
 import socket
 import subprocess
-import sys
 import termios
 import tty
 import urllib.request
@@ -44,9 +37,15 @@ from getpass import getuser
 from multiprocessing import cpu_count
 from shutil import which
 from socket import gethostname
-
 from colorama import Fore, Style
 
+this_dir = os.path.dirname(os.path.abspath(__file__))
+dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
+if not os.path.isdir(dk_lib_dir):
+    raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
+sys.path.insert(0, dk_lib_dir)
+
+# pylint: disable=wrong-import-position
 from lib.basic_functions import is_empty_string
 from lib.file_system_object import current_dir, pushdir, popdir
 from lib.logger import error, log_progress_output, LogLevels
@@ -118,7 +117,7 @@ def is_tool_installed(name: str) -> bool:
 def assert_tools_installed(tools: (str | list[str])):
     if isinstance(tools, str):
         tools = [tools]
-    missing_tools = list()
+    missing_tools = []
     for tool in tools:
         if not is_tool_installed(tool):
             missing_tools.append(tool)
@@ -130,6 +129,7 @@ def assert_tools_installed(tools: (str | list[str])):
 def check_correct_tool_version(tool: str, version: str) -> bool:
     if not is_tool_installed(tool):
         return False
+    return True
 
 
 def pipe_monitor_thread_function(pipe, verbosity: LogLevels):

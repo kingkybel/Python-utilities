@@ -29,9 +29,10 @@ import json
 import os
 import re
 import sys
-import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
-from typing import List, Tuple
+from os import PathLike
+
+import matplotlib.pyplot as plt
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../../Python-utilities")
@@ -39,6 +40,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.logger import error, log_warning
 from lib.file_utils import read_file
 
@@ -76,12 +78,12 @@ def parse_crontab(crontab_lines: list[str]) -> list[dict[str, str]]:
     return entries
 
 
-def expand_time_field(field: str, max_value: int) -> List[int]:
+def expand_time_field(field: str, max_value: int) -> list[int]:
     """Expands a time field like '0,15' or '7-18' into a list of integers."""
     result = set()
     for part in field.split(","):
         if "-" in part:  # Range
-            start, end = map(int, part.split("-"))
+            start, end = {int, part.split("-")}
             result.update(range(start, end + 1))
         elif part == "*":  # Wildcard
             result.update(range(max_value))
@@ -94,7 +96,7 @@ def generate_intervals(
         interval: int,
         scope: str,
         reference_date: datetime = None
-) -> List[Tuple[datetime, datetime]]:
+) -> list[tuple[datetime, datetime]]:
     """
     Generates time intervals based on the interval and scope.
     """
@@ -132,7 +134,7 @@ def generate_intervals(
 def collect_jobs(
         schedule: list[dict[str, str]],
         intervals: list[tuple[datetime, datetime]]
-) -> List[Tuple[str, List[str]]]:
+) -> list[tuple[str, list[str]]]:
     """
     Collects jobs for each interval.
     """
@@ -155,7 +157,7 @@ def collect_jobs(
     return jobs_by_interval
 
 
-def plot_job_intervals(job_intervals: List[Tuple[str, List[str]]], title: str):
+def plot_job_intervals(job_intervals: list[tuple[str, list[str]]], title: str):
     """
     Plots the number of jobs per interval.
     """
@@ -174,15 +176,15 @@ def plot_job_intervals(job_intervals: List[Tuple[str, List[str]]], title: str):
     plt.show()
 
 
-def write_to_csv(file_path: str, rows: List[List[str]], headers: List[str]):
+def write_to_csv(file_path: str, rows: list[list[str]], headers: list[str]):
     """Writes rows to a CSV file with the given headers."""
-    with open(file_path, mode="w", newline="") as csv_file:
+    with open(file_path, mode="w", newline="", encoding="utf-8") as csv_file:
         writer = csv.writer(csv_file)
         writer.writerow(headers)
         writer.writerows(rows)
 
 
-def write_to_json(job_intervals, output_file):
+def write_to_json(job_intervals: list[tuple[str, str]], output_file: PathLike):
     """
     Writes job intervals to a JSON file in the specified format.
 
@@ -214,8 +216,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Create a graph and schedule from crontab.")
     parser.add_argument(
         "--crontab-file", "-c",
-        default=f"crontab.txt",
-        help=f'File with crontab entries, defaults to "crontab.csv"'
+        default="crontab.txt",
+        help='File with crontab entries, defaults to "crontab.csv"'
     )
     parser.add_argument("--interval", "-i",
                         type=int,

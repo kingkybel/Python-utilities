@@ -21,6 +21,7 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import json
 import os
 import os.path
@@ -33,6 +34,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.basic_functions import is_empty_string
 from lib.exceptions import JsonGeneralError, JsonError, JsonKeyError, JsonIndexError, JsonValueMismatch
 from lib.file_system_object import find
@@ -79,13 +81,13 @@ class JsonObject:
         if isinstance(obj, set):
             # If it's a set, convert it to a list after doing the same recursively.
             return [JsonObject.convert_sets_to_vectors(item) for item in obj]
-        elif isinstance(obj, dict):
+        if isinstance(obj, dict):
             # If it's a dictionary, recursively process its values
             return {key: JsonObject.convert_sets_to_vectors(value) for key, value in obj.items()}
-        elif isinstance(obj, list):
+        if isinstance(obj, list):
             # If it's a list, recursively process its elements
             return [JsonObject.convert_sets_to_vectors(item) for item in obj]
-        elif isinstance(obj, tuple):
+        if isinstance(obj, tuple):
             # If it's a tuple, recursively process its elements and convert to list
             return [JsonObject.convert_sets_to_vectors(item) for item in obj]
         # elif isinstance(obj, object):
@@ -118,10 +120,30 @@ class JsonObject:
             with open(filename, 'w') as file:
                 json.dump(self.json_, file, indent=indent)
 
+    def empty(self, obj=None) -> bool:
+        if obj is None:
+            return not bool(self.json_) or self.json_ == {} or self.json_ == []
+        return not bool(obj) or obj == {} or obj == []
+
+    def is_list(self, obj=None) -> bool:
+        if obj is None:
+            return isinstance(self.json_, list)
+        return isinstance(obj, list)
+
+    def is_dict(self, obj=None) -> bool:
+        if obj is None:
+            return isinstance(self.json_, dict)
+        return isinstance(obj, dict)
+
+    def size(self, obj=None) -> int:
+        if obj is None:
+            return len(self.json_)
+        return len(obj)
+
     @classmethod
     def assert_json_files_valid(cls, paths: (str | PathLike | list[str | PathLike])):
         json_files = find(paths=paths, file_type_filter="f", name_patterns=r".*\.json")
-        failed_files = list()
+        failed_files = []
         reval = 0
         for json_file in json_files:
             try:
@@ -197,7 +219,7 @@ class JsonObject:
                 if default is not None:
                     return default
                 error_msg = f"Cannot get key number '{i}' in json {iterator}. {k}"
-                raise JsonGeneralError(message=error_msg)
+                raise JsonGeneralError(message=error_msg) from k
         return iterator
 
     def set(self,
@@ -222,9 +244,9 @@ class JsonObject:
     def __set_forced(self, keys: list[str], value: (bool | int | float | str | list | dict)):
         # if the root element is the wrong type then make this an empty root element of the correct type
         if isinstance(keys[0], JsonIndexKey) and not isinstance(self.json_, list):
-            self.json_ = list()
+            self.json_ = []
         elif isinstance(keys[0], JsonStringKey) and not isinstance(self.json_, dict):
-            self.json_ = dict()
+            self.json_ = {}
 
         prev_iterator = None
         prev_key = None
@@ -249,7 +271,7 @@ class JsonObject:
 
             if isinstance(cur_key, JsonIndexKey):
                 if not isinstance(iterator, list):
-                    iterator = list()
+                    iterator = []
                 if cur_key.is_start:
                     iterator.insert(0, blank_object_type())
                     index = 0
@@ -269,7 +291,7 @@ class JsonObject:
                 iterator = iterator[int(index)]
             else:
                 if not isinstance(iterator, dict):
-                    iterator = dict()
+                    iterator = {}
                 if is_last:
                     iterator[str(cur_key)] = value
                 elif JsonObject.__try_get_key(iterator, cur_key) == next_key:
@@ -292,7 +314,7 @@ class JsonObject:
     def __set_not_forced(self, keys: list[str], value: (bool | int | float | str | list | dict)):
         if isinstance(keys[0], JsonIndexKey) and not isinstance(self.json_, list):
             raise JsonIndexError(key_number=0, keys=keys, json_obj=self.json_)
-        elif isinstance(keys[0], JsonStringKey) and not isinstance(self.json_, dict):
+        if isinstance(keys[0], JsonStringKey) and not isinstance(self.json_, dict):
             raise JsonKeyError(key=0, keys=keys, json_obj=self.json_)
         iterator = self.json_
         cur_key = keys[0]
@@ -311,7 +333,7 @@ class JsonObject:
                         index = cur_key.index
 
                     if is_last:
-                        if type(iterator[int(index)]) == type(value):
+                        if isinstance(iterator[int(index)], type(value)):
                             iterator[int(index)] = value
                         else:
                             raise JsonValueMismatch(orig_value=iterator[int(index)], new_value=value)
@@ -320,7 +342,7 @@ class JsonObject:
                     if isinstance(iterator, list):
                         raise JsonKeyError(key=cur_key, keys=keys, json_obj=self.json_)
                     if is_last:
-                        if type(iterator[cur_key.key]) == type(value):
+                        if isinstance(iterator[cur_key.key], type(value)):
                             iterator[cur_key.key] = value
                     else:
                         raise JsonValueMismatch(orig_value=iterator[cur_key.key], new_value=value)
@@ -329,7 +351,7 @@ class JsonObject:
                 raise
             except JsonIndexError:
                 raise
-            except KeyError:
+            except KeyError as k:
                 error_msg = f"Cannot create/overwrite key number '{i}' '{cur_key}' - not leaf"
-                raise JsonGeneralError(message=error_msg)
+                raise JsonGeneralError(message=error_msg) from k
         return self.json_
