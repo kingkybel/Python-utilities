@@ -28,7 +28,6 @@ import os
 import os.path
 import sys
 from os import PathLike
-
 from colorama import Fore, Style
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
@@ -60,7 +59,7 @@ class LogLevels(ExtendedEnum):
         return self.name.lower()
 
     def logging_level(self) -> int:
-        return self.value
+        return int(self.value)
 
 
 class CustomFormatter(logging.Formatter):
@@ -81,10 +80,10 @@ class CustomFormatter(logging.Formatter):
         # remember the original
         format_orig = self._style._fmt
 
-        if record.levelno == LogLevels.COMMAND.value:
+        if record.levelno == LogLevels.COMMAND:
             self._style._fmt = "\n######## execute command:\n%(messages)s\n#########################"
 
-        if record.levelno == LogLevels.COMMAND_OUTPUT.value:
+        if record.levelno == LogLevels.COMMAND_OUTPUT:
             self._style._fmt = "%(messages)s"
 
         result = logging.Formatter.format(self, record)
@@ -106,7 +105,7 @@ class CustomFormatter(logging.Formatter):
             s = ct.strftime(datefmt)
         else:
             t = ct.strftime("%Y-%m-%d %H:%M:%S")
-            s = "%s.%05d" % (t, record.msecs)
+            s = f"{t}.{record.msecs:.05d}"
         return s
 
 
@@ -118,7 +117,8 @@ class ScriptLogger:
     def __init__(self,
                  logfile_name: (str | PathLike) = None,
                  verbosity: (str | LogLevels) = LogLevels.INFO,
-                 logfile_open_mode: str = "w"):
+                 logfile_open_mode: str = "w",
+                 encoding="utf-8"):
         self.do_file_log = False
         self.verbosity = self.set_verbosity(verbosity)
 
@@ -126,8 +126,8 @@ class ScriptLogger:
             log_dir = os.path.dirname(logfile_name)
             if not os.path.isdir(log_dir):
                 os.makedirs(log_dir, exist_ok=True)
-            l_file = open(logfile_name, logfile_open_mode)
-            l_file.close()
+            with open(file=logfile_name, mode=logfile_open_mode, encoding=encoding) as log_file:
+                log_file.close()
             self.do_file_log = True
 
             filehandler = logging.FileHandler(logfile_name, mode=logfile_open_mode)
@@ -196,7 +196,7 @@ class ScriptLogger:
             comment = " ### " + comment
         if self.do_file_log:
             logging.log(level=LogLevels.COMMAND.logging_level(), msg=f"{command_str}{comment}")
-        if self.verbosity.logging_level() <= LogLevels.COMMAND.logging_level():
+        if self.verbosity.logging_level() <= LogLevels.COMMAND.value:
             spaces_len = max(100 - len(command_str) - len(comment), 1)
             spaces = " " * spaces_len
             print(f"{Fore.MAGENTA}{command_str}{Fore.LIGHTBLACK_EX}{spaces}{comment}{Style.RESET_ALL}")
@@ -205,7 +205,7 @@ class ScriptLogger:
         if self.do_file_log:
             logging.log(level=LogLevels.COMMAND_OUTPUT.logging_level(),
                         msg=command_output)
-        if self.verbosity.logging_level() <= LogLevels.COMMAND_OUTPUT.logging_level():
+        if self.verbosity.logging_level() <= LogLevels.COMMAND_OUTPUT.value:
             print(command_output)
 
     def log_header(self, header, filler: str = "="):
@@ -265,7 +265,6 @@ def set_logger(script_logger: ScriptLogger = None,
 
 
 def get_logger() -> ScriptLogger:
-    global global_logger
     return global_logger
 
 

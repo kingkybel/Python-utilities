@@ -52,14 +52,14 @@ class BasicFileSetCreator(ABCFileSetCreator):
         file_list = []
         ######################################
         # add common project files.
-        for tmplt in [(".vscode/c_cpp_properties.json", CommentStyle.NONE),
+        for tmplt in ((".vscode/c_cpp_properties.json", CommentStyle.NONE),
                       (".vscode/launch.json", CommentStyle.NONE),
                       (".vscode/settings.json", CommentStyle.NONE),
                       (".vscode/tasks.json", CommentStyle.NONE),
                       (".gitignore", CommentStyle.BASH),
                       (".clang-format", CommentStyle.BASH),
                       (".clang-tidy", CommentStyle.BASH),
-                      ("Doxyfile", CommentStyle.BASH)]:
+                      ("Doxyfile", CommentStyle.BASH)):
             file_list.append(
                 FileNameMapper(template_file=f"{self.tpl_dir()}/{tmplt[0]}",
                                target_file=f"{self.project_path()}/{tmplt[0]}",

@@ -103,6 +103,7 @@ def ping(host_name: str = None) -> tuple[int, str]:
     if is_empty_string(host_name):
         host_name = "127.0.0.1"
     ip = f"- {host_name} doesn't respond -"
+    # pylint: disable=unused-variable
     reval, s_out, s_err = run_command(f"ping -c 1 {host_name}", raise_errors=False)
     if reval == 0:
         ip_list = re.findall(rf"PING {host_name}\s+\(([0-9.]+)\)", s_out)
@@ -167,6 +168,47 @@ def run_command(cmd: (str | list[str]),
     :param dryrun: if set to True, then do not execute but just output a comment describing the command.
     :return: only if raise_errors == False: tuple (error-code, stout-string, stderr-string)
     """
+    cmd, cmd_str, cwd = __prepare_run(cmd, comment, cwd, dryrun)
+
+    return_code = 0
+    if dryrun:
+        popdir(dryrun=dryrun)
+        return 0, "", ""
+
+    with subprocess.Popen(cmd,
+                               cwd=cwd,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               bufsize=1,
+                               universal_newlines=True) as process:
+        log_progress_output("-" * 10 + "sub-process output" + "-" * 10, verbosity=LogLevels.COMMAND_OUTPUT)
+
+        out_thread = ReturningThread(target=pipe_monitor_thread_function,
+                                     args=(process.stdout, LogLevels.COMMAND_OUTPUT))
+        err_thread = ReturningThread(target=pipe_monitor_thread_function,
+                                     args=(process.stderr, LogLevels.WARNING))
+        out_thread.start()
+        err_thread.start()
+        # let the process do its job
+        # ...
+        # then join the threads and read the output.
+        std_out_str = str(out_thread.join())
+        std_err_str = str(err_thread.join())
+        process.stdout.close()
+        process.stderr.close()
+
+        return_code = process.wait()
+        popdir(dryrun=dryrun)
+        log_progress_output("-" * 40, LogLevels.COMMAND_OUTPUT)
+
+        if return_code != 0:
+            if raise_errors:
+                error(f"run_command(cmd='{cmd_str}' failed with error-code '{return_code}':\n{std_err_str}")
+
+    return return_code, std_out_str, std_err_str
+
+
+def __prepare_run(cmd, comment, cwd, dryrun):
     if isinstance(cmd, str):
         cmd = squeeze_chars(source=cmd, squeeze_set="\t\n\r ", replace_with=" ")
         cmd = cmd.split()
@@ -177,49 +219,11 @@ def run_command(cmd: (str | list[str]),
         else:
             cmd_copy.append(c)
     cmd_str = " ".join(cmd_copy)
-
     if cwd is None or is_empty_string(cwd):
         cwd = current_dir()
-
     pushdir(cwd, dryrun=dryrun)
     log_progress_output(message=cmd_str, extra_comment=comment, verbosity=LogLevels.COMMAND, dryrun=dryrun)
-
-    return_code = 0
-    if dryrun:
-        popdir(dryrun=dryrun)
-        return 0, "", ""
-
-    process = subprocess.Popen(cmd,
-                               cwd=cwd,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               bufsize=1,
-                               universal_newlines=True)
-    log_progress_output("-" * 10 + "sub-process output" + "-" * 10, verbosity=LogLevels.COMMAND_OUTPUT)
-
-    out_thread = ReturningThread(target=pipe_monitor_thread_function,
-                                 args=(process.stdout, LogLevels.COMMAND_OUTPUT))
-    err_thread = ReturningThread(target=pipe_monitor_thread_function,
-                                 args=(process.stderr, LogLevels.WARNING))
-    out_thread.start()
-    err_thread.start()
-    # let the process do its job
-    # ...
-    # then join the threads and read the output.
-    std_out_str = str(out_thread.join())
-    std_err_str = str(err_thread.join())
-    process.stdout.close()
-    process.stderr.close()
-
-    return_code = process.wait()
-    popdir(dryrun=dryrun)
-    log_progress_output("-" * 40, LogLevels.COMMAND_OUTPUT)
-
-    if return_code != 0:
-        if raise_errors:
-            error(f"run_command(cmd='{cmd_str}' failed with error-code '{return_code}':\n{std_err_str}")
-
-    return return_code, std_out_str, std_err_str
+    return cmd, cmd_str, cwd
 
 
 def run_interactive_command(cmd: (str | list),
@@ -233,22 +237,9 @@ def run_interactive_command(cmd: (str | list),
     :param: comment: a comment to enhance the log-output.
     :param: dryrun: if set to True, then do not execute but just output a comment describing the command.
     """
-    if isinstance(cmd, str):
-        cmd = squeeze_chars(source=cmd, squeeze_set="\t\n\r ", replace_with=" ")
-        cmd = cmd.split()
-    cmd_copy = []
-    for c in cmd:
-        if c.find(" ") != -1:
-            cmd_copy.append(f"\"{c}\"")
-        else:
-            cmd_copy.append(c)
-    cmd_str = " ".join(cmd_copy)
 
-    if cwd is None or is_empty_string(cwd):
-        cwd = current_dir()
-
-    pushdir(cwd, dryrun=dryrun)
-    log_progress_output(message=cmd_str, extra_comment=comment, verbosity=LogLevels.COMMAND, dryrun=dryrun)
+    # pylint: disable=unused-variable
+    cmd, cmd_str, cwd = __prepare_run(cmd, comment, cwd, dryrun)
 
     if not dryrun:
         old_tty = termios.tcgetattr(sys.stdin)
@@ -256,22 +247,22 @@ def run_interactive_command(cmd: (str | list),
         master_fd, slave_fd = pty.openpty()
 
         try:
-            process = subprocess.Popen(cmd,
-                                       # cwd=cwd,
-                                       preexec_fn=os.setsid,
-                                       stdin=slave_fd,
-                                       stdout=slave_fd,
-                                       stderr=slave_fd,
-                                       universal_newlines=True)
-            while process.poll() is None:
-                r, w, e = select.select([sys.stdin, master_fd], [], [])
-                if sys.stdin in r:
-                    d = os.read(sys.stdin.fileno(), 10240)
-                    os.write(master_fd, d)
-                elif master_fd in r:
-                    o = os.read(master_fd, 10240)
-                    if o:
-                        os.write(sys.stdout.fileno(), o)
+            with subprocess.Popen(cmd,
+                                  # cwd=cwd,
+                                  preexec_fn=os.setsid,
+                                  stdin=slave_fd,
+                                  stdout=slave_fd,
+                                  stderr=slave_fd,
+                                  universal_newlines=True) as process:
+                while process.poll() is None:
+                    r, w, e = select.select([sys.stdin, master_fd], [], [])
+                    if sys.stdin in r:
+                        d = os.read(sys.stdin.fileno(), 10240)
+                        os.write(master_fd, d)
+                    elif master_fd in r:
+                        o = os.read(master_fd, 10240)
+                        if o:
+                            os.write(sys.stdout.fileno(), o)
         finally:
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_tty)
 

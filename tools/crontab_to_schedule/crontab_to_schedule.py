@@ -23,6 +23,7 @@
 # @date: 2024-05-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import argparse
 import csv
 import json
@@ -184,7 +185,7 @@ def write_to_csv(file_path: str, rows: list[list[str]], headers: list[str]):
         writer.writerows(rows)
 
 
-def write_to_json(job_intervals: list[tuple[str, str]], output_file: PathLike):
+def write_to_json(job_intervals: list[tuple[str, str]], output_file: PathLike | str):
     """
     Writes job intervals to a JSON file in the specified format.
 
