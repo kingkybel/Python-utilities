@@ -154,7 +154,7 @@ class ScriptLogger:
 
     def __error__(self, err_type: str, message):
         if self.do_file_log:
-            logging.error(f"{err_type}: {message}")
+            logging.error("%s: %s", err_type, message)
         print(f"{Fore.RED}{err_type}{Style.RESET_ALL}: {Fore.YELLOW}{message}{Style.RESET_ALL}")
 
     def log_critical(self, message):
@@ -213,15 +213,14 @@ class ScriptLogger:
             filler_len = int((100 - len(header) - 2) / 2)
             filler = filler * filler_len
         if self.do_file_log:
-            logging.info(f"{filler} {header} {filler}")
+            logging.info("%s %s %s", filler, header, filler)
         if self.verbosity.logging_level() <= logging.INFO:
             print(f"{Fore.YELLOW}{filler}{Style.RESET_ALL} {header} {Fore.YELLOW}{filler}{Style.RESET_ALL}")
 
     def log_progress_output(self,
                             message,
                             verbosity: (str | LogLevels) = LogLevels.INFO,
-                            extra_comment: str = None,
-                            dryrun: bool = False):
+                            extra_comment: str = None):
         if isinstance(verbosity, str):
             verbosity = LogLevels.from_string(verbosity)
         match verbosity:
@@ -309,9 +308,7 @@ def log_command(message: str, extra_comment: str = None, dryrun: bool = False):
 
 def log_progress_output(message: str,
                         verbosity: (str | LogLevels) = LogLevels.INFO,
-                        extra_comment: str = None,
-                        dryrun: bool = False):
+                        extra_comment: str = None):
     get_logger().log_progress_output(message=message,
                                      verbosity=verbosity,
-                                     extra_comment=extra_comment,
-                                     dryrun=dryrun)
+                                     extra_comment=extra_comment)

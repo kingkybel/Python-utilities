@@ -39,60 +39,38 @@ from lib.logger import LogLevels, set_logger
 
 
 class BasicFunctionsTests(unittest.TestCase):
-    def setUp(self) -> None:
-        return super().setUp()
 
-    def tearDown(self):
-        return super().tearDown()
+    def assertPathRaises(self, paths, protect_patterns=None, should_raise=True):
+        """Helper to test if valid_absolute_path raises SystemError for paths."""
+        for path in paths:
+            with self.subTest(path=path, protect_patterns=protect_patterns):
+                if should_raise:
+                    with self.assertRaises(SystemError):
+                        valid_absolute_path(path, protect_system_patterns=protect_patterns)
+                else:
+                    try:
+                        valid_absolute_path(path, protect_system_patterns=protect_patterns)
+                    except SystemError as e:
+                        self.fail(f"SystemError raised for path '{path}' with error: {e}")
 
     def test_valid_absolute_path_protected_patterns(self):
+        # Test protected paths
         protected_paths = ["/usr/bin", "/", "/lib32", "/lib64/some/random/sub/dir",
                            "/dev/123", "/proc/x/y/z"]
-        for path in protected_paths:
-            has_thrown = False
-            try:
-                valid_absolute_path(path)
-            except SystemError as e:
-                # print(e)
-                has_thrown = True
-            self.assertTrue(has_thrown)
+        self.assertPathRaises(protected_paths)
 
-        unprotected_paths = ["/tmp", "/home", "~", "xxx",
-                             "dev/123", "/abs/de/f"]
+        # Test unprotected paths
+        unprotected_paths = ["/tmp", "/home", "~", "xxx", "dev/123", "/abs/de/f"]
+        self.assertPathRaises(unprotected_paths, should_raise=False)
 
-        for path in unprotected_paths:
-            has_thrown = False
-            # valid_path = None
-            try:
-                # valid_path = valid_absolute_path(path)
-                valid_absolute_path(path)
-            except SystemError as e:
-                # print(e)
-                has_thrown = True
-            # print(valid_path)
-            self.assertFalse(has_thrown)
-
+        # Test with specified protection patterns
         protect_patterns = ["/tmp.*", "/hom.*"]
         now_specified_protected_paths = ["/tmp/bin", "/home/user", "/home/user/x/yy/zzz"]
-        for path in now_specified_protected_paths:
-            has_thrown = False
-            try:
-                valid_absolute_path(path, protect_system_patterns=protect_patterns)
-            except SystemError as e:
-                # print(e)
-                has_thrown = True
-            self.assertTrue(has_thrown)
+        self.assertPathRaises(now_specified_protected_paths, protect_patterns=protect_patterns)
 
         now_specified_unprotected_paths = ["/usr/bin", "/", "/lib32", "/lib64/some/random/sub/dir",
                                            "/dev/123", "/proc/x/y/z"]
-        for path in now_specified_unprotected_paths:
-            has_thrown = False
-            try:
-                valid_absolute_path(path, protect_system_patterns=protect_patterns)
-            except SystemError as e:
-                print(e)
-                has_thrown = True
-            self.assertFalse(has_thrown)
+        self.assertPathRaises(now_specified_unprotected_paths, protect_patterns=protect_patterns, should_raise=False)
 
 
 if __name__ == '__main__':

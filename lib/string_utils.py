@@ -29,7 +29,7 @@ import random
 import re
 import string
 import sys
-from colorama import Style, Fore, init as colorama_init
+from colorama import init as colorama_init
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
@@ -47,7 +47,13 @@ FALSE_STRINGS = ["false", "f", "no", "n", "0"]
 TRUE_STRINGS = ["true", "t", "yes", "y", "1"]
 
 
-def input_value(var_name: str, help_str: str, var_type=str, regex_str=None, constraint: (range | list) = None):
+def input_value(
+    var_name: str,
+    help_str: str,
+    var_type=str,
+    regex_str=None,
+    constraint: (range | list) = None
+) -> any:
     """
     An interactive prompt to enter a value.
     :param: var_name: The name of the variable to enter. Can be any string.
@@ -57,45 +63,50 @@ def input_value(var_name: str, help_str: str, var_type=str, regex_str=None, cons
     :param: constraint: alternatively a list or range of valid values.
     :return: the entered value in the correct type.
     """
-    reval = None
-    range_str = ""
-    if regex_str is None and constraint is None:
-        if var_type == bool:
-            regex_str = "|".join(FALSE_STRINGS + TRUE_STRINGS)
-        else:
-            regex_str = ".*"
-    elif regex_str is None and constraint is not None:
-        raise StringUtilError(f"Cannot use regex '{regex_str}' and constraint '{constraint}'")
+    if regex_str and constraint:
+        raise ValueError(f"Cannot use both regex '{regex_str}' and constraint '{constraint}'")
 
-    if isinstance(constraint, range):
-        range_str = f"[{constraint.start}..{constraint.stop}]"
+    # Default regex for bool if none provided
+    if var_type == bool and regex_str is None:
+        regex_str = "|".join(FALSE_STRINGS + TRUE_STRINGS)
 
-    prompt = f"\t{Fore.YELLOW}{var_name}{Style.RESET_ALL} ({help_str}{range_str}) [{regex_str}]"
-    if is_empty_string(help_str):
-        prompt = f"\t{Fore.YELLOW}{var_name}{Style.RESET_ALL}{range_str})"
-    prompt += "->"
-    while reval is None:
-        reval = input(prompt)
-        if not is_empty_string(regex_str):
-            matched = re.match(regex_str, reval)
-            if not bool(matched):
-                reval = None
-        elif isinstance(constraint, range):
-            if int(reval) not in constraint:
-                reval = None
-        elif reval not in constraint:
-                reval = None
+    # Generate constraint description
+    range_str = f"[{constraint.start}..{constraint.stop}]" if isinstance(constraint, range) else ""
+    prompt = f"\t{var_name} ({help_str}{range_str}) [{regex_str or '*'}] -> "
 
-        if var_type == bool:
-            if reval in TRUE_STRINGS:
-                return True
-            return False
-        if var_type == int:
-            return int(reval)
-        if var_type == float:
-            return float(reval)
-        return reval
-    return ""
+    while True:
+        # Simulating input for flexibility and testing
+        reval = __get_user_input(prompt)  # Replace 'input' with a function for testability
+
+        # Validate against regex
+        if regex_str and not re.match(regex_str, reval):
+            print("Input does not match the required format. Please try again.")
+            continue
+
+        # Validate against constraint
+        if constraint:
+            if isinstance(constraint, range) and int(reval) not in constraint:
+                print(f"Input must be in range {range_str}. Please try again.")
+                continue
+            if isinstance(constraint, list) and reval not in constraint:
+                print(f"Input must be one of {constraint}. Please try again.")
+                continue
+
+        # Convert input to the specified type
+        try:
+            if var_type == bool:
+                return reval in TRUE_STRINGS
+            return var_type(reval)
+        except ValueError:
+            print(f"Input could not be converted to {var_type.__name__}. Please try again.")
+
+
+# Replace 'input' for better testability
+def __get_user_input(prompt: str) -> str:
+    """Wrapper function to replace input, allowing easier testing."""
+    # pylint: disable=bad-builtin
+    return input(prompt)
+
 
 def squeeze_chars(source: str, squeeze_set: str, replace_with: str = ' ') -> str:
     """
@@ -132,7 +143,7 @@ def remove_control_chars(text: str) -> str:
     """
     text = text.encode("ascii", "ignore")
     text = text.decode()
-    control_chars = ''.join(map(chr, itertools.chain(range(0x00, 0x20), range(0x7f, 0xa0))))
+    control_chars = ''.join(chr(c) for c in itertools.chain(range(0x00, 0x20), range(0x7f, 0xa0)))
     control_char_re = re.compile(f'[{re.escape(control_chars)}]')
     return control_char_re.sub(' ', text)
 
@@ -148,9 +159,8 @@ def matches_any(search_string: str, patterns: (str | list[str]) = None) -> bool:
         return True
     if isinstance(patterns, str):
         patterns = [patterns]
-    for pattern in patterns:
-        if bool(re.match(pattern=pattern, string=search_string)):
-            return True
+    if any(re.match(pattern=pattern, string=search_string) for pattern in patterns):
+        return True
     return False
 
 

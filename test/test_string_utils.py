@@ -38,11 +38,6 @@ from lib.logger import LogLevels, set_logger
 
 
 class BasicFunctionsTests(unittest.TestCase):
-    def setUp(self) -> None:
-        return super().setUp()
-
-    def tearDown(self):
-        return super().tearDown()
 
     def test_squeeze_chars(self):
         self.assertEqual("", squeeze_chars(source="", squeeze_set="\n\t\r ", replace_with=" "))

@@ -40,11 +40,6 @@ from lib.logger import LogLevels, set_logger
 
 
 class ExtendedEnumTests(unittest.TestCase):
-    def setUp(self) -> None:
-        return super().setUp()
-
-    def tearDown(self):
-        return super().tearDown()
 
     def test_create_enum(self):
         class SimpleEnum(ExtendedEnum):

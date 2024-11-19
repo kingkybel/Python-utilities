@@ -223,7 +223,7 @@ def __prepare_run(cmd, comment, cwd, dryrun):
     if cwd is None or is_empty_string(cwd):
         cwd = current_dir()
     pushdir(cwd, dryrun=dryrun)
-    log_progress_output(message=cmd_str, extra_comment=comment, verbosity=LogLevels.COMMAND, dryrun=dryrun)
+    log_progress_output(message=cmd_str, extra_comment=comment, verbosity=LogLevels.COMMAND)
     return cmd, cmd_str, cwd
 
 

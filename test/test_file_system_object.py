@@ -41,11 +41,6 @@ from lib.logger import LogLevels, set_logger
 
 
 class FileSystemObjectTests(unittest.TestCase):
-    def setUp(self) -> None:
-        return super().setUp()
-
-    def tearDown(self):
-        return super().tearDown()
 
     def test_make_path_list(self):
         path1 = Path("/xyz/abc")

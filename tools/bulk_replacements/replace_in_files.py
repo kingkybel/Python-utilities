@@ -109,14 +109,14 @@ def main():
     for file in files:
         log_info(message=f"Processing {file}")
         # Read the file where replacements need to be performed
-        with open(file, 'r') as f:
+        with open(file, 'r', encoding="utf-8") as f:
             content = f.read()
 
         # Perform the replacements
         modified_content = perform_replacements(content, replacements)
 
         # Save the modified content back to the file (or alternatively output it)
-        with open(file, 'w') as f:
+        with open(file, 'w', encoding="utf-8") as f:
             f.write(modified_content)
 
         print(f"Replacements applied to {file} successfully.")

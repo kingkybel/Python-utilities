@@ -43,6 +43,8 @@ class MainOnlyFileSetCreator(ABCFileSetCreator):
     @brief Create files for one class
     """
 
+    # left here for consistency with other derivatives of ABCFileSetCreator
+    # pylint: disable=useless-parent-delegation
     def __init__(self, project_path: (str | PathLike)):
         super().__init__(project_path)
 
