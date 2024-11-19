@@ -61,9 +61,9 @@ def get_logged_in_user() -> str:
     try:
         return os.getlogin()
     except FileNotFoundError:  # happens on WSL
-        squeeze_chars(source=os.popen("whoami").read(), squeeze_set="\n\t\r ")
+        return squeeze_chars(source=os.popen("whoami").read(), squeeze_set="\n\t\r ")
     except OSError:  # happens on docker
-        squeeze_chars(source=os.popen("whoami").read(), squeeze_set="\n\t\r ")
+        return squeeze_chars(source=os.popen("whoami").read(), squeeze_set="\n\t\r ")
 
 
 def assert_is_root():
@@ -135,8 +135,8 @@ def check_correct_tool_version(tool: str, version: str) -> bool:
 def pipe_monitor_thread_function(pipe, verbosity: LogLevels):
     """
     Function that runs as thread and is monitoring the output of a pipe.
-    :param pipe: file-pipe: either stdin or stdout.
-    :param verbosity: log-level so out put can be customised.
+    :param: pipe: file-pipe: either stdin or stdout.
+    :param: verbosity: log-level so out put can be customised.
     :return: the string that was piped to the pipe.
     """
     piped_str = ""
@@ -170,7 +170,7 @@ def run_command(cmd: (str | list[str]),
     if isinstance(cmd, str):
         cmd = squeeze_chars(source=cmd, squeeze_set="\t\n\r ", replace_with=" ")
         cmd = cmd.split()
-    cmd_copy = list()
+    cmd_copy = []
     for c in cmd:
         if c.find(" ") != -1:
             cmd_copy.append(f"\"{c}\"")
@@ -188,38 +188,38 @@ def run_command(cmd: (str | list[str]),
     if dryrun:
         popdir(dryrun=dryrun)
         return 0, "", ""
-    else:
-        process = subprocess.Popen(cmd,
-                                   cwd=cwd,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   bufsize=1,
-                                   universal_newlines=True)
-        log_progress_output("-" * 10 + "sub-process output" + "-" * 10, verbosity=LogLevels.COMMAND_OUTPUT)
 
-        out_thread = ReturningThread(target=pipe_monitor_thread_function,
-                                     args=(process.stdout, LogLevels.COMMAND_OUTPUT))
-        err_thread = ReturningThread(target=pipe_monitor_thread_function,
-                                     args=(process.stderr, LogLevels.WARNING))
-        out_thread.start()
-        err_thread.start()
-        # let the process do its job
-        # ...
-        # then join the threads and read the output.
-        std_out_str = str(out_thread.join())
-        std_err_str = str(err_thread.join())
-        process.stdout.close()
-        process.stderr.close()
+    process = subprocess.Popen(cmd,
+                               cwd=cwd,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               bufsize=1,
+                               universal_newlines=True)
+    log_progress_output("-" * 10 + "sub-process output" + "-" * 10, verbosity=LogLevels.COMMAND_OUTPUT)
 
-        return_code = process.wait()
-        popdir(dryrun=dryrun)
-        log_progress_output("-" * 40, LogLevels.COMMAND_OUTPUT)
+    out_thread = ReturningThread(target=pipe_monitor_thread_function,
+                                 args=(process.stdout, LogLevels.COMMAND_OUTPUT))
+    err_thread = ReturningThread(target=pipe_monitor_thread_function,
+                                 args=(process.stderr, LogLevels.WARNING))
+    out_thread.start()
+    err_thread.start()
+    # let the process do its job
+    # ...
+    # then join the threads and read the output.
+    std_out_str = str(out_thread.join())
+    std_err_str = str(err_thread.join())
+    process.stdout.close()
+    process.stderr.close()
 
-        if return_code != 0:
-            if raise_errors:
-                error(f"run_command(cmd='{cmd_str}' failed with error-code '{return_code}':\n{std_err_str}")
+    return_code = process.wait()
+    popdir(dryrun=dryrun)
+    log_progress_output("-" * 40, LogLevels.COMMAND_OUTPUT)
 
-        return return_code, std_out_str, std_err_str
+    if return_code != 0:
+        if raise_errors:
+            error(f"run_command(cmd='{cmd_str}' failed with error-code '{return_code}':\n{std_err_str}")
+
+    return return_code, std_out_str, std_err_str
 
 
 def run_interactive_command(cmd: (str | list),
@@ -228,16 +228,15 @@ def run_interactive_command(cmd: (str | list),
                             dryrun: bool = False):
     """
     Run an interactive command in a sub-process.
-    :param cmd: command to execute.
-    :param cwd: the working directory to use.
-    :param comment: a comment to enhance the log-output.
-    :param dryrun: if set to True, then do not execute but just output a comment describing the command.
-    :return: None.
+    :param: cmd: command to execute.
+    :param: cwd: the working directory to use.
+    :param: comment: a comment to enhance the log-output.
+    :param: dryrun: if set to True, then do not execute but just output a comment describing the command.
     """
     if isinstance(cmd, str):
         cmd = squeeze_chars(source=cmd, squeeze_set="\t\n\r ", replace_with=" ")
         cmd = cmd.split()
-    cmd_copy = list()
+    cmd_copy = []
     for c in cmd:
         if c.find(" ") != -1:
             cmd_copy.append(f"\"{c}\"")

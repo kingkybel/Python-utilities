@@ -24,20 +24,18 @@
 import argparse
 import re
 import sys
-
-import pandas as pd
 import os
-
-from colorama import Fore, Style
-
-from lib.file_system_object import find, FileSystemObjectType
-from lib.logger import error, log_info
+import pandas as pd
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../../Python-utilities")
 if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
+
+# pylint: disable=wrong-import-position
+from lib.file_system_object import find, FileSystemObjectType
+from lib.logger import error, log_info
 
 
 def load_replacements(file_path):
@@ -69,7 +67,7 @@ def perform_replacements(text, replacements):
     for _, row in replacements.iterrows():
         pattern = row[0]
         replacement = row[1]
-        if type(replacement) != str:
+        if not isinstance(replacement, str):
             error(error_code=-1, message=f"Row '{row}' ")
         pattern_is_regex = bool(row[2])
         replacement_is_regex = bool(row[3])
@@ -83,15 +81,14 @@ def perform_replacements(text, replacements):
                 text = re.sub(temp_placeholder, replacement, text)
             else:
                 text = re.sub(pattern, replacement, text)
+        # If it's a simple string replacement, we use Python's built-in replace function
+        elif replacement_is_regex:
+            # Swap with regex-based replacement but plain string match
+            text = text.replace(pattern, temp_placeholder)
+            text = re.sub(temp_placeholder, replacement, text)
         else:
-            # If it's a simple string replacement, we use Python's built-in replace function
-            if replacement_is_regex:
-                # Swap with regex-based replacement but plain string match
-                text = text.replace(pattern, temp_placeholder)
-                text = re.sub(temp_placeholder, replacement, text)
-            else:
-                # Plain string replacement
-                text = text.replace(pattern, replacement)
+            # Plain string replacement
+            text = text.replace(pattern, replacement)
 
     return text
 

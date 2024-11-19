@@ -23,6 +23,7 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import os
 import sys
 from os import PathLike
@@ -33,6 +34,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.bash import run_command, assert_tools_installed
 from lib.basic_functions import valid_absolute_path
 from lib.file_system_object import find, FileSystemObjectType

@@ -21,6 +21,7 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import os
 import sys
 from os import PathLike
@@ -33,6 +34,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.file_utils import read_file
 from lib.overrides import overrides
 from lib.basic_functions import is_empty_string
@@ -56,36 +58,31 @@ class CmakeFileSetCreator(ABCFileSetCreator):
                  ):
         super().__init__(project_path)
         if class_names is None:
-            class_names = list()
+            class_names = []
         self.__class_names = class_names
         if grpc_service_config_strings is None:
-            grpc_service_config_strings = list()
+            grpc_service_config_strings = []
         self.__grpc_service_config_strings = grpc_service_config_strings
         if templates is None:
-            templates = list()
+            templates = []
         self.__templates = templates
         self.__add_docker = add_docker
 
     @overrides(ABCFileSetCreator)
     def get_file_map_list(self) -> list[FileNameMapper]:
-        file_list = list()
-        file_list.append(
+        file_list = [
             FileNameMapper(template_file=f"{self.tpl_dir()}/do_build",
                            target_file=f"{self.project_dir()}/do_build",
-                           comment_style=CommentStyle.BASH))
-        file_list.append(
+                           comment_style=CommentStyle.BASH),
             FileNameMapper(template_file=f"{self.tpl_dir()}/CMakeLists.txt",
                            target_file=f"{self.project_dir()}/CMakeLists.txt",
-                           comment_style=CommentStyle.DOCKER))
-        file_list.append(
+                           comment_style=CommentStyle.DOCKER),
             FileNameMapper(template_file=f"{self.tpl_src_dir()}/CMakeLists.txt",
                            target_file=f"{self.src_dir()}/CMakeLists.txt",
-                           comment_style=CommentStyle.DOCKER))
-
-        file_list.append(
+                           comment_style=CommentStyle.DOCKER),
             FileNameMapper(template_file=f"{self.tpl_services_dir()}/CMakeLists.txt",
                            target_file=f"{self.services_dir()}/CMakeLists.txt",
-                           comment_style=CommentStyle.DOCKER))
+                           comment_style=CommentStyle.DOCKER)]
         if len(self.__class_names) > 0:
             file_list.append(
                 FileNameMapper(template_file=f"{self.tpl_classes_dir()}/CMakeLists.txt",
@@ -109,7 +106,7 @@ class CmakeFileSetCreator(ABCFileSetCreator):
 
     @overrides(ABCFileSetCreator)
     def get_tag_replacements(self) -> dict[str, str]:
-        tag_dict = dict()
+        tag_dict = {}
         tag_dict["{{cookiecutter.cmake_include_classes_sub_dir}}"] = ""
         tag_dict["{{cookiecutter.cmake_class_lib_targets}}"] = ""
         tag_dict["{{cookiecutter.cmake_include_grpc_sub_dir}}"] = ""
@@ -137,16 +134,18 @@ class CmakeFileSetCreator(ABCFileSetCreator):
             tag_dict["{{cookiecutter.cmake_grpc_services}}"] = self.__make_cmake_grpc_services()
             tag_dict["{{cookiecutter.cmake_test_include_dirs}}"] = \
                 f'target_include_directories("run_{self.project_name().lower()}_tests" PRIVATE ${{PROTO_CPP_SRC_DIR}})'
-            tag_dict["{{cookiecutter.cmake_grpc_common_defs}}"] = "set(PROTO_CPP_SRC_DIR ${CMAKE_SOURCE_DIR}/src/proto_cpp)\n" \
-                                                     "include(${CMAKE_SOURCE_DIR}/src/grpc/cmake/common.cmake)"
+            tag_dict[
+                "{{cookiecutter.cmake_grpc_common_defs}}"] = "set(PROTO_CPP_SRC_DIR ${CMAKE_SOURCE_DIR}/src/proto_cpp)\n" \
+                                                             "include(${CMAKE_SOURCE_DIR}/src/grpc/cmake/common.cmake)"
             tag_dict["{{cookiecutter.cmake_grpc_common_libs}}"] = "  absl::flags\n" \
-                                                     "  absl::flags_parse\n" \
-                                                     "  ${_REFLECTION}\n" \
-                                                     "  ${_GRPC_GRPCPP}\n" \
-                                                     "  ${_PROTOBUF_LIBPROTOBUF}"
+                                                                  "  absl::flags_parse\n" \
+                                                                  "  ${_REFLECTION}\n" \
+                                                                  "  ${_GRPC_GRPCPP}\n" \
+                                                                  "  ${_PROTOBUF_LIBPROTOBUF}"
 
         if len(self.__class_names) == 0 and len(self.__grpc_service_config_strings) == 0:
-            tag_dict["{{cookiecutter.cmake_services_project_part}}"] = read_file(f"{self.tpl_services_dir()}/CMake_project.part")
+            tag_dict["{{cookiecutter.cmake_services_project_part}}"] = read_file(
+                f"{self.tpl_services_dir()}/CMake_project.part")
 
         if len(self.__grpc_service_config_strings) + len(self.__class_names) + len(self.__templates) == 0:
             tag_dict["{{cookiecutter.cmake_include_subdir_test}}"] = ""
@@ -258,7 +257,7 @@ class CmakeFileSetCreator(ABCFileSetCreator):
                                f"build\n"
 
             if is_empty_string(docker_cmds):
-                docker_cmds += f"docker compose build\n"
+                docker_cmds += "docker compose build\n"
 
         return docker_cmds
 

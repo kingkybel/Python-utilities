@@ -21,6 +21,7 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import os
 import sys
 from os import PathLike
@@ -31,6 +32,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.overrides import overrides
 from tools.cpp_project.file_name_mapper import FileNameMapper, CommentStyle
 from tools.cpp_project.abc_file_set_creator import ABCFileSetCreator
@@ -52,4 +54,4 @@ class MainOnlyFileSetCreator(ABCFileSetCreator):
 
     @overrides(ABCFileSetCreator)
     def get_tag_replacements(self) -> dict[str, str]:
-        return dict()
+        return {}

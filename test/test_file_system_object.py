@@ -34,6 +34,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.file_system_object import make_path_list, glob_path_patterns, GlobMode, mkdir, remove, touch, pushdir, \
     current_dir, popdir
 from lib.logger import LogLevels, set_logger
@@ -127,7 +128,7 @@ class FileSystemObjectTests(unittest.TestCase):
         self.assertTrue(has_thrown)
 
         has_thrown = False
-        returned_list = list()
+        returned_list = []
         try:
             returned_list = glob_path_patterns("/tmp/test-glob/sub/subXXX", glob_mode=GlobMode.KEEP_EMPTY)
         except FileNotFoundError:

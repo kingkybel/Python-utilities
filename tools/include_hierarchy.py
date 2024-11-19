@@ -33,6 +33,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.bash import get_logged_in_user
 from lib.file_system_object import find, FileSystemObjectType
 from lib.file_utils import read_file
@@ -78,7 +79,7 @@ if __name__ == "__main__":
     directory = found_args.root_dir
     cpp_files = find(paths=[f"{directory}/src", f"{directory}/include"],
                      file_type_filter=FileSystemObjectType.FILE)
-    included_files = dict()
+    included_files = {}
 
     # Extract includes from all files
     for cpp_file in cpp_files:
@@ -88,7 +89,7 @@ if __name__ == "__main__":
     for include in included_files:
         included_files = also_included_by(include, included_files)
 
-    hierarchy = dict()
+    hierarchy = {}
     for include in included_files:
         hierarchy[include] = 0
         for inc_by in included_files[include]:

@@ -61,11 +61,11 @@ class FileSystemObjectType(ExtendedFlag):
     FILE = auto()
     EMPTY_DIR = auto()
     NOT_EMPTY_DIR = auto()
-    DIR = EMPTY_DIR | NOT_EMPTY_DIR
     STALE_LINK = auto()
     NOT_STALE_LINK = auto()
-    LINK = STALE_LINK | NOT_STALE_LINK
     MOUNT = auto()
+    DIR = EMPTY_DIR | NOT_EMPTY_DIR
+    LINK = STALE_LINK | NOT_STALE_LINK
     ALL = FILE | DIR | LINK | MOUNT
 
     @classmethod

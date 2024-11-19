@@ -95,7 +95,7 @@ def input_value(var_name: str, help_str: str, var_type=str, regex_str=None, cons
         if var_type == float:
             return float(reval)
         return reval
-
+    return ""
 
 def squeeze_chars(source: str, squeeze_set: str, replace_with: str = ' ') -> str:
     """
@@ -133,7 +133,7 @@ def remove_control_chars(text: str) -> str:
     text = text.encode("ascii", "ignore")
     text = text.decode()
     control_chars = ''.join(map(chr, itertools.chain(range(0x00, 0x20), range(0x7f, 0xa0))))
-    control_char_re = re.compile('[%s]' % re.escape(control_chars))
+    control_char_re = re.compile(f'[{re.escape(control_chars)}]')
     return control_char_re.sub(' ', text)
 
 

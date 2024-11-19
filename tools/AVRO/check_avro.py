@@ -33,6 +33,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.logger import error, log_warning
 from tools.AVRO.avro_kafka import AvroKafka
 
@@ -61,7 +62,7 @@ def parse_and_validate_arguments():
     parser.add_argument("--schema-file", "-s",
                         default="schema.avsc",
                         type=str,
-                        help=f'Schema file to check against, default "schema.avsc"')
+                        help='Schema file to check against, default "schema.avsc"')
     parser.add_argument("--data-file", "-d",
                         default="data.json",
                         type=str,

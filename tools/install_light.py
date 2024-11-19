@@ -32,6 +32,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.bash import get_logged_in_user, assert_is_root
 from lib.file_system_object import mkdir, find, FileSystemObjectType, symbolic_link, cp, chown
 from lib.string_utils import input_value
@@ -48,7 +49,7 @@ if __name__ == "__main__":
         help="alnum project-name. will be appended to include-directory as sub-dir, if not None, default None")
     parser.add_argument(
         "--root_dir", "-r",
-        default=f".",
+        default=".",
         type=str,
         help='Location of include, build/bin and build/lib folders')
     parser.add_argument(
@@ -74,7 +75,7 @@ if __name__ == "__main__":
                                            var_type=bool,
                                            help_str="Accept empty project sub-directory? ")
         if not accept_empty_prj_sub:
-            exit(0)
+            sys.exit(0)
 
     local_inc_dir = mkdir(f"{found_args.local_dir}/include{prj_sub}", expect_1=True)
     inc_dir = mkdir(f"{found_args.install_dir}/include{prj_sub}", expect_1=True, allow_system_paths=True)

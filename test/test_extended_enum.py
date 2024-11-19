@@ -33,6 +33,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.exceptions import ExtendedEnumError
 from lib.extended_enum import ExtendedEnum, EnumListType, ExtendedFlag
 from lib.logger import LogLevels, set_logger

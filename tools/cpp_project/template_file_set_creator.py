@@ -21,6 +21,7 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import os
 import sys
 from os import PathLike
@@ -31,6 +32,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.logger import error
 from lib.string_utils import is_cpp_id
 from lib.basic_functions import is_empty_string
@@ -47,7 +49,7 @@ class TemplateFileSetCreator(ABCFileSetCreator):
     def __init__(self, project_path: (str | PathLike), template_config_str: str):
         super().__init__(project_path)
         if is_empty_string(template_config_str):
-            error(f"Configuration for template is empty")
+            error("Configuration for template is empty")
         name_and_type = template_config_str.split(":")
         if len(name_and_type) < 2:
             error(f"Invalid template config str '{template_config_str}. Needs at least one type.")
@@ -192,7 +194,7 @@ class TemplateFileSetCreator(ABCFileSetCreator):
         variable_definitions = ""
         num_types = len(self.__typenames)
         for i in range(num_types):
-            tmpl_type = self.__concrete_types_to_rotate[i % len(self.__concrete_types_to_rotate)]
+            # tmpl_type = self.__concrete_types_to_rotate[i % len(self.__concrete_types_to_rotate)]
             variable_definitions += f"{self.__typenames[i].lower()}_var"
             if i < num_types - 1:
                 variable_definitions += ", "

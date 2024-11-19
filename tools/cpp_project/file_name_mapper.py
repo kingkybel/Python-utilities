@@ -21,6 +21,7 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import os
 import sys
 from enum import auto
@@ -30,6 +31,7 @@ this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/..")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.basic_functions import valid_absolute_path
 from lib.extended_enum import ExtendedEnum
 
@@ -61,6 +63,7 @@ class CommentStyle(ExtendedEnum):
             return "###"
         if self == CommentStyle.PROTO:
             return "////"
+        return ""
 
     def cont(self) -> str:
         if self == CommentStyle.NONE:
@@ -79,6 +82,7 @@ class CommentStyle(ExtendedEnum):
             return "# "
         if self == CommentStyle.PROTO:
             return "// "
+        return ""
 
     def end(self) -> str:
         if self == CommentStyle.NONE:
@@ -97,7 +101,7 @@ class CommentStyle(ExtendedEnum):
             return "###"
         if self == CommentStyle.PROTO:
             return "////"
-
+        return ""
 
 class FileNameMapper:
     def __init__(self,
@@ -109,7 +113,7 @@ class FileNameMapper:
         if isinstance(comment_style, str):
             comment_style = CommentStyle.from_string(comment_style)
         self.__comment_style = comment_style
-        self.__tag_replacements = dict()
+        self.__tag_replacements = {}
 
     def template_file(self) -> str:
         return self.__template_file

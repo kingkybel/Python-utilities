@@ -32,6 +32,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.string_utils import squeeze_chars, matches_any, normalise_sentence, roman_to_integer, is_roman_numeral
 from lib.logger import LogLevels, set_logger
 

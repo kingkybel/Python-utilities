@@ -44,8 +44,8 @@ from lib.string_utils import squeeze_chars
 def generate_incremental_filename(filename: (str | PathLike), allow_system_paths: bool = False) -> str:
     """
     Generate a filename with incremental numbers if file exists.
-    :param filename: The basic path of the file, may contain spaces, which will be replaced by underscores.
-    :param allow_system_paths: allow to manipulate system paths
+    :param: filename: The basic path of the file, may contain spaces, which will be replaced by underscores.
+    :param: allow_system_paths: allow to manipulate system paths
     :return: A unique filename with an incremental number.
     """
     filename = squeeze_chars(source=str(filename), squeeze_set="\n\t\r ", replace_with="_")

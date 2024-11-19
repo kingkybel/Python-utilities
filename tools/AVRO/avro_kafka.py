@@ -21,12 +21,13 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 from os import PathLike
+from io import BytesIO
 import fastavro
 from fastavro.schema import load_schema
 from fastavro import writer, reader
 from confluent_kafka import Producer, Consumer, KafkaError, TopicPartition
-from io import BytesIO
 
 from lib.json_object import JsonObject
 
@@ -78,7 +79,7 @@ class AvroKafka:
     def deserialize_from_avro(self, avro_data):
         """
         Deserialize JSON document using the AVRO schema.
-        :param avro_data:
+        :param: avro_data:
         :return:
         """
         bytes_reader = BytesIO(avro_data)
@@ -89,7 +90,7 @@ class AvroKafka:
     def produce_to_kafka(self, topic):
         """
         Produce a Kafka message to Kafka.
-        :param topic: topic of the message
+        :param: topic: topic of the message
         """
         avro_data = self.serialize_to_avro()
         self.producer.produce(topic, avro_data)
@@ -99,8 +100,7 @@ class AvroKafka:
     def consume_from_kafka(self, topics: str | list[str]):
         """
         Consume a Kafka message on Kafka.
-        :param topics: the topics to consume
-        :return:
+        :param: topics: the topics to consume
         """
         if isinstance(topics, str):
             topics = [topics]
@@ -112,9 +112,8 @@ class AvroKafka:
             if msg.error():
                 if msg.error().code() == KafkaError._PARTITION_EOF:
                     continue
-                else:
-                    print(msg.error())
-                    break
+                print(msg.error())
+                break
             avro_data = msg.value()
             try:
                 deserialized_data = self.deserialize_from_avro(avro_data)
@@ -129,9 +128,9 @@ class AvroKafka:
                                  offset: int):
         """
         Query a Kafka message at a specific partition and offset and resend it.
-        :param topic: Topic to query and resend the message from.
-        :param partition: Partition to query.
-        :param offset: Offset to query.
+        :param: topic: Topic to query and resend the message from.
+        :param: partition: Partition to query.
+        :param: offset: Offset to query.
         """
         self.consumer.assign([TopicPartition(topic, partition, offset)])
         msg = self.consumer.poll(timeout=10.0)

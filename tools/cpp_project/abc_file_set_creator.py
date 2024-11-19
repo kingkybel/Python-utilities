@@ -21,6 +21,7 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import os
 import sys
 from abc import ABC, abstractmethod
@@ -32,6 +33,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.file_system_object import remove, mkdir
 from lib.basic_functions import valid_absolute_path, now_year, now_date
 from lib.file_utils import read_file, write_file, get_git_config

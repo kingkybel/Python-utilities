@@ -21,6 +21,7 @@
 # @date: 2024-07-13
 # @author: Dieter J Kybelksties
 
+from __future__ import annotations
 import os
 import sys
 from os import PathLike
@@ -31,14 +32,15 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from tools.cpp_project.abc_file_set_creator import ABCFileSetCreator
+from tools.cpp_project.grpc_messaging_type import GrpcMessagingType
 from tools.cpp_project.file_name_mapper import FileNameMapper, CommentStyle
 from lib.basic_functions import is_empty_string
 from lib.exceptions import ExtendedEnumError
 from lib.logger import error, log_warning
 from lib.overrides import overrides
 from lib.string_utils import is_cpp_id
-from tools.cpp_project.grpc_messaging_type import GrpcMessagingType
 
 
 class GrpcFileSetCreator(ABCFileSetCreator):
@@ -49,7 +51,7 @@ class GrpcFileSetCreator(ABCFileSetCreator):
                  add_docker: bool = False):
         super().__init__(project_path)
         if is_empty_string(proto_service_request_str):
-            error(f"Illegal (empty) gRPC string - don't now what to do.")
+            error("Illegal (empty) gRPC string - don't now what to do.")
         self.__port = port
         self.__add_docker = add_docker
         self.__proto = ""
@@ -81,7 +83,7 @@ class GrpcFileSetCreator(ABCFileSetCreator):
 
     @overrides(ABCFileSetCreator)
     def get_file_map_list(self) -> list[FileNameMapper]:
-        file_list = list()
+        file_list = []
         service = self.service()
         # request = self.request()
         conn_type_str = self.msging_type()

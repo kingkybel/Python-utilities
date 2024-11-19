@@ -32,6 +32,7 @@ if not os.path.isdir(dk_lib_dir):
     raise FileNotFoundError(f"Library directory '{dk_lib_dir}' cannot be found")
 sys.path.insert(0, dk_lib_dir)
 
+# pylint: disable=wrong-import-position
 from lib.exceptions import JsonKeyError, JsonPathFormatError, JsonIndexKeyError, JsonStringKeyError, JsonValueMismatch
 from lib.file_system_object import remove
 from lib.file_utils import write_file
@@ -365,7 +366,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(json_obj.get("key/path/[3]/mixed/[$]"), "value")
         self.assertEqual(json_obj.get("key/path/[3]/mixed/[0]"), "value")
         self.assertEqual(json_obj.get("key/path/[$]/mixed/[0]"), "value")
-        self.assertEqual(json_obj.get("key/path/[2]"), dict())
+        self.assertEqual(json_obj.get("key/path/[2]"), {})
 
     def test_failing_get_and_set(self):
         json_obj = JsonObject(json_str="")
