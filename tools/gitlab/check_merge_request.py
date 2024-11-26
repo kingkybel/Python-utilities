@@ -27,10 +27,10 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import pandas as pd
 import sys
 from os import PathLike
 import requests
-
 
 GITLAB_COM_API_V_4 = "https://gitlab.com/api/v4"
 
@@ -79,7 +79,7 @@ def get_git_remote_url():
 def extract_gitlab_project_id(access_token: str, repo_name: str) -> str | None:
     """
     Extract the GitLab project ID from the remote URL.
-    :param: access_token: Access token for the current user
+    :param: gitlab_access_token: Access token for the current user
     :param: repo_name: name of the repository/project
     :return: the project id for the repository/project
     """
@@ -124,7 +124,7 @@ def get_merge_request_status(api_url: str, project_id: str, branch_name: str, ac
         reval.set("error",
                   f" Unable to fetch merge requests. {response.text} for {project_id} and branch {branch_name}",
                   force=True)
-        reval.set("status_code",response.status_code, force=True)
+        reval.set("status_code", response.status_code, force=True)
         return reval
 
     merge_request_json = JsonObject(json.dumps(response.json()))
@@ -149,13 +149,7 @@ def get_merge_request_status(api_url: str, project_id: str, branch_name: str, ac
     return reval
 
 
-def merge_requests_on_local_directories(project_dirs: list[PathLike | str]) -> JsonObject:
-    access_token = os.getenv("GITLAB_TOKEN")  # Set as an environment variable
-
-    if not access_token:
-        print("Error: Please set the GITLAB_TOKEN environment variable.")
-        sys.exit(1)
-
+def merge_requests_on_local_directories(project_dirs: list[PathLike | str], access_token: str) -> JsonObject:
     merge_requests_combined = JsonObject("[]")
     for project_dir in project_dirs:
         branch_name = get_current_local_branch(project_dir)
@@ -176,6 +170,11 @@ if __name__ == "__main__":
                         type=str,
                         default=None,
                         help="output file name, default output to stdout")
+    parser.add_argument("--gitlab-access-token", "-a",
+                        type=str,
+                        default=None,
+                        help="Access token to the gitlab API. If not set then environment variable " \
+                             "'GITLAB_ACCESS_TOKEN' is used.")
     local_or_remote = parser.add_mutually_exclusive_group(required=True)
     local_or_remote.add_argument("--project-name", "-p",
                                  type=str,
@@ -195,7 +194,14 @@ if __name__ == "__main__":
 
     local_dirs = []
     args = parser.parse_args()
-    if args.project_name:
+
+    gitlab_access_token = os.getenv("GITLAB_TOKEN")
+    if args.gitlab_access_token is not None:
+        gitlab_access_token = args.gitlab_access_token
+    if not gitlab_access_token:
+        error("No access-token for gitlab is set. Either export GITLAB_TOKEN=<your token> or pass as parameter.")
+
+    if args.project_name is not None:
         do_local = False
     elif args.local_project_dir:
         local_dirs = args.local_project_dir
@@ -203,9 +209,11 @@ if __name__ == "__main__":
         local_dirs = find(paths=args.repo_base_dir, file_type_filter=FileSystemObjectType.DIR, min_depth=1, max_depth=1)
         print(local_dirs)
 
-    merge_requests = merge_requests_on_local_directories(local_dirs)
+    merge_requests = merge_requests_on_local_directories(local_dirs, access_token=gitlab_access_token)
 
     if args.output_file is not None:
-        write_file(filename=valid_absolute_path(f"{this_dir}/{args.output_file}"), content=merge_requests.to_str())
+        df = pd.json_normalize(merge_requests.get())
+        df.to_excel("output.xlsx", index=False)
+        # write_file(filename=valid_absolute_path(f"{this_dir}/{args.output_file}"), content=merge_requests.to_str())
     else:
         print(merge_requests.to_str())

@@ -165,6 +165,8 @@ class JsonObject:
         iterator = self.json_
         for key_index, key in enumerate(keys):
             # check the key is compatible with the container
+            if iterator is None:
+                raise JsonGeneralError(f"get({keys}, {default}) and key_index {key_index}({key}) iterator is None")
             if isinstance(iterator, list) and not isinstance(key, JsonIndexKey):
                 raise JsonIndexRequired(key_index=key_index, keys=keys, json_obj=iterator)
             if isinstance(iterator, dict) and not isinstance(key, JsonStringKey):
@@ -199,12 +201,13 @@ class JsonObject:
                 elif isinstance(key, JsonStringKey):
                     if isinstance(iterator, list):
                         raise JsonIndexRequired(key_index=key_index, keys=keys, json_obj=iterator)
-
+                    if not isinstance(iterator, dict):
+                        raise JsonKeyStringRequired(key_index=key_index, keys=keys, json_obj=iterator)
                     # if we are at the last key then either
                     # - return the value, if it exists
                     # - otherwise if default is defined return the default, error otherwise
                     if is_last_key:
-                        if dict(iterator).get(key.get()) is not None:
+                        if iterator is not None and dict(iterator).get(key.get()) is not None:
                             return dict(iterator).get(key.get())
                         if default is not None:
                             return default

@@ -27,7 +27,7 @@ import collections.abc
 import os
 import sys
 from abc import ABC, abstractmethod
-from typing import Sized, Iterable
+from typing import Iterable
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
