@@ -23,6 +23,7 @@
 
 from __future__ import annotations
 
+
 class BaseScriptError(Exception):
     def __init__(self, message: str = None):
         if message is None:
@@ -67,18 +68,18 @@ class JsonGeneralError(JsonError):
         super().__init__(message)
 
 
-class JsonPartialKeyError(JsonError):
+class JsonMalformedKey(JsonError):
     pass
 
 
-class JsonIndexKeyError(JsonPartialKeyError):
+class JsonMalformedIndex(JsonMalformedKey):
     def __init__(self, index: (str | int)):
         self.message = f"Index '{index}' (type={type(index)}) is not a valid index. " \
                        "Only 0, positive ints or '^'/'$' are allowed"
         super().__init__(self.message)
 
 
-class JsonStringKeyError(JsonPartialKeyError):
+class JsonMalformedStringKey(JsonMalformedKey):
     def __init__(self, key: str):
         self.message = f"Json-key '{key}' (type={type(key)}) is not a valid index. " \
                        "Must not have whitespace at front or back, or contain '[', ']', '/' or '\"'"
@@ -98,27 +99,27 @@ class JsonPathFormatError(JsonError, ValueError):
         super().__init__(self.message)
 
 
-class JsonKeyError(JsonError, KeyError):
-    def __init__(self, key, keys: list, json_obj=None):
+class JsonKeyStringRequired(JsonError, KeyError):
+    def __init__(self, key_index: int, keys: list[str], json_obj=None):
         if json_obj is not None:
-            self.message = f"Key '{keys[key]}' at key-number {key} requires " \
-                           "object type(dict) but found '{type(json_obj)}'"
+            self.message = f"Object at depth {key_index} has type '{type(json_obj)}', but " \
+                           f"key '{keys[key_index]}' requires '{list}'"
         elif json_obj is not None:
-            self.message = f"Key '{keys[key]}' at key-number {key} cannot be found in '{json_obj}'"
+            self.message = f"Index '{keys[key_index]}' at index {key_index} is out of bounds [0..{len(json_obj) - 1}"
         else:
-            self.message = f"Key '{keys[key]}' at key-number {key} found empty json-object'"
+            self.message = f"Index '{keys[key_index]}' at index {key_index} cannot be found in empty json-object'"
         super().__init__(self.message)
 
 
-class JsonIndexError(JsonError, KeyError):
-    def __init__(self, key_number: int, keys: list, json_obj=None):
+class JsonIndexRequired(JsonError, KeyError):
+    def __init__(self, key_index: int, keys: list[str], json_obj=None):
         if json_obj is not None:
-            self.message = f"Index '{keys[key_number]}' at key-number {key_number} requires " \
-                           "object type(list) but found '{type(json_obj)}'"
+            self.message = f"Object at depth {key_index} has type '{type(json_obj)}', but " \
+                           f"key '{keys[key_index]}' requires '{dict}'"
         elif json_obj is not None:
-            self.message = f"Index '{keys[key_number]}' at index {key_number} is out of bounds [0..{len(json_obj) - 1}"
+            self.message = f"Key '{keys[key_index]}' at key-number {key_index} cannot be found in '{json_obj}'"
         else:
-            self.message = f"Index '{keys[key_number]}' at index {key_number} cannot be found in empty json-object'"
+            self.message = f"Key '{keys[key_index]}' at key-number {key_index} found empty json-object'"
         super().__init__(self.message)
 
 

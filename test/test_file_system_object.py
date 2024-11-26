@@ -36,7 +36,7 @@ sys.path.insert(0, dk_lib_dir)
 
 # pylint: disable=wrong-import-position
 from lib.file_system_object import make_path_list, glob_path_patterns, GlobMode, mkdir, remove, touch, pushdir, \
-    current_dir, popdir
+    current_dir, popdir, find, FileSystemObjectType
 from lib.logger import LogLevels, set_logger
 
 
@@ -176,6 +176,41 @@ class FileSystemObjectTests(unittest.TestCase):
         self.assertEqual(current_dir(), f"{tmp_dir}/sub1/sub11")
         popdir()
         self.assertEqual(current_dir(), tmp_dir)
+
+        remove(tmp_dir)
+
+    def test_find(self):
+        tmp_dir = "/tmp/test_find"
+        mkdir([f"{tmp_dir}/sub1/sub11/sub111/sub1111/sub11111",
+               f"{tmp_dir}/sub1/sub12/sub121",
+               f"{tmp_dir}/sub1/sub12/sub122/sub1221",
+               f"{tmp_dir}/sub1/sub12/sub122/sub1222",
+               f"{tmp_dir}/sub2/sub21",
+               f"{tmp_dir}/sub2/sub22"])
+        touch([f"{tmp_dir}/sub1/sub11/sub111/sub1111/sub11111/xxx.txt",
+               f"{tmp_dir}/sub1/sub12/sub121/xxx1.txt",
+               f"{tmp_dir}/sub1/sub12/sub122/sub1221/xxx1.txt",
+               f"{tmp_dir}/sub1/sub12/sub122/sub1222/xxx2.txt",
+               f"{tmp_dir}/sub2/sub21/xxx.txt",
+               f"{tmp_dir}/sub2/sub22/xxx.txt"])
+        pushdir(tmp_dir)
+        results = find(f"{tmp_dir}")
+        self.assertEqual(20,len(results) )
+        results = find(f"{tmp_dir}", file_type_filter=FileSystemObjectType.FILE)
+        self.assertEqual(6,len(results))
+        results = find(f"{tmp_dir}", file_type_filter=FileSystemObjectType.DIR)
+        self.assertEqual(14,len(results))
+        results = find(f"{tmp_dir}", file_type_filter=FileSystemObjectType.DIR, name_patterns=r"xxx.*")
+        self.assertEqual(0,len(results))
+        results = find(f"{tmp_dir}", file_type_filter=FileSystemObjectType.FILE, name_patterns=r"xxx.*")
+        self.assertEqual(6, len(results))
+        results = find(f"{tmp_dir}", file_type_filter=FileSystemObjectType.FILE, name_patterns=r"xxx\.t*")
+        self.assertEqual(3, len(results))
+        results = find(f"{tmp_dir}", file_type_filter=FileSystemObjectType.DIR, min_depth=1, max_depth=1)
+        self.assertEqual(2, len(results))
+        results = find(f"{tmp_dir}", file_type_filter=FileSystemObjectType.DIR, min_depth=0, max_depth=2)
+        # print(results)
+        self.assertEqual(7, len(results))
 
         remove(tmp_dir)
 

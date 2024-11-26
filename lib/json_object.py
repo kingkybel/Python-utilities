@@ -36,11 +36,11 @@ sys.path.insert(0, dk_lib_dir)
 
 # pylint: disable=wrong-import-position
 from lib.basic_functions import is_empty_string
-from lib.exceptions import JsonGeneralError, JsonError, JsonKeyError, JsonIndexError, JsonValueMismatch
+from lib.exceptions import JsonGeneralError, JsonError, JsonKeyStringRequired, JsonIndexRequired, JsonValueMismatch
 from lib.file_system_object import find
 from lib.json_key_path import JsonKeyPath, JsonIndexKey, JsonStringKey
 from lib.logger import log_command
-from lib.string_utils import squeeze_chars
+from lib.string_utils import squeeze_chars, get_random_string
 
 
 class JsonObject:
@@ -50,7 +50,7 @@ class JsonObject:
                  json_str: (str | list) = None,
                  filename: (str | PathLike) = None,
                  json_obj: (list | dict) = None):
-        self.json_ = None
+        self.json_: dict | list | None = None
         if json_str is not None:
             if squeeze_chars(source=json_str, squeeze_set="\n\t\r ", replace_with=" ") == "":
                 json_str = "{}"
@@ -72,9 +72,6 @@ class JsonObject:
         if is_empty_string(json_str):
             json_str = "{}"
         self.json_ = json.loads(json_str)
-
-    def get_json(self):
-        return self.json_
 
     @classmethod
     def convert_sets_to_vectors(cls, obj):
@@ -114,7 +111,7 @@ class JsonObject:
                 raise
             file.close()
 
-    def to_file(self, filename: (str | PathLike), indent: int = 4, encoding:str="utf-8", dryrun: bool = False):
+    def to_file(self, filename: (str | PathLike), indent: int = 4, encoding: str = "utf-8", dryrun: bool = False):
         log_command(f"JsonObject.to_file({filename})", dryrun=dryrun)
         if not dryrun:
             with open(filename, 'w', encoding=encoding) as file:
@@ -153,76 +150,78 @@ class JsonObject:
                 reval = -1
         return reval, failed_files
 
-    @classmethod
-    def __try_get_key(cls, json_obj, key: (int | str)):
-        if not isinstance(json_obj, (dict | list)):
-            return JsonObject.NOT_FOUND
-        if isinstance(json_obj, list) and not isinstance(key, int):
-            return JsonObject.NOT_FOUND
-        try:
-            return json_obj[key]
-        except KeyError:
-            return JsonObject.NOT_FOUND
-
     def key_exists(self, keys: (str | list[str])):
-        not_exist_str = "KEY-DOES-NOT-EXIST"
+        not_exist_str = "KEY-DOES-NOT-EXIST-" + get_random_string(47, "0123456789ABCDEF")
         if self.get(keys, default=not_exist_str) == not_exist_str:
             return False
         return True
 
-    def get(self, keys: (str | list[str]), default=None):
+    def get(self, keys: (str | list[str] | None) = None, default=None):
+        if keys is None:
+            return self.json_
         if isinstance(keys, str):
             keys = JsonKeyPath(keys).key_list()
-        if isinstance(keys[0], JsonIndexKey) and not isinstance(self.json_, list):
-            if default is not None:
-                return default
-            raise JsonKeyError(key=0, keys=keys, json_obj=self.json_)
+
         iterator = self.json_
-        for i, cur_key in enumerate(keys):
+        for key_index, key in enumerate(keys):
+            # check the key is compatible with the container
+            if isinstance(iterator, list) and not isinstance(key, JsonIndexKey):
+                raise JsonIndexRequired(key_index=key_index, keys=keys, json_obj=iterator)
+            if isinstance(iterator, dict) and not isinstance(key, JsonStringKey):
+                raise JsonKeyStringRequired(key_index=key_index, keys=keys, json_obj=iterator)
+
+            is_last_key = (key_index >= len(keys) - 1)
+
             try:
-                is_last = (i == len(keys) - 1)
-                if isinstance(cur_key, JsonIndexKey):
-                    if not isinstance(iterator, list):
-                        if default is not None:
-                            return default
-                        raise JsonIndexError(key_number=i, keys=keys, json_obj=iterator)
-                    if cur_key.is_start:
-                        index = 0
-                    elif cur_key.is_end:
-                        index = len(iterator) - 1
+                if isinstance(key, JsonIndexKey):
+                    index = JsonObject.__get_absolute_index(key_index=key_index, keys=keys, json_obj=iterator,
+                                                            for_insert=False)
+
+                    # if we are at a leaf we return:
+                    # - for indices greater/equal the length of the list: the default if defined, error otherwise
+                    # - the value at the index, if index is in range
+                    if is_last_key:
+                        if int(index) >= len(iterator):
+                            if default is not None:
+                                return default
+                            raise JsonIndexRequired(key_index=key_index, keys=keys, json_obj=iterator)
+                        return list(iterator)[int(index)]
+
+                    # We're not at a leaf, so if the index is in range, then we advance the iterator
+                    if int(index) < len(iterator):
+                        iterator = list(iterator)[int(index)]
                     else:
-                        index = cur_key.index
-                    if is_last:
-                        if int(index) > len(iterator) - 1:
-                            if default is not None:
-                                return default
-                            raise JsonIndexError(key_number=i, keys=keys, json_obj=iterator)
-                        return iterator[int(index)]
-                    iterator = iterator[int(index)]
-                elif isinstance(cur_key, JsonStringKey):
-                    if isinstance(iterator, list):
+                        # otherwise if a default is defined return it, otherwise error
                         if default is not None:
                             return default
-                        raise JsonKeyError(key=i, keys=keys, json_obj=iterator)
-                    if is_last:
-                        try:
-                            return iterator[cur_key.key]
-                        except KeyError as e:
-                            if default is not None:
-                                return default
-                            raise JsonKeyError(key=i, keys=keys, json_obj=iterator) from e
-                    iterator = iterator[cur_key.key]
-            except JsonKeyError:
+                        raise JsonIndexRequired(key_index=key_index, keys=keys, json_obj=iterator)
+
+                elif isinstance(key, JsonStringKey):
+                    if isinstance(iterator, list):
+                        raise JsonIndexRequired(key_index=key_index, keys=keys, json_obj=iterator)
+
+                    # if we are at the last key then either
+                    # - return the value, if it exists
+                    # - otherwise if default is defined return the default, error otherwise
+                    if is_last_key:
+                        if dict(iterator).get(key.get()) is not None:
+                            return dict(iterator).get(key.get())
+                        if default is not None:
+                            return default
+                        raise JsonKeyStringRequired(key_index=key_index, keys=keys, json_obj=iterator)
+                    # it's not a list and not the last key, so it must be a dict, so advance the iterator
+                    iterator = dict(iterator)[key.get()]
+            except JsonKeyStringRequired:
                 raise
             except KeyError as k:
                 if default is not None:
                     return default
-                error_msg = f"Cannot get key number '{i}' in json {iterator}. {k}"
+                error_msg = f"Cannot get key number '{key_index}' in json {iterator}. {k}"
                 raise JsonGeneralError(message=error_msg) from k
         return iterator
 
     def set(self,
-            keys: (str | list[str]),
+            keys: (str | list[str] | JsonKeyPath),
             value: (bool | int | float | str | list | dict),
             force: bool = False,
             dryrun: bool = False):
@@ -233,104 +232,98 @@ class JsonObject:
         path = JsonKeyPath(keys)
         keys = path.key_list()
 
-        log_command(f"JsonObject.set(keys={str(path)}, value={value}, force={force} dryrun={dryrun}")
         if not dryrun:
+            self.__change_root_or_raise(keys, force)
             if force:
-                self.__set_forced(keys, value)
+                self.__make_forced_path(keys, value)
+                self.__set_impl(keys, value)
             else:
-                self.__set_not_forced(keys, value)
+                self.__set_impl(keys, value)
 
-    def __set_forced(self, keys: list[str], value: (bool | int | float | str | list | dict)):
-        # if the root element is the wrong type then make this an empty root element of the correct type
+    @classmethod
+    def __get_absolute_index(cls, key_index: int, keys, json_obj, for_insert: bool):
+        if not isinstance(json_obj, list):
+            raise JsonIndexRequired(key_index=key_index, keys=keys, json_obj=json_obj)
+        cur_key = keys[key_index]
+        if cur_key.is_start_symbol:
+            index = 0
+        elif cur_key.is_end_symbol:
+            index = len(json_obj) - 1
+            if for_insert:
+                index += 1
+        else:
+            index = cur_key.index
+        return index
+
+    def __change_root_or_raise(self, keys: JsonKeyPath, force: bool):
         if isinstance(keys[0], JsonIndexKey) and not isinstance(self.json_, list):
-            self.json_ = []
+            if force:
+                self.json_ = []
+            else:
+                raise JsonIndexRequired(key_index=0, keys=keys.list_of_keys, json_obj=self.json_)
         elif isinstance(keys[0], JsonStringKey) and not isinstance(self.json_, dict):
-            self.json_ = {}
-
-        prev_iterator = None
-        prev_key = None
-        iterator = self.json_
-        for i, cur_key in enumerate(keys):
-            is_first = (i == 0)
-            is_last = (i == len(keys) - 1)
-            next_key = None
-            next_key_is_list = False
-            if not is_last:
-                next_key = keys[i + 1]
-                next_key_is_list = isinstance(next_key, JsonIndexKey)
-            if not is_first:
-                prev_key = keys[i - 1]
-            if next_key_is_list:
-                blank_object_type = list
+            if force:
+                # we need to change the variable type here
+                # pylint: disable=redefined-variable-type
+                self.json_ = {}
             else:
-                blank_object_type = dict
-                if is_last and isinstance(value, (str, bool, int, float)):
-                    blank_object_type = type(value)
+                raise JsonKeyStringRequired(key_index=0, keys=keys.list_of_keys, json_obj=self.json_)
 
-            if isinstance(cur_key, JsonIndexKey):
-                if not isinstance(iterator, list):
-                    iterator = []
-                if cur_key.is_start:
-                    iterator.insert(0, blank_object_type())
-                    index = 0
-                elif cur_key.is_end:
-                    iterator.append(blank_object_type())
-                    index = len(iterator) - 1
-                else:
-                    index = cur_key.index
-                    for _ in range(len(iterator), int(index) + 1):
-                        iterator.append(blank_object_type())
-
-                if is_last:
-                    iterator[int(index)] = value
-                elif not isinstance(iterator[int(index)], blank_object_type):
-                    iterator[int(index)] = blank_object_type()
-                prev_iterator = iterator
-                iterator = iterator[int(index)]
-            else:
-                if not isinstance(iterator, dict):
-                    iterator = {}
-                if is_last:
-                    iterator[str(cur_key)] = value
-                elif JsonObject.__try_get_key(iterator, cur_key) == next_key:
-                    tmp = blank_object_type()
-                    tmp[str(cur_key)] = blank_object_type()
-                    iterator = tmp
-                    prev_iterator[str(prev_key)] = iterator
-                elif not isinstance(iterator, blank_object_type):
-                    iterator[str(cur_key)] = blank_object_type()
-                else:
-                    try:
-                        iterator[str(cur_key)]
-                    except KeyError:
-                        iterator[str(cur_key)] = blank_object_type()
-
-                prev_iterator = iterator
-                iterator = iterator[str(cur_key)]
-        return self.json_
-
-    def __set_not_forced(self, keys: list[str], value: (bool | int | float | str | list | dict)):
-        if isinstance(keys[0], JsonIndexKey) and not isinstance(self.json_, list):
-            raise JsonIndexError(key_number=0, keys=keys, json_obj=self.json_)
-        if isinstance(keys[0], JsonStringKey) and not isinstance(self.json_, dict):
-            raise JsonKeyError(key=0, keys=keys, json_obj=self.json_)
+    def __make_forced_path(self, keys: JsonKeyPath, value: bool | int | float | str | list | dict):
+        # make the root element compatible
+        self.__change_root_or_raise(keys, force=True)
         iterator = self.json_
-        cur_key = keys[0]
-        for i, cur_key in enumerate(keys):
+        for key_index, key in enumerate(keys):
+            is_last_key = (key_index >= len(keys) - 1)
+
+            if not is_last_key:
+                blank_object = []
+                if isinstance(keys[key_index + 1], JsonStringKey):
+                    blank_object = {}
+                if isinstance(iterator, list):
+                    abs_index = self.__get_absolute_index(key_index, keys, iterator, for_insert=True)
+                    self.__extend_list(blank_object, iterator, key_index, keys)
+                    iterator = iterator[abs_index]
+                elif isinstance(iterator, dict):
+                    if iterator.get(key.get()) is None:
+                        iterator[key.get()] = blank_object
+                    iterator = iterator[key.get()]
+            else:
+                blank_object = type(value)()
+                if isinstance(iterator, list):
+                    self.__extend_list(blank_object, iterator, key_index, keys)
+                elif isinstance(iterator, dict):
+                    if iterator.get(key.get()) is None:
+                        iterator[key.get()] = blank_object
+
+    def __extend_list(self, blank_object, iterator, key_index, keys):
+        index_key = keys[key_index]
+        if index_key.is_start_symbol:
+            iterator.insert(0, blank_object)
+        elif index_key.is_end_symbol:
+            iterator.append(blank_object)
+        else:
+            abs_index = self.__get_absolute_index(key_index, keys, iterator, for_insert=True)
+            for _ in range(abs_index - len(iterator) + 1):
+                iterator.append(blank_object)
+
+    def __set_impl(self, keys: JsonKeyPath, value: (bool | int | float | str | list | dict)):
+        iterator = self.json_
+
+        for key_index, key in enumerate(keys):
+            is_last_key = (key_index >= len(keys) - 1)
             try:
-                is_last = (i == len(keys) - 1)
-                cur_key = keys[i]
-                if isinstance(cur_key, JsonIndexKey):
+                if isinstance(key, JsonIndexKey):
                     if not isinstance(iterator, list):
-                        raise JsonIndexError(key_number=i, keys=keys, json_obj=self.json_)
-                    if cur_key.is_start:
+                        raise JsonIndexRequired(key_index=key_index, keys=keys.list_of_keys, json_obj=self.json_)
+                    if key.is_start_symbol:
                         index = 0
-                    elif cur_key.is_end:
+                    elif key.is_end_symbol:
                         index = len(iterator) - 1
                     else:
-                        index = cur_key.index
+                        index = key.index
 
-                    if is_last:
+                    if is_last_key:
                         if isinstance(iterator[int(index)], type(value)):
                             iterator[int(index)] = value
                         else:
@@ -338,18 +331,18 @@ class JsonObject:
                     iterator = iterator[int(index)]
                 else:
                     if isinstance(iterator, list):
-                        raise JsonKeyError(key=cur_key, keys=keys, json_obj=self.json_)
-                    if is_last:
-                        if isinstance(iterator[cur_key.key], type(value)):
-                            iterator[cur_key.key] = value
-                    else:
-                        raise JsonValueMismatch(orig_value=iterator[cur_key.key], new_value=value)
-                    iterator = iterator[cur_key.key]
-            except JsonKeyError:
+                        raise JsonKeyStringRequired(key_index=key_index, keys=keys.list_of_keys, json_obj=self.json_)
+                    if is_last_key:
+                        # if isinstance(iterator[key.get()], type(value)):
+                        iterator[key.get()] = value
+                        # else:
+                        #     raise JsonValueMismatch(orig_value=iterator[key.get()], new_value=value)
+                    iterator = iterator[key.get()]
+            except JsonKeyStringRequired:
                 raise
-            except JsonIndexError:
+            except JsonIndexRequired:
                 raise
             except KeyError as k:
-                error_msg = f"Cannot create/overwrite key number '{i}' '{cur_key}' - not leaf"
+                error_msg = f"Cannot create/overwrite key number '{key_index}' '{key}' - not leaf"
                 raise JsonGeneralError(message=error_msg) from k
         return self.json_

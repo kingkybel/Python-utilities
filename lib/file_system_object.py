@@ -306,6 +306,8 @@ def find(paths: (str | PathLike | list),
          sort_field: FindSortField = FindSortField.NONE,
          reverse: bool = False,
          allow_system_paths: bool = False,
+         min_depth: int = None,
+         max_depth: int = None,
          dryrun: bool = False):
     paths = glob_path_patterns(paths)
     _validate_paths_are_directories(paths)
@@ -318,7 +320,13 @@ def find(paths: (str | PathLike | list),
         return []
 
     augmented_path_list = _collect_augmented_paths(
-        paths, file_type_filter, name_patterns, exclude_patterns, allow_system_paths
+        paths=paths,
+        file_type_filter=file_type_filter,
+        name_patterns=name_patterns,
+        exclude_patterns=exclude_patterns,
+        allow_system_paths=allow_system_paths,
+        min_depth=min_depth,
+        max_depth=max_depth
     )
 
     result_path_list = _sort_and_extract_paths(
@@ -350,16 +358,26 @@ def _collect_augmented_paths(paths,
                              name_patterns,
                              exclude_patterns,
                              allow_system_paths,
-                             max_dive: int = None):
+                             min_depth: int = None,
+                             max_depth: int = None):
     """Collect paths with additional properties such as type and depth."""
     augmented_path_list = []
     for path in paths:
-        min_depth = path.count(os.path.sep)
+        if min_depth is None or min_depth < 0:
+            min_depth = path.count(os.path.sep)
+        else:
+            min_depth = path.count(os.path.sep) + min_depth
+        if max_depth is None or max_depth < 0:
+            max_depth = sys.maxsize
+        else:
+            max_depth = path.count(os.path.sep) + max_depth
+        if min_depth > max_depth:
+            min_depth, max_depth = max_depth, min_depth
+
         # pylint: disable=unused-variable
         for dir_name, sub_dir_list, file_list in os.walk(path):
             depth = dir_name.count(os.path.sep)
-            if max_dive is None or (depth - min_depth) < max_dive:
-                path.count(os.path.sep)
+            if min_depth <= depth <= max_depth:
                 _process_directory(
                     dir_name, file_type_filter, name_patterns, exclude_patterns, allow_system_paths, depth,
                     augmented_path_list

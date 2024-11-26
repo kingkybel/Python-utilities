@@ -22,8 +22,12 @@
 # @author: Dieter J Kybelksties
 
 from __future__ import annotations
+
+import collections.abc
 import os
 import sys
+from abc import ABC, abstractmethod
+from typing import Sized, Iterable
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
@@ -33,48 +37,66 @@ sys.path.insert(0, dk_lib_dir)
 
 # pylint: disable=wrong-import-position
 from lib.basic_functions import is_empty_string
-from lib.exceptions import JsonPathFormatError, JsonIndexKeyError, JsonStringKeyError, \
-    JsonPartialKeyError
+from lib.exceptions import JsonPathFormatError, JsonMalformedIndex, JsonMalformedStringKey, \
+    JsonMalformedKey
 from lib.string_utils import matches_any
 
 
-class JsonKey:
-    pass
+class JsonKey(ABC):
+    @abstractmethod
+    def get(self) -> int | str:
+        pass
 
 
 class JsonIndexKey(JsonKey):
+    START_SYMBOL = -1
+    END_SYMBOL = -2
     def __init__(self, index: (str | int)):
-        self.is_start = False
-        self.is_end = False
+        self.is_start_symbol = False
+        self.is_end_symbol = False
         self.index = None
         if isinstance(index, str):
             if index == "^":
-                self.is_start = True
+                self.is_start_symbol = True
             elif index == "$":
-                self.is_end = True
+                self.is_end_symbol = True
             else:
                 try:
                     self.index = int(index)
                 except ValueError:
-                    raise JsonIndexKeyError(index) from ValueError
+                    raise JsonMalformedIndex(index) from ValueError
         else:
             self.index = index
 
         if self.index is not None and self.index < 0:
-            raise JsonIndexKeyError(self.index)
+            raise JsonMalformedIndex(self.index)
 
     def __str__(self):
-        if self.is_start:
+        if self.is_start_symbol:
             return "[^]"
-        if self.is_end:
+        if self.is_end_symbol:
             return "[$]"
         return f"[{self.index}]"
 
+    def get(self) -> int | str:
+        if self.is_start_symbol or self.is_end_symbol:
+            return 0
+        return int(self.index)
+
+    def extend_object(self, obj: list, element) -> list:
+        if self.is_start_symbol:
+            obj.insert(0, element)
+            return obj
+        if self.is_end_symbol:
+            obj.append(element)
+            return obj
+        obj += element * (self.index - len(obj))
+        return obj
 
 class JsonStringKey(JsonKey):
     def __init__(self, key: str):
         if is_empty_string(key):
-            raise JsonStringKeyError(key)
+            raise JsonMalformedStringKey(key)
         if matches_any(search_string=key, patterns=[".* $", ".*\t$",
                                                     "^ .*", "^\t.*",
                                                     ".*\n.*",
@@ -82,14 +104,17 @@ class JsonStringKey(JsonKey):
                                                     r".*\[.*",
                                                     r".*\].*",
                                                     r".*\".*"]):
-            raise JsonStringKeyError(key=key)
+            raise JsonMalformedStringKey(key=key)
         self.key = key
 
     def __str__(self):
         return self.key
 
+    def get(self) -> int | str:
+        return str(self.key)
 
-class JsonKeyPath:
+
+class JsonKeyPath(collections.abc.Sized, ABC, Iterable[JsonKey]):
     def __init__(self, key_path: (str | list) = None):
         self.list_of_keys = []
         if isinstance(key_path, str):
@@ -107,11 +132,32 @@ class JsonKeyPath:
                     self.list_of_keys.append(JsonIndexKey(partial))
                 else:
                     self.list_of_keys.append(JsonStringKey(str(partial)))
-            except JsonPartialKeyError as e:
+            except JsonMalformedKey as e:
                 raise JsonPathFormatError(path_string="/".join(key_path), extra_info=e.message) from e
 
     def __str__(self):
         return "/".join([str(key) for key in self.list_of_keys])
+
+    def __sizeof__(self):
+        return len(self.list_of_keys)
+
+    def __getitem__(self, item):
+        return self.list_of_keys[item]
+
+    def __iter__(self):
+        for key in self.list_of_keys:
+            yield key
+
+    def __len__(self):
+        return len(self.list_of_keys)
+
+    def __contains__(self, item):
+        return item in self.list_of_keys
+
+    def __eq__(self, other):
+        if isinstance(other, JsonKeyPath):
+            return self.list_of_keys == other.list_of_keys
+        return False
 
     def key_list(self):
         return self.list_of_keys

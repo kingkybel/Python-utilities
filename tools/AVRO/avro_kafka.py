@@ -65,7 +65,7 @@ class AvroKafka:
         Validate JSON against schema against avro schema.
         :return: true if valid, false otherwise
         """
-        return fastavro.validation.validate(self.json_.get_json(), self.schema_)
+        return fastavro.validation.validate(self.json_.get(), self.schema_)
 
     def serialize_to_avro(self):
         """
@@ -73,7 +73,7 @@ class AvroKafka:
         :return: serialized Jason as bytes
         """
         bytes_writer = BytesIO()
-        writer(bytes_writer, self.schema_, [self.json_.get_json()])
+        writer(bytes_writer, self.schema_, [self.json_.get()])
         return bytes_writer.getvalue()
 
     def deserialize_from_avro(self, avro_data):
