@@ -57,10 +57,10 @@ def valid_absolute_path(path: (str | PathLike),
                         allow_system_paths: bool = False):
     """
     Create an absolute path from the given path.
-    :param: path: the original path.
-    :param: protect_system_patterns: a list of patterns to prevent the returned path to be a protected system-path.
+    :param path: the original path.
+    :param protect_system_patterns: a list of patterns to prevent the returned path to be a protected system-path.
                                      By default, the Unix/Linux system paths are protected.
-    :param: allow_system_paths: if set to True then system paths are allowed, default False
+    :param allow_system_paths: if set to True then system paths are allowed, default False
     :return: the absolute path as string.
     """
     if protect_system_patterns is None:

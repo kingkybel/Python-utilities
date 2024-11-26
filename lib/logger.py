@@ -27,6 +27,7 @@ import logging
 import os
 import os.path
 import sys
+from logging import LogRecord
 from os import PathLike
 from colorama import Fore, Style
 
@@ -59,6 +60,10 @@ class LogLevels(ExtendedEnum):
         return self.name.lower()
 
     def logging_level(self) -> int:
+        """
+        Gets the logging level as int.
+        :return: the logging level as it
+        """
         return int(self.value)
 
 
@@ -71,10 +76,10 @@ class CustomFormatter(logging.Formatter):
         logging.Formatter.__init__(self, fmt=fmt)
 
     @overrides(logging.Formatter)
-    def format(self, record) -> str:
+    def format(self, record: LogRecord) -> str:
         """
         Overriding the format function in order to handle custom log-levels appropriately.
-        :param: record: the logging record.
+        :param record: the logging record.
         :return: the formatted record as string.
         """
         # remember the original

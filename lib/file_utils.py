@@ -44,8 +44,8 @@ from lib.string_utils import squeeze_chars
 def generate_incremental_filename(filename: (str | PathLike), allow_system_paths: bool = False) -> str:
     """
     Generate a filename with incremental numbers if file exists.
-    :param: filename: The basic path of the file, may contain spaces, which will be replaced by underscores.
-    :param: allow_system_paths: allow to manipulate system paths
+    :param filename: The basic path of the file, may contain spaces, which will be replaced by underscores.
+    :param allow_system_paths: allow to manipulate system paths
     :return: A unique filename with an incremental number.
     """
     filename = squeeze_chars(source=str(filename), squeeze_set="\n\t\r ", replace_with="_")
@@ -71,9 +71,9 @@ def generate_incremental_filename(filename: (str | PathLike), allow_system_paths
 def read_file(filename: (str | PathLike), encoding: str = "utf-8", dryrun: bool = False) -> str:
     """
     Read a text file and return the contents as string.
-    :param: filename: filename to read.
-    :param: encoding: the encoding to use for reading the file.
-    :param: dryrun: if set to True, then do not execute but just output a comment describing the command.
+    :param filename: filename to read.
+    :param encoding: the encoding to use for reading the file.
+    :param dryrun: if set to True, then do not execute but just output a comment describing the command.
     :return: the contents of the file as string.
     """
     content = ""
@@ -92,12 +92,12 @@ def write_file(filename: (str | PathLike),
                dryrun: bool = False):
     """
     Write the given content to the given filename.
-    :param: filename: filename to read.
-    :param: content: string or list of strings to write.
-    :param: mode: one of 'a': append, 'w': write
-    :param: allow_system_paths: whether system paths are allowed
-    :param: encoding: the encoding to use for writing.
-    :param: dryrun: if set to True, then do not execute but just output a comment describing the command.
+    :param filename: filename to read.
+    :param content: string or list of strings to write.
+    :param mode: one of 'a': append, 'w': write
+    :param allow_system_paths: whether system paths are allowed
+    :param encoding: the encoding to use for writing.
+    :param dryrun: if set to True, then do not execute but just output a comment describing the command.
     """
     filename = valid_absolute_path(filename, allow_system_paths=allow_system_paths)
     log_command(f"write_file({filename}, mode='{mode}')",
@@ -124,6 +124,11 @@ def write_file(filename: (str | PathLike),
 
 
 def extract_dict_from_string(content: (str | list[str])):
+    """
+    Extract dictionary from given string.
+    :param content: content to extract dictionary from.
+    :return: a dictionary with keys 'key' and 'value'.
+    """
     key_val_dict = {}
     lines = content.split("\n")
     for line in lines:
@@ -161,6 +166,13 @@ def parse_env_file(filename: (str | PathLike), dryrun: bool = False) -> dict[str
 def get_git_config(path: (str | PathLike) = None,
                    allow_system_paths: bool = False,
                    dryrun: bool = False) -> dict[str, str]:
+    """
+    Extract git config from given git repository located at path.
+    :param path: path to git repository.
+    :param allow_system_paths: allow to manipulate system paths
+    :param dryrun: if set to True, then do not execute but just output a comment describing the command.
+    :return:
+    """
     key_val_dict = {}
     if path is None:
         path = valid_absolute_path(".", allow_system_paths=allow_system_paths)

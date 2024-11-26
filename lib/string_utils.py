@@ -112,9 +112,9 @@ def squeeze_chars(source: str, squeeze_set: str, replace_with: str = ' ') -> str
     """
     Return a string that is identical to the given source, but with sub-strings containing
     only chars in the squeeze-set replaced by a single replacement char.
-    :param: source: the original string.
-    :param: squeeze_set: characters to squeeze out.
-    :param: replace_with: the replacement char.
+    :param source: the original string.
+    :param squeeze_set: characters to squeeze out.
+    :param replace_with: the replacement char.
     :return: the modified squeezed string.
     """
     if is_empty_string(source):
@@ -138,7 +138,7 @@ def squeeze_chars(source: str, squeeze_set: str, replace_with: str = ' ') -> str
 def remove_control_chars(text: str) -> str:
     """
     Remove ASCII control characters from a string.
-    :param: text: the string containing control characters.
+    :param text: the string containing control characters.
     :return: the same string without control characters.
     """
     text = text.encode("ascii", "ignore")
@@ -151,8 +151,8 @@ def remove_control_chars(text: str) -> str:
 def matches_any(search_string: str, patterns: (str | list[str]) = None) -> bool:
     """
     Check whether the search-string matches any of the given patterns.
-    :param: search_string: the string to test.
-    :param: patterns: the list of patterns to match against.
+    :param search_string: the string to test.
+    :param patterns: the list of patterns to match against.
     :return: True if any pattern matches, False otherwise.
     """
     if patterns is None:
@@ -175,9 +175,9 @@ def normalise_sentence(sentence: str,
                        expected_non_al_nums: (str | list[str]) = None) -> str:
     """
     Remove most common non-sentence characters, repeated whitespace etc. from a string.
-    :param: sentence: the original string containing a sentence.
-    :param: squeeze_set: pollutant characters to remove.
-    :param: expected_non_al_nums: list of non-alpha-numeric chars that should not to be stripped.
+    :param sentence: the original string containing a sentence.
+    :param squeeze_set: pollutant characters to remove.
+    :param expected_non_al_nums: list of non-alpha-numeric chars that should not to be stripped.
     :return:
     """
     sentence = squeeze_chars(source=sentence,
@@ -204,8 +204,8 @@ def normalise_sentence(sentence: str,
 def get_random_string(length, letters: str = None) -> str:
     """
     Create a random string of given length.
-    :param: length: number of characters.
-    :param: letters: characters to choose from.
+    :param length: number of characters.
+    :param letters: characters to choose from.
     :return: a random string.
     """
     # choose from all lowercase letter
@@ -217,9 +217,9 @@ def get_random_string(length, letters: str = None) -> str:
 def contains_at_least_n_of(text, specified_words: (str | list[str]) = None, minimum: int = 10) -> bool:
     """
     Check whether a text contains at least `minimum` of the specified words.
-    :param: text: the text to check.
-    :param: specified_words: a list of words to look for.
-    :param: minimum: minimum number of words to be found.
+    :param text: the text to check.
+    :param specified_words: a list of words to look for.
+    :param minimum: minimum number of words to be found.
     :return: True if at least `minimum` words are in tex, False otherwise.
     """
     if specified_words is None:
@@ -255,8 +255,8 @@ def is_cpp_id(identifier: str) -> bool:
 def split_text_into_chunks(text: str, max_chunk_size: int) -> list[str]:
     """
     Split a text into smaller texts and without splitting words or sentences.
-    :param: text: the text to split.
-    :param: max_chunk_size: the approximate size of the resulting chunks.
+    :param text: the text to split.
+    :param max_chunk_size: the approximate size of the resulting chunks.
     :return: a list of smaller texts.
     """
     # Split the text into sentences

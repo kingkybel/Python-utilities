@@ -43,7 +43,7 @@ sys.path.insert(0, dk_lib_dir)
 
 # pylint: disable=wrong-import-position
 from lib.basic_functions import is_empty_string, valid_absolute_path
-from lib.extended_enum import ExtendedFlag, ExtendedEnum, always_match
+from lib.extended_enum import ExtendedFlag, ExtendedEnum, always_match, predicate_type
 from lib.logger import error, log_warning, log_command
 from lib.overrides import overrides
 from lib.string_utils import matches_any
@@ -70,6 +70,11 @@ class FileSystemObjectType(ExtendedFlag):
 
     @classmethod
     def from_file_system_object(cls, file_system_object: (str | PathLike)):
+        """
+        Get the FileSystemObjectType from an actual file system object.
+        :param file_system_object: path to the object
+        :return: the FileSystemObjectType that matches the actual file system object
+        """
         if isinstance(file_system_object, PathLike):
             file_system_object = str(file_system_object)
         if is_empty_string(file_system_object):
@@ -92,7 +97,13 @@ class FileSystemObjectType(ExtendedFlag):
 
     @classmethod
     @overrides
-    def from_string(cls, partial: str, predicate=always_match):
+    def from_string(cls, partial: str, predicate: predicate_type = always_match):
+        """
+        Get the FileSystemObjectType from a partial string.
+        :param partial: the partial string to identify the FileSystemObjectType
+        :param predicate: a predicate function to filter the matches
+        :return: the FileSystemObjectType that matches the partial string
+        """
         sorted_partial = "".join(sorted(partial, key=str.lower))
         if sorted_partial == "f":
             return FileSystemObjectType.FILE
@@ -116,25 +127,52 @@ class GlobMode(ExtendedEnum):
     WARN_EMPTY = auto()
 
 
-def make_path_list(paths: (str | PathLike | list)) -> list[str]:
+def make_path_list(paths: (str | PathLike | list), fail_on_error: bool = True) -> list[str]:
+    """
+    Create a list of paths from a list of paths.
+    :param paths: one or more strings to be checked/filtered
+    :param fail_on_error: if set to True, then fail when any non-(existing)-path is encountered,
+                          otherwise skip with a warning
+    :return: a list of all valid paths
+    :raises SystemExit: if an error is encountered and fail_on_error is set to True
+    """
     if isinstance(paths, PathLike):
-        paths = str(paths)
-    if isinstance(paths, str):
-        paths = [paths]
-    if len(paths) == 0:
-        error("path-list is empty")
+        path_list = [str(paths)]
+    elif isinstance(paths, str):
+        path_list = [paths]
+    else:
+        path_list = paths
+    if len(path_list) == 0:
+        if fail_on_error:
+            error("path-list is empty")
+        else:
+            log_warning("path-list is empty")
+            return []
     reval_paths = []
-    for path in paths:
+    for path in path_list:
         if not isinstance(path, (str, PathLike)):
-            error(f"paths contains path with invalid type '{path}'({type(path)})")
+            if fail_on_error:
+                error(f"paths contains path with invalid type '{path}'({type(path)})")
+            else:
+                log_warning(f"paths contains path with invalid type '{path}'({type(path)})")
         if is_empty_string(path):
-            error(f"paths contains empty path-strings {paths}")
+            if fail_on_error:
+                error(f"paths contains empty path-strings {paths}")
+            else:
+                log_warning(f"paths contains empty path-strings {paths}")
         else:
             reval_paths.append(str(path))
     return reval_paths
 
 
 def glob_path_patterns(paths: (str | PathLike | list), glob_mode: GlobMode = GlobMode.FAIL_ON_EMPTY) -> list:
+    """
+    Glob the strings in paths to get all matching paths.
+    :param paths: a list of raw paths
+    :param glob_mode: the glob mode to use
+    :return: a list of all valid paths
+    :raises FileNotFoundError: if globbing does not lead to an existing file
+    """
     results = []
     paths = make_path_list(paths)
 
@@ -160,6 +198,13 @@ def remove(paths: (str | PathLike | list),
            force: bool = False,
            allow_system_paths: bool = False,
            dryrun: bool = False):
+    """
+    Remove paths contained in a list of paths.
+    :param paths: the paths to remove
+    :param force: ignore errors, if set to True
+    :param allow_system_paths:
+    :param dryrun: just go through the motions
+    """
     glob_mode = GlobMode.WARN_EMPTY
     if force:
         glob_mode = GlobMode.KEEP_EMPTY
@@ -180,6 +225,13 @@ def remove(paths: (str | PathLike | list),
 
 
 def set_file_last_modified(paths: (str | PathLike | list), dt: datetime, dryrun: bool = False) -> list:
+    """
+    Update the "last modified attribute" on given files.
+    :param paths: the paths to modify
+    :param dt: time and date to which to set the last modified attribute
+    :param dryrun: just go through the motions
+    :return: a list of the modified files
+    """
     paths = glob_path_patterns(paths, glob_mode=GlobMode.WARN_EMPTY)
     modified = []
     if not dryrun:
@@ -194,6 +246,14 @@ def touch(paths: (str | PathLike | list),
           glob_mode: GlobMode = GlobMode.KEEP_EMPTY,
           allow_system_paths: bool = False,
           dryrun: bool = False):
+    """
+    Touch the files, create if needed and possible.
+    :param paths: paths to touch
+    :param glob_mode: glob mode to use
+    :param allow_system_paths: if set to True, system paths can be changed
+    :param dryrun: just go through the motions
+    :return: error-code a list of the touched files
+    """
     paths = glob_path_patterns(paths, glob_mode=glob_mode)
     if not dryrun:
         touched = []
@@ -217,12 +277,22 @@ def touch(paths: (str | PathLike | list),
     return 0, touched
 
 
-def mkdir(paths: (str | PathLike | list),
+def mkdir(paths: (str | PathLike | list[str | PathLike]),
           force: bool = False,
           recreate: bool = False,
           expect_1: bool = False,
           allow_system_paths: bool = False,
-          dryrun: bool = False):
+          dryrun: bool = False) -> str | list[str]:
+    """
+    Make directories if they don't exist.
+    :param paths: paths of directories
+    :param force: if set to True, remove files, directories etc. if they're in the way
+    :param recreate: if a path is a regular file then delete the file and create a directory
+    :param expect_1: if only one file is expected then only max one path is returned
+    :param allow_system_paths: if set to True, system paths can be changed
+    :param dryrun: go through the motions
+    :return: one or many paths that were created, or pre-existed
+    """
     paths = glob_path_patterns(paths, glob_mode=GlobMode.KEEP_EMPTY)
     log_command(f"mkdir {paths}", dryrun=dryrun)
     created_paths = []
@@ -251,6 +321,14 @@ def symbolic_link(existing_path: (str | PathLike),
                   overwrite_link: bool = False,
                   allow_system_paths: bool = False,
                   dryrun: bool = False):
+    """
+    Create a symbolic link.
+    :param existing_path: the existing path to link to
+    :param new_link: the new link to be created
+    :param overwrite_link: if set to True then overwrite any existing link
+    :param allow_system_paths: if set to True, system paths can be changed
+    :param dryrun: go through the motions
+    """
     if isinstance(existing_path, PathLike):
         existing_path = str(existing_path)
     if isinstance(new_link, PathLike):
@@ -270,6 +348,10 @@ def symbolic_link(existing_path: (str | PathLike),
 
 
 def current_dir() -> str:
+    """
+    Return the current directory as a string.
+    :return: the current directory
+    """
     try:
         cwd = os.getcwd()
     except OSError:
@@ -281,7 +363,11 @@ push_stack = []
 
 
 def pushdir(path: (str | PathLike), dryrun: bool = False):
-    global push_stack
+    """
+    Change the current directory to the given path and put the previous one on a stack.
+    :param path: path to change to
+    :param dryrun: go through the motions
+    """
     push_stack.append(current_dir())
     log_command(f"pushd {path}", dryrun=dryrun)
     if not dryrun:
@@ -289,7 +375,10 @@ def pushdir(path: (str | PathLike), dryrun: bool = False):
 
 
 def popdir(dryrun: bool = False):
-    global push_stack
+    """
+    Change the current directory the previous one on top of the stack and pop it.
+    :param dryrun: go through the motions
+    """
     current = current_dir()
     if len(push_stack) > 0:
         current = push_stack.pop()
@@ -309,6 +398,20 @@ def find(paths: (str | PathLike | list),
          min_depth: int = None,
          max_depth: int = None,
          dryrun: bool = False):
+    """
+    Find file system objects in the given directories.
+    :param paths: paths of directories
+    :param file_type_filter: file type filter, default: all file-system-object types
+    :param name_patterns: pattern for filename matching
+    :param exclude_patterns: pattern for excluding files
+    :param sort_field: sort field, name/type/depth
+    :param reverse: reverse sort, default: False
+    :param allow_system_paths: look in system paths, default: False
+    :param min_depth: minimum depth to traverse from, default: None
+    :param max_depth: maximum depth to traverse to, default: None
+    :param dryrun: go through the motions
+    :return: an augmented list of file system objects
+    """
     paths = glob_path_patterns(paths)
     _validate_paths_are_directories(paths)
 
@@ -433,14 +536,29 @@ def _sort_and_extract_paths(augmented_path_list, sort_field, reverse):
 
 
 def is_stale_link(path: (str | PathLike)):
+    """
+    Check whether a symbolic link points to an actual file-system-object or not.
+    :param path: path to check
+    :return: True if link is stale, False otherwise
+    """
     return FileSystemObjectType.from_file_system_object(path) == FileSystemObjectType.STALE_LINK
 
 
 def is_empty_dir(path: (str | PathLike)):
+    """
+    Check whether a directory is empty or not.
+    :param path:  path to check
+    :return: True if directory is empty, False otherwise
+    """
     return FileSystemObjectType.from_file_system_object(path) == FileSystemObjectType.EMPTY_DIR
 
 
 def remove_stale_links(paths: (str | PathLike | list), dryrun: bool = False):
+    """
+    Remove stale links from a list of paths.
+    :param paths: paths to remove stale links from
+    :param dryrun: go through the motions
+    """
     log_command(f"remove_stale_links {paths}", extra_comment="python function", dryrun=dryrun)
     if not dryrun:
         paths = glob_path_patterns(paths)
@@ -453,6 +571,11 @@ def remove_stale_links(paths: (str | PathLike | list), dryrun: bool = False):
 
 
 def remove_empty_dirs(paths: (str | PathLike | list), dryrun: bool = False):
+    """
+    Remove empty directories from a list of paths.
+    :param paths: paths to remove empty directories
+    :param dryrun: go through the motions
+    """
     log_command(f"remove_stale_links {paths}", extra_comment="python function", dryrun=dryrun)
     if not dryrun:
         paths = glob_path_patterns(paths)
@@ -514,6 +637,12 @@ def cp(paths: (str | PathLike | list), target: (str | PathLike), dryrun: bool = 
 
 
 def mv(paths: (str | PathLike | list[str | PathLike]), target: (str | PathLike), dryrun: bool = False):
+    """
+    Move file-system objects to a target.
+    :param paths: paths to move files
+    :param target: target path
+    :param dryrun: go through the motions
+    """
     log_command(f"mv {paths} {target}", dryrun=dryrun)
     paths = glob_path_patterns(paths)
     if len(paths) > 1 and not os.path.isdir(target):
@@ -526,6 +655,13 @@ def chown(paths: (str | PathLike | list[str | PathLike]),
           user: (str | int),
           group: (str | int) = None,
           dryrun: bool = False):
+    """
+    Change ownership of file-system objects to a <user> and <group>.
+    :param paths: paths to change ownership
+    :param user: user to be the new owner
+    :param group: group to be the new owner
+    :param dryrun: go through the motions
+    """
     if group is None:
         group = user
     log_command(f"chown {user}:{group} {paths}", dryrun=dryrun)

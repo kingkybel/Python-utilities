@@ -28,6 +28,7 @@ import os.path
 import sys
 from os import PathLike
 
+
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
 if not os.path.isdir(dk_lib_dir):
@@ -65,16 +66,30 @@ class JsonObject:
     def __str__(self):
         return json.dumps(self.json_)
 
-    def to_str(self, indent: int = 2):
+    def to_str(self, indent: int = 2) -> str:
+        """
+        Output as a string.
+        :param indent: number of indentations to use
+        :return: this object as a string
+        """
         return json.dumps(self.json_, indent=indent)
 
     def from_string(self, json_str: str):
+        """
+        Create a JsonObject from a string.
+        :param json_str: the json string
+        """
         if is_empty_string(json_str):
             json_str = "{}"
         self.json_ = json.loads(json_str)
 
     @classmethod
-    def convert_sets_to_vectors(cls, obj):
+    def convert_sets_to_vectors(cls, obj: object) -> object:
+        """
+        Recursively convert sets to vectors.
+        :param obj: the object to convert
+        :return: a copy of obj that can be used as a json-object
+        """
         if isinstance(obj, set):
             # If it's a set, convert it to a list after doing the same recursively.
             return [JsonObject.convert_sets_to_vectors(item) for item in obj]
@@ -97,10 +112,19 @@ class JsonObject:
         return obj
 
     def from_object(self, obj: object):
+        """
+        Create a JsonObject from an object.
+        :param obj: the object to initialise this JsonObject with
+        """
         obj = JsonObject.convert_sets_to_vectors(obj)
         self.from_string(json.dumps(obj))
 
-    def from_file(self, filename: (str | PathLike), encoding="utf-8"):
+    def from_file(self, filename: (str | PathLike), encoding: str = "utf-8"):
+        """
+        Initialize this JsonObject from a json-file.
+        :param filename: json-file
+        :param encoding: encoding of the file
+        """
         if not os.path.isfile(filename):
             raise JsonGeneralError(f"Cannot load json from file '{filename}': file does not exist")
         with open(filename, encoding=encoding) as file:
@@ -112,33 +136,70 @@ class JsonObject:
             file.close()
 
     def to_file(self, filename: (str | PathLike), indent: int = 4, encoding: str = "utf-8", dryrun: bool = False):
+        """
+        Write this JsonObject to a json-file.
+        :param filename: the output filename
+        :param indent: number of indentation chars to use
+        :param encoding: encoding of the file
+        :param dryrun: whether to write the file, or only go through the motions
+        """
         log_command(f"JsonObject.to_file({filename})", dryrun=dryrun)
         if not dryrun:
             with open(filename, 'w', encoding=encoding) as file:
                 json.dump(self.json_, file, indent=indent)
 
-    def empty(self, obj=None) -> bool:
+    def empty(self, obj: object = None) -> bool:
+        """
+        Check whether the given object is empty.
+        :param obj: object to check
+        :return: True if the given object is empty (empty list/dict or None), false otherwise
+        """
         if obj is None:
             return not bool(self.json_) or self.json_ == {} or self.json_ == []
         return not bool(obj) or obj == {} or obj == []
 
-    def is_list(self, obj=None) -> bool:
+    def is_list(self, obj: object = None) -> bool:
+        """
+        Check whether the given object is a list.
+        :param obj: the object to check
+        :return: True, if obj is a list, False otherwise
+        """
         if obj is None:
             return isinstance(self.json_, list)
         return isinstance(obj, list)
 
-    def is_dict(self, obj=None) -> bool:
+    def is_dict(self, obj: object = None) -> bool:
+        """
+        Check whether the given object is a dict.
+        :param obj:  the object to check
+        :return:  True, if obj is a dict, False otherwise
+        """
         if obj is None:
             return isinstance(self.json_, dict)
         return isinstance(obj, dict)
 
-    def size(self, obj=None) -> int:
+    def size(self, obj: object = None) -> int:
+        """
+        Size of the given object, if it is a list.
+        :param obj: object to check
+        :return: size of the given object, if it is a list, 0 otherwise
+        """
         if obj is None:
+            if self.is_list():
+                return len(self.json_)
+            return 0
+        if self.is_list(obj):
             return len(self.json_)
-        return len(obj)
+        return 0
 
     @classmethod
-    def assert_json_files_valid(cls, paths: (str | PathLike | list[str | PathLike])):
+    def assert_json_files_valid(cls, paths: (str | PathLike | list[str | PathLike])) -> tuple[
+        int, list[str | PathLike]]:
+        """ | PathLike
+        Assert that the given paths are valid and that the files are a json-files.
+        :param paths: file-paths to check
+        :return: tuple of an error code and a list of invalid paths/files
+        """
         json_files = find(paths=paths, file_type_filter="f", name_patterns=r".*\.json")
         failed_files = []
         reval = 0
@@ -151,12 +212,27 @@ class JsonObject:
         return reval, failed_files
 
     def key_exists(self, keys: (str | list[str])):
+        """
+        Check if a key exists.
+        :param keys: path to a key
+        :return: True if key exists, False otherwise
+        """
         not_exist_str = "KEY-DOES-NOT-EXIST-" + get_random_string(47, "0123456789ABCDEF")
         if self.get(keys, default=not_exist_str) == not_exist_str:
             return False
         return True
 
-    def get(self, keys: (str | list[str] | None) = None, default=None):
+    def get(self, keys: (str | list[str] | None) = None, default: (bool | int | float | str | list | dict) = None):
+        """
+        Get the value of the given keys. If a default is defined, and it's possible to default a key, then the default
+        value will be returned when the key is missing.This happens when this object and the key are structurally
+        compatible, but the path is too long and the object can no longer be iterated.
+        Example: object = {"key1":{"Key2":[]} and key is key1/key2/[0]/key3
+        :param keys: key-path
+        :param default: default-value
+        :return: the value of the given key, or the default if key is compatible
+        :raise JsonKeyStringRequired, JsonIndexRequired, JsonGeneralError: on compatibility problems
+        """
         if keys is None:
             return self.json_
         if isinstance(keys, str):
@@ -228,6 +304,14 @@ class JsonObject:
             value: (bool | int | float | str | list | dict),
             force: bool = False,
             dryrun: bool = False):
+        """
+        Set a value in this JsonObject
+        :param keys: path to a key
+        :param value: value to set
+        :param force: if True, then force the path to exist, before the value is set
+        :param dryrun: if set to false then just go through the motions
+        :raise JsonKeyStringRequired, JsonGeneralError: on compatibility problems
+        """
         if value is None:
             raise JsonGeneralError("Cannot set value that is None")
         if not isinstance(value, (bool, int, float, str, dict, list)):

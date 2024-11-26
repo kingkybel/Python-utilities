@@ -43,33 +43,35 @@ class EnumListType(Flag):
     NAME = auto()
     STR = auto()
 
+
 # pylint: disable=unused-argument
-def always_match(any_obj):
+def always_match(any_obj: object = None):
     """
     Predicate that always matches for any object of any type.
-    :param: any_obj: placeholder object
+    :param any_obj: placeholder object
     :return: always true.
     """
     return True
 
+type predicate_type = type(always_match)
 
 def match_one_alternative(
         partial: str,
         alternatives: str | list[str],
         delimiter: str = "|",
-        predicate=lambda x: True,
+        predicate:predicate_type=lambda x: True,
         flags: re.RegexFlag = re.IGNORECASE,
         consecutive_only: bool = False,
 ) -> tuple[str | None, int, list[str]]:
     """
     Matches a string to a unique alternative.
 
-    :param: partial: A partial string to match against alternatives.
-    :param: alternatives: A string (split by `delimiter`) or a list of strings to match against.
-    :param: delimiter: Delimiter to split the alternatives string if it's not a list.
-    :param: predicate: A function to filter alternatives.
-    :param: flags: Regular expression flags.
-    :param: consecutive_only: If True, characters in `partial` must be consecutive; otherwise, order suffices.
+    :param partial: A partial string to match against alternatives.
+    :param alternatives: A string (split by `delimiter`) or a list of strings to match against.
+    :param delimiter: Delimiter to split the alternatives string if it's not a list.
+    :param predicate: A function to filter alternatives.
+    :param flags: Regular expression flags.
+    :param consecutive_only: If True, characters in `partial` must be consecutive; otherwise, order suffices.
     :return: A tuple:
         - Matched alternative (or None if no unique match exists).
         - Return code: 0 (success), -1 (failure).
@@ -171,6 +173,7 @@ class ExtendedEnum(Enum):
 
     def __ror__(self, other):
         return self.__or__(other)
+
 
 class ExtendedFlag(Flag):
     """

@@ -79,19 +79,32 @@ class JsonIndexKey(JsonKey):
         return f"[{self.index}]"
 
     def get(self) -> int | str:
+        """
+        Get the list index as int.
+        In case of start- or end- symbol, return 0.
+        :return: index as int
+        """
         if self.is_start_symbol or self.is_end_symbol:
             return 0
         return int(self.index)
 
-    def extend_object(self, obj: list, element) -> list:
+
+    def extend_object(self, list_container: list, element: object) -> list:
+        """
+        Extend the list by inserting or appending elements depending on index/start-/end-values.
+        :param list_container: the list to extend.
+        :param element: the element to insert/append.
+        :return: the extended list.
+        """
         if self.is_start_symbol:
-            obj.insert(0, element)
-            return obj
+            list_container.insert(0, element)
+            return list_container
         if self.is_end_symbol:
-            obj.append(element)
-            return obj
-        obj += element * (self.index - len(obj))
-        return obj
+            list_container.append(element)
+            return list_container
+        for _ in range(self.index - len(list_container)):
+            list_container.append(element)
+        return list_container
 
 class JsonStringKey(JsonKey):
     def __init__(self, key: str):
@@ -111,6 +124,10 @@ class JsonStringKey(JsonKey):
         return self.key
 
     def get(self) -> int | str:
+        """
+        Get the dict key as str.
+        :return:
+        """
         return str(self.key)
 
 
@@ -160,4 +177,8 @@ class JsonKeyPath(collections.abc.Sized, ABC, Iterable[JsonKey]):
         return False
 
     def key_list(self):
+        """
+        Get the list of keys.
+        :return: the list of keys.
+        """
         return self.list_of_keys

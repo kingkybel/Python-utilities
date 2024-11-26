@@ -37,6 +37,8 @@ from getpass import getuser
 from multiprocessing import cpu_count
 from shutil import which
 from socket import gethostname
+from typing import IO
+
 from colorama import Fore, Style
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
@@ -58,6 +60,10 @@ def get_effective_user() -> str:
 
 
 def get_logged_in_user() -> str:
+    """
+    Get the currently logged-in user
+    :return: the user name
+    """
     try:
         return os.getlogin()
     except FileNotFoundError:  # happens on WSL
@@ -67,21 +73,37 @@ def get_logged_in_user() -> str:
 
 
 def assert_is_root():
+    """
+    Assert that the script is run with root privileges
+    :raise SystemExit:
+    """
     if get_effective_user() != "root":
         error(
             f"""This script needs to be run with root privileges.
 Try: {Fore.MAGENTA}sudo {which('python')} {' '.join(sys.argv)}{Style.RESET_ALL}""")
 
 
-def number_of_cores():
-    return cpu_count()
+def number_of_cores() -> int:
+    """
+    Get the number of available cores
+    :return: the number of cores
+    """
+    return int(cpu_count())
 
 
 def hostname() -> str:
+    """
+    Get the hostname
+    :return: the hostname
+    """
     return gethostname()
 
 
 def get_ip() -> str:
+    """
+    Get the IP address
+    :return: the IP address of this machine, if connected, default localhost address otherwise
+    """
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(0)
     try:
@@ -96,10 +118,19 @@ def get_ip() -> str:
 
 
 def get_external_ip() -> str:
+    """
+    Get the external IP address
+    :return: the external IP address, if connected
+    """
     return urllib.request.urlopen("https://ident.me").read().decode("utf8")
 
 
 def ping(host_name: str = None) -> tuple[int, str]:
+    """
+    Ping the host
+    :param host_name: the host name to ping
+    :return: a tuple error code and error message
+    """
     if is_empty_string(host_name):
         host_name = "127.0.0.1"
     ip = f"- {host_name} doesn't respond -"
@@ -112,10 +143,20 @@ def ping(host_name: str = None) -> tuple[int, str]:
 
 
 def is_tool_installed(name: str) -> bool:
+    """
+    Check if the tool is installed
+    :param name: name of the tool
+    :return: True, if tool is installed, False otherwise
+    """
     return which(name) is not None
 
 
 def assert_tools_installed(tools: (str | list[str])):
+    """
+    Assert that the whole list of tools is installed
+    :param tools: all the tools to check
+    :raises SystemExit:
+    """
     if isinstance(tools, str):
         tools = [tools]
     missing_tools = []
@@ -129,29 +170,36 @@ def assert_tools_installed(tools: (str | list[str])):
 
 # pylint: disable=unused-argument
 def check_correct_tool_version(tool: str, version: str) -> bool:
+    """
+    Check that the correct version of a tool is installed.
+    TODO
+    :param tool: the tool to check
+    :param version: its version
+    :return: True, if the tool is installed with correct version, False otherwise
+    """
     if not is_tool_installed(tool):
         return False
     return True
 
 
-def pipe_monitor_thread_function(pipe, verbosity: LogLevels):
+def pipe_monitor_thread_function(pipe: IO, verbosity: LogLevels):
     """
     Function that runs as thread and is monitoring the output of a pipe.
-    :param: pipe: file-pipe: either stdin or stdout.
-    :param: verbosity: log-level so out put can be customised.
+    :param pipe: file-pipe: either stdin or stdout.
+    :param verbosity: log-level so out put can be customised.
     :return: the string that was piped to the pipe.
     """
     piped_str = ""
     pipe_empty = 0
     for line in pipe:
         piped_str += line
-        if is_empty_string(line.strip()):
+        if is_empty_string(str(line.strip())):
             pipe_empty += 1
             if pipe_empty >= 10:
                 break
         else:
             pipe_empty = 0
-        log_progress_output(line.strip(), verbosity=verbosity)
+        log_progress_output(str(line.strip()), verbosity=verbosity)
     return piped_str
 
 
@@ -177,11 +225,11 @@ def run_command(cmd: (str | list[str]),
         return 0, "", ""
 
     with subprocess.Popen(cmd,
-                               cwd=cwd,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               bufsize=1,
-                               universal_newlines=True) as process:
+                          cwd=cwd,
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE,
+                          bufsize=1,
+                          universal_newlines=True) as process:
         log_progress_output("-" * 10 + "sub-process output" + "-" * 10, verbosity=LogLevels.COMMAND_OUTPUT)
 
         out_thread = ReturningThread(target=pipe_monitor_thread_function,
@@ -233,10 +281,10 @@ def run_interactive_command(cmd: (str | list),
                             dryrun: bool = False):
     """
     Run an interactive command in a sub-process.
-    :param: cmd: command to execute.
-    :param: cwd: the working directory to use.
-    :param: comment: a comment to enhance the log-output.
-    :param: dryrun: if set to True, then do not execute but just output a comment describing the command.
+    :param cmd: command to execute.
+    :param cwd: the working directory to use.
+    :param comment: a comment to enhance the log-output.
+    :param dryrun: if set to True, then do not execute but just output a comment describing the command.
     """
 
     # pylint: disable=unused-variable
