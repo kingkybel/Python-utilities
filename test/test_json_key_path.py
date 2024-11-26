@@ -40,19 +40,11 @@ from lib.logger import set_logger, LogLevels
 
 class JsonKeyPathTestCase(unittest.TestCase):
     def test_json_index_keys(self):
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonMalformedIndex):
             JsonIndexKey("")
-        except JsonMalformedIndex:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonMalformedIndex):
             JsonIndexKey(-1)
-        except JsonMalformedIndex:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
         key = JsonIndexKey("^")
         self.assertTrue(key.is_start_symbol)
@@ -79,180 +71,72 @@ class JsonKeyPathTestCase(unittest.TestCase):
         self.assertEqual(str(key), "[100]")
 
     def test_json_string_keys(self):
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonMalformedStringKey):
             JsonStringKey("")
-        except JsonMalformedStringKey:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonMalformedStringKey):
             JsonStringKey("[key")
-        except JsonMalformedStringKey:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonMalformedStringKey):
             JsonStringKey("k]ey")
-        except JsonMalformedStringKey:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonMalformedStringKey):
             JsonStringKey(" key")
-        except JsonMalformedStringKey:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonMalformedStringKey):
             JsonStringKey("key ")
-        except JsonMalformedStringKey:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonMalformedStringKey):
             JsonStringKey("/key")
-        except JsonMalformedStringKey:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonMalformedStringKey):
             JsonStringKey("key\n")
-        except JsonMalformedStringKey:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
-            JsonStringKey("\tkey")
-        except JsonMalformedStringKey:
-            has_thrown = True
-        self.assertTrue(has_thrown)
-
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonMalformedStringKey):
             JsonStringKey("key\t")
-        except JsonMalformedStringKey:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
     def test_illegal_json_paths(self):
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonPathFormatError):
             JsonKeyPath("")
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonPathFormatError):
             JsonKeyPath([])
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
-        has_thrown = False
-        try:
+
+        with self.assertRaises(JsonPathFormatError):
             JsonKeyPath([""])
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonPathFormatError):
             JsonKeyPath("key/")
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonPathFormatError):
             JsonKeyPath(["key", ""])
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonPathFormatError):
             JsonKeyPath("key//path")
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonPathFormatError):
             JsonKeyPath(["key", "", "path"])
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonPathFormatError):
             JsonKeyPath("[]")
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonPathFormatError):
             JsonKeyPath(["[]"])
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
-            JsonKeyPath("[no_integer]")
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
-
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonPathFormatError):
             JsonKeyPath(["[no_integer]"])
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
-            JsonKeyPath("[-666]")
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
-
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonPathFormatError):
             JsonKeyPath(["[-666]"])
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonPathFormatError):
             JsonKeyPath("key/[-666]/path")
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonPathFormatError):
             JsonKeyPath(["key", "[-666]", "path"])
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonPathFormatError):
             JsonKeyPath(["key", "sep/ar/ate/d", "path"])
-        except JsonPathFormatError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
     def test_legal_json_paths(self):
         json_keys = JsonKeyPath("key")

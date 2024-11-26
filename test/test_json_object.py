@@ -97,9 +97,9 @@ class JsonObjectTestCase(unittest.TestCase):
     def test_changing_leaf_type(self):
         json_obj = JsonObject(json_str='{"nums":[1,2,3]}')
         self.assertTrue(isinstance(json_obj.get("nums"), list))
-
-        json_obj.set("nums", "value", force=True)
-        self.assertTrue(isinstance(json_obj.get("nums"), str))
+        with self.assertRaises(JsonValueMismatch):
+            json_obj.set("nums",  {"key": "value"}, force=False)
+        json_obj.set("nums",  {"key": "value"}, force=True)
 
         json_obj.set("nums", ["value"], force=True)
         self.assertTrue(isinstance(json_obj.get("nums"), list))
@@ -214,40 +214,26 @@ class JsonObjectTestCase(unittest.TestCase):
 
     def test_failing_get_and_set(self):
         json_obj = JsonObject(json_obj={})
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonKeyStringRequired):
             json_obj.get("key")
-        except JsonKeyStringRequired:
-            has_thrown = True
-        self.assertTrue(has_thrown)
         self.assertEqual(json_obj.get("key", default="MyDefaultedValue"), "MyDefaultedValue")
 
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonKeyStringRequired):
             json_obj.get("[0]")
-        except JsonKeyStringRequired:
-            has_thrown = True
-        self.assertTrue(has_thrown)
+        with self.assertRaises(JsonKeyStringRequired):
+            json_obj.get("[0]", default="MyDefaultedValue")
 
-        json_obj = JsonObject(json_str="")
+        json_obj = JsonObject(json_obj={})
         json_obj.set(keys="key/path/[3]/mixed", value="value", force=True)
-        has_thrown = False
-        try:
+        with self.assertRaises(JsonValueMismatch):
             json_obj.set(keys="key/path/[3]/mixed", value=1234, force=False)
-        except JsonValueMismatch:
-            has_thrown = True
-        self.assertFalse(has_thrown)
 
         json_obj = JsonObject(json_str="")
         json_obj.set(keys="key/path/[3]/mixed/[$]", value="value", force=True)
-        has_thrown = False
-        try:
+
+        with self.assertRaises(JsonValueMismatch):
             json_obj.set(keys="key/path/[3]/mixed/[$]", value=1234, force=False)
-        except JsonValueMismatch:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-
-if __name__ == '__main__':
-    set_logger(verbosity=LogLevels.WARNING)
-    unittest.main()
+    if __name__ == '__main__':
+        set_logger(verbosity=LogLevels.WARNING)
+        unittest.main()

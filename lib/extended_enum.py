@@ -26,6 +26,7 @@ import os
 import sys
 import re
 from enum import Flag, Enum, auto
+from typing import Callable
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
@@ -53,7 +54,7 @@ def always_match(any_obj: object = None):
     """
     return True
 
-type predicate_type = type(always_match)
+type predicate_type = Callable[[object], bool]
 
 def match_one_alternative(
         partial: str,

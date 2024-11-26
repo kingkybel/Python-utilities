@@ -50,35 +50,17 @@ class FileSystemObjectTests(unittest.TestCase):
         self.assertEqual(["/home/user"], make_path_list(path3))
         self.assertListEqual(["/xyz/abc", "/usr/bin", "/home/user"], make_path_list([path1, path2, path3]))
 
-        has_thrown = False
-        try:
+        with self.assertRaises(SystemExit):
             make_path_list("")
-        except SystemExit:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(SystemExit):
             make_path_list([])
-        except SystemExit:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(SystemExit):
             make_path_list([path1, "", path3])
-        except SystemExit:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        self.assertTrue(has_thrown)
-
-        has_thrown = False
-        try:
+        with self.assertRaises(SystemExit):
             make_path_list([path1, [], path3])
-        except SystemExit:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
     def test_glob_path_patterns_successful(self):
         shutil.rmtree("/tmp/test-glob", ignore_errors=True)
@@ -115,13 +97,10 @@ class FileSystemObjectTests(unittest.TestCase):
         os.makedirs(dir2, exist_ok=True)
         os.makedirs(dir3, exist_ok=True)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(FileNotFoundError):
             glob_path_patterns("/tmp/test-glob/sub/subXXX")
-        except FileNotFoundError:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
+        # make sure that on GlobMode.KEEP_EMPTY the function does *NOT* raise an exception
         has_thrown = False
         returned_list = []
         try:

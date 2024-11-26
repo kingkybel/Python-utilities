@@ -28,7 +28,6 @@ import os.path
 import sys
 from os import PathLike
 
-
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../Python-utilities")
 if not os.path.isdir(dk_lib_dir):
@@ -224,8 +223,8 @@ class JsonObject:
 
     def get(self, keys: (str | list[str] | None) = None, default: (bool | int | float | str | list | dict) = None):
         """
-        Get the value of the given keys. If a default is defined, and it's possible to default a key, then the default
-        value will be returned when the key is missing.This happens when this object and the key are structurally
+        Get the value of the given key-path. If a default is defined, and it's possible to default a key, then the
+        default value will be returned when the key is missing.This happens when this object and the key are structurally
         compatible, but the path is too long and the object can no longer be iterated.
         Example: object = {"key1":{"Key2":[]} and key is key1/key2/[0]/key3
         :param keys: key-path
@@ -240,13 +239,7 @@ class JsonObject:
 
         iterator = self.json_
         for key_index, key in enumerate(keys):
-            # check the key is compatible with the container
-            if iterator is None:
-                raise JsonGeneralError(f"get({keys}, {default}) and key_index {key_index}({key}) iterator is None")
-            if isinstance(iterator, list) and not isinstance(key, JsonIndexKey):
-                raise JsonIndexRequired(key_index=key_index, keys=keys, json_obj=iterator)
-            if isinstance(iterator, dict) and not isinstance(key, JsonStringKey):
-                raise JsonKeyStringRequired(key_index=key_index, keys=keys, json_obj=iterator)
+            self.__assert_iterator_and_key_are_compatible(default, iterator, key, key_index, keys)
 
             is_last_key = (key_index >= len(keys) - 1)
 
@@ -299,6 +292,16 @@ class JsonObject:
                 raise JsonGeneralError(message=error_msg) from k
         return iterator
 
+    @classmethod
+    def __assert_iterator_and_key_are_compatible(cls, default, iterator, key, key_index, keys):
+        # check the key is compatible with the container
+        if iterator is None:
+            raise JsonGeneralError(f"get({keys}, {default}) and key_index {key_index}({key}) iterator is None")
+        if isinstance(iterator, list) and not isinstance(key, JsonIndexKey):
+            raise JsonIndexRequired(key_index=key_index, keys=keys, json_obj=iterator)
+        if isinstance(iterator, dict) and not isinstance(key, JsonStringKey):
+            raise JsonKeyStringRequired(key_index=key_index, keys=keys, json_obj=iterator)
+
     def set(self,
             keys: (str | list[str] | JsonKeyPath),
             value: (bool | int | float | str | list | dict),
@@ -320,12 +323,10 @@ class JsonObject:
         keys = path.key_list()
 
         if not dryrun:
-            self.__change_root_or_raise(keys, force)
+            self.__change_root_or_raise(keys=keys, force=force)
             if force:
-                self.__make_forced_path(keys, value)
-                self.__set_impl(keys, value)
-            else:
-                self.__set_impl(keys, value)
+                self.__make_forced_path(keys=keys, value=value)
+            self.__set_impl(keys=keys, value=value, force=force)
 
     @classmethod
     def __get_absolute_index(cls, key_index: int, keys, json_obj, for_insert: bool):
@@ -394,7 +395,7 @@ class JsonObject:
             for _ in range(abs_index - len(iterator) + 1):
                 iterator.append(blank_object)
 
-    def __set_impl(self, keys: JsonKeyPath, value: (bool | int | float | str | list | dict)):
+    def __set_impl(self, keys: JsonKeyPath, value: (bool | int | float | str | list | dict), force: bool):
         iterator = self.json_
 
         for key_index, key in enumerate(keys):
@@ -420,10 +421,10 @@ class JsonObject:
                     if isinstance(iterator, list):
                         raise JsonKeyStringRequired(key_index=key_index, keys=keys.list_of_keys, json_obj=self.json_)
                     if is_last_key:
-                        # if isinstance(iterator[key.get()], type(value)):
-                        iterator[key.get()] = value
-                        # else:
-                        #     raise JsonValueMismatch(orig_value=iterator[key.get()], new_value=value)
+                        if isinstance(iterator[key.get()], type(value)) or force:
+                            iterator[key.get()] = value
+                        else:
+                            raise JsonValueMismatch(orig_value=iterator[key.get()], new_value=value)
                     iterator = iterator[key.get()]
             except JsonKeyStringRequired:
                 raise

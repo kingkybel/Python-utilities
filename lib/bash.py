@@ -38,7 +38,6 @@ from multiprocessing import cpu_count
 from shutil import which
 from socket import gethostname
 from typing import IO
-
 from colorama import Fore, Style
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
@@ -62,7 +61,7 @@ def get_effective_user() -> str:
 def get_logged_in_user() -> str:
     """
     Get the currently logged-in user
-    :return: the user name
+    :return: the username
     """
     try:
         return os.getlogin()
@@ -182,7 +181,7 @@ def check_correct_tool_version(tool: str, version: str) -> bool:
     return True
 
 
-def pipe_monitor_thread_function(pipe: IO, verbosity: LogLevels):
+def pipe_monitor_thread_function(pipe: IO[str|bytes], verbosity: LogLevels):
     """
     Function that runs as thread and is monitoring the output of a pipe.
     :param pipe: file-pipe: either stdin or stdout.

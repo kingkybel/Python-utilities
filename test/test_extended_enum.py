@@ -148,21 +148,11 @@ class ExtendedEnumTests(unittest.TestCase):
                     case SimpleEnum.SIMPLE3:
                         return "ccc"
 
-        has_thrown = False
-        try:
+        with self.assertRaises(ExtendedEnumError):
             SimpleEnum.from_string("xy")
-        except ExtendedEnumError as e:
-            print(e.message)
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(ExtendedEnumError):
             SimpleEnum.from_string("SIM")
-        except ExtendedEnumError as e:
-            print(e.message)
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
     def test_flag_no_match(self):
         class SimpleFlag(ExtendedFlag):
@@ -179,19 +169,11 @@ class ExtendedEnumTests(unittest.TestCase):
                     case SimpleFlag.SIMPLE3:
                         return "ccc"
 
-        has_thrown = False
-        try:
+        with self.assertRaises(ExtendedEnumError):
             SimpleFlag.from_string("12")
-        except ExtendedEnumError as e:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
-        has_thrown = False
-        try:
+        with self.assertRaises(ExtendedEnumError):
             SimpleFlag.from_string("SIM")
-        except ExtendedEnumError as e:
-            has_thrown = True
-        self.assertTrue(has_thrown)
 
 
 if __name__ == '__main__':
