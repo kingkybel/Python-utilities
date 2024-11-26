@@ -179,7 +179,7 @@ class JsonObject:
                     index = JsonObject.__get_absolute_index(key_index=key_index, keys=keys, json_obj=iterator,
                                                             for_insert=False)
 
-                    # if we are at a leaf we return:
+                    # if we are at a path-end we return:
                     # - for indices greater/equal the length of the list: the default if defined, error otherwise
                     # - the value at the index, if index is in range
                     if is_last_key:
@@ -189,7 +189,7 @@ class JsonObject:
                             raise JsonIndexRequired(key_index=key_index, keys=keys, json_obj=iterator)
                         return list(iterator)[int(index)]
 
-                    # We're not at a leaf, so if the index is in range, then we advance the iterator
+                    # We're not at a path-end, so if the index is in range, then we advance the iterator
                     if int(index) < len(iterator):
                         iterator = list(iterator)[int(index)]
                     else:
@@ -346,6 +346,6 @@ class JsonObject:
             except JsonIndexRequired:
                 raise
             except KeyError as k:
-                error_msg = f"Cannot create/overwrite key number '{key_index}' '{key}' - not leaf"
+                error_msg = f"Cannot create/overwrite key number '{key_index}' '{key}' - not path-end"
                 raise JsonGeneralError(message=error_msg) from k
         return self.json_
