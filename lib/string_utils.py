@@ -112,9 +112,9 @@ def squeeze_chars(source: str, squeeze_set: str, replace_with: str = ' ') -> str
     """
     Return a string that is identical to the given source, but with sub-strings containing
     only chars in the squeeze-set replaced by a single replacement char.
-    :param source: the original string.
-    :param squeeze_set: characters to squeeze out.
-    :param replace_with: the replacement char.
+    :param: source: the original string.
+    :param: squeeze_set: characters to squeeze out.
+    :param: replace_with: the replacement char.
     :return: the modified squeezed string.
     """
     if is_empty_string(source):
@@ -151,9 +151,9 @@ def remove_control_chars(text: str) -> str:
 def matches_any(search_string: str, patterns: (str | list[str]) = None) -> bool:
     """
     Check whether the search-string matches any of the given patterns.
-    :param search_string: the string to test.
-    :param patterns: the list of patterns to match against.
-    :return: Tru if any pattern matches, False otherwise.
+    :param: search_string: the string to test.
+    :param: patterns: the list of patterns to match against.
+    :return: True if any pattern matches, False otherwise.
     """
     if patterns is None:
         return True
@@ -175,9 +175,9 @@ def normalise_sentence(sentence: str,
                        expected_non_al_nums: (str | list[str]) = None) -> str:
     """
     Remove most common non-sentence characters, repeated whitespace etc. from a string.
-    :param sentence: the original string containing a sentence.
-    :param squeeze_set: pollutant characters to remove.
-    :param expected_non_al_nums: list of non-alpha-numeric chars that should not to be stripped.
+    :param: sentence: the original string containing a sentence.
+    :param: squeeze_set: pollutant characters to remove.
+    :param: expected_non_al_nums: list of non-alpha-numeric chars that should not to be stripped.
     :return:
     """
     sentence = squeeze_chars(source=sentence,
@@ -255,8 +255,8 @@ def is_cpp_id(identifier: str) -> bool:
 def split_text_into_chunks(text: str, max_chunk_size: int) -> list[str]:
     """
     Split a text into smaller texts and without splitting words or sentences.
-    :param text: the text to split.
-    :param max_chunk_size: the approximate size of the resulting chunks.
+    :param: text: the text to split.
+    :param: max_chunk_size: the approximate size of the resulting chunks.
     :return: a list of smaller texts.
     """
     # Split the text into sentences
@@ -291,7 +291,7 @@ def is_utf8_ascii(text: str) -> bool:
 def is_roman_numeral(text: str) -> bool:
     """
     Check whether a number is a Roman numeral.
-    :param text: the text to check.
+    :param: text: the text to check.
     :return: True, if the text is a Roman numeral, False otherwise.
     """
     text = text.upper().strip()
