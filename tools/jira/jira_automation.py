@@ -110,6 +110,14 @@ if __name__ == "__main__":
                         default=None,
                         help="Access token to the Jira API. If not set then environment variable " \
                              "'JIRA_API_TOKEN' is used.")
+    parser.add_argument("--jira-project-key", "-k",
+                        type=str,
+                        default=None,
+                        help="Jira project-key.")
+    parser.add_argument("--full-name-for-ticket-statuses", "-f",
+                        type=str,
+                        default=None,
+                        help="Username to check ticket statuses for.")
     args = parser.parse_args()
 
     jira_server = os.getenv("JIRA_SERVER", args.server)
@@ -124,16 +132,18 @@ if __name__ == "__main__":
     jira_automation.list_boards()
 
     # List statuses of tickets assigned to a specific user
-    print("\nUser Ticket Statuses:")
-    jira_automation.list_user_ticket_statuses("Dieter Kybelksties")
+    if args.full_name_for_ticket_statuses is not None:
+        print(f"\nUser Ticket Statuses for user {args.full_name_for_ticket_statuses}:")
+        jira_automation.list_user_ticket_statuses(args.full_name_for_ticket_statuses)
 
     jira_automation.list_projects()
 
     # Create a new ticket
-    print("\nCreating a Ticket:")
-    jira_automation.create_ticket(
-        project_key="PLAT",
-        summary="Sample Ticket Summary created from automation",
-        description="Detailed description of the sample ticket.",
-        issue_type="Task"
-    )
+    if args.jira_project_key is not None:
+        print("\nCreating a Ticket:")
+        jira_automation.create_ticket(
+            project_key=args.jira_project_key,
+            summary="Sample Ticket Summary created from automation",
+            description="Detailed description of the sample ticket.",
+            issue_type="Task"
+        )
