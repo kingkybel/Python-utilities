@@ -36,7 +36,8 @@ sys.path.insert(0, dk_lib_dir)
 # pylint: disable=wrong-import-position
 from lib.file_system_object import remove, mkdir
 from lib.basic_functions import valid_absolute_path, now_year, now_date
-from lib.file_utils import read_file, write_file, get_git_config
+from lib.file_utils import read_file, write_file
+from lib.git_commands import get_git_config
 from lib.string_utils import replace_all
 from lib.logger import log_info
 from tools.cpp_project.file_name_mapper import FileNameMapper, CommentStyle

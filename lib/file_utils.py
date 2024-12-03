@@ -34,7 +34,6 @@ if not os.path.isdir(dk_lib_dir):
 sys.path.insert(0, dk_lib_dir)
 
 # pylint: disable=wrong-import-position
-from lib.bash import assert_tools_installed, run_command
 from lib.basic_functions import valid_absolute_path, is_empty_string
 from lib.file_system_object import mkdir
 from lib.logger import log_command, error
@@ -163,24 +162,3 @@ def parse_env_file(filename: (str | PathLike), dryrun: bool = False) -> dict[str
     return key_val_dict
 
 
-def get_git_config(path: (str | PathLike) = None,
-                   allow_system_paths: bool = False,
-                   dryrun: bool = False) -> dict[str, str]:
-    """
-    Extract git config from given git repository located at path.
-    :param path: path to git repository.
-    :param allow_system_paths: allow to manipulate system paths
-    :param dryrun: if set to True, then do not execute but just output a comment describing the command.
-    :return:
-    """
-    key_val_dict = {}
-    if path is None:
-        path = valid_absolute_path(".", allow_system_paths=allow_system_paths)
-    assert_tools_installed("git")
-    reval, s_out, s_err = run_command(cmd="git config --list", cwd=path, raise_errors=False, dryrun=dryrun)
-    if reval != 0:
-        error(f"Could not retrieve git-config in path '{path}': {s_err}")
-    if not dryrun:
-        key_val_dict = extract_dict_from_string(s_out)
-
-    return key_val_dict

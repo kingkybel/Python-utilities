@@ -80,7 +80,12 @@ def parse_crontab(crontab_lines: list[str]) -> list[dict[str, str]]:
 
 
 def expand_time_field(field: str, max_value: int) -> list[int]:
-    """Expands a time field like '0,15' or '7-18' into a list of integers."""
+    """
+    Expands a time field like '0,15' or '7-18' into a list of integers.
+    :param field:
+    :param max_value:
+    :return:
+    """
     result = set()
     for part in field.split(","):
         if "-" in part:  # Range
@@ -94,42 +99,46 @@ def expand_time_field(field: str, max_value: int) -> list[int]:
 
 
 def generate_intervals(
-        interval: int,
-        scope: str,
-        reference_date: datetime = None
+        time_delta_mins: int,
+        scope_restriction: str,
+        date_to_check: datetime | str = None
 ) -> list[tuple[datetime, datetime]]:
     """
     Generates time intervals based on the interval and scope.
+    :param time_delta_mins: size of the time interval in minutes.
+    :param scope_restriction: day, <start-time>-<end-time>
+    :param date_to_check: date to generate interval for.
+    :return: intervals
     """
-    if reference_date is None:
-        reference_date = datetime.now()
+    if date_to_check is None:
+        date_to_check = datetime.now()
 
-    intervals = []
-    if scope == "day":
-        start = reference_date.replace(hour=0, minute=0, second=0, microsecond=0)
-        end = reference_date.replace(hour=23, minute=59, second=59, microsecond=0)
-    elif "-" in scope:  # Time range
-        start_str, end_str = scope.split("-")
+    reval_intervals = []
+    if scope_restriction == "day":
+        start = date_to_check.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = date_to_check.replace(hour=23, minute=59, second=59, microsecond=0)
+    elif "-" in scope_restriction:  # Time range
+        start_str, end_str = scope_restriction.split("-")
         start = datetime.strptime(start_str, "%H:%M").replace(
-            year=reference_date.year,
-            month=reference_date.month,
-            day=reference_date.day,
+            year=date_to_check.year,
+            month=date_to_check.month,
+            day=date_to_check.day,
         )
         end = datetime.strptime(end_str, "%H:%M").replace(
-            year=reference_date.year,
-            month=reference_date.month,
-            day=reference_date.day,
+            year=date_to_check.year,
+            month=date_to_check.month,
+            day=date_to_check.day,
         )
     else:
-        raise ValueError(f"Invalid scope format: {scope}")
+        raise ValueError(f"Invalid scope_restriction format: {scope_restriction}")
 
     current = start
     while current <= end:
-        next_time = current + timedelta(minutes=interval)
-        intervals.append((current, min(next_time, end)))
+        next_time = current + timedelta(minutes=time_delta_mins)
+        reval_intervals.append((current, min(next_time, end)))
         current = next_time
 
-    return intervals
+    return reval_intervals
 
 
 def collect_jobs(
@@ -137,7 +146,10 @@ def collect_jobs(
         intervals: list[tuple[datetime, datetime]]
 ) -> list[tuple[str, list[str]]]:
     """
-    Collects jobs for each interval.
+    Collects jobs from schedule for each interval.
+    :param schedule:
+    :param intervals:
+    :return:
     """
     jobs_by_interval = []
 
@@ -160,7 +172,10 @@ def collect_jobs(
 
 def plot_job_intervals(job_intervals: list[tuple[str, list[str]]], title: str):
     """
-    Plots the number of jobs per interval.
+    Plots the number of jobs per interval
+    :param job_intervals:
+    :param title:
+    :return:
     """
     interval_labels = [interval for interval, _ in job_intervals]
     job_counts = [len(jobs) for _, jobs in job_intervals]
@@ -178,7 +193,13 @@ def plot_job_intervals(job_intervals: list[tuple[str, list[str]]], title: str):
 
 
 def write_to_csv(file_path: str, rows: list[list[str]], headers: list[str]):
-    """Writes rows to a CSV file with the given headers."""
+    """
+    Writes rows to a CSV file with the given headers..
+    :param file_path:
+    :param rows:
+    :param headers:
+    :return:
+    """
     with open(file_path, mode="w", newline="", encoding="utf-8") as csv_file:
         writer = csv.writer(csv_file)
         writer.writerow(headers)
@@ -188,10 +209,9 @@ def write_to_csv(file_path: str, rows: list[list[str]], headers: list[str]):
 def write_to_json(job_intervals: list[tuple[str, str]], output_file: PathLike | str):
     """
     Writes job intervals to a JSON file in the specified format.
-
-    Args:
-        job_intervals (list): List of (interval_label, jobs) tuples.
-        output_file (str): Path to the output JSON file.
+    :param job_intervals: List of (interval_label, jobs) tuples.
+    :param output_file: Path to the output JSON file.
+    :return:
     """
     # Create the JSON structure
     json_data = [
@@ -239,7 +259,7 @@ if __name__ == "__main__":
     parser.add_argument("--plot", "-p",
                         default=False,
                         action="store_true",
-                        help="display a plot of number of jobs per time interval.")
+                        help="display a plot of number of jobs per time time_delta_mins.")
 
     args = parser.parse_args()
 
@@ -259,7 +279,7 @@ if __name__ == "__main__":
     schedule = parse_crontab(crontab_content.splitlines())
 
     # Generate time intervals
-    intervals = generate_intervals(interval, scope, reference_date=reference_date)
+    intervals = generate_intervals(interval, scope_restriction=scope, date_to_check=reference_date)
 
     # Collect jobs in intervals
     job_intervals = collect_jobs(schedule=schedule, intervals=intervals)

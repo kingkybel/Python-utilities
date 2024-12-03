@@ -38,7 +38,7 @@ sys.path.insert(0, dk_lib_dir)
 from lib.bash import run_command, assert_tools_installed
 from lib.basic_functions import valid_absolute_path
 from lib.file_system_object import find, FileSystemObjectType
-from lib.file_utils import get_git_config
+from lib.git_commands import get_git_config
 from tools.cpp_project.basic_file_set_creator import BasicFileSetCreator
 from tools.cpp_project.class_file_set_creator import ClassFileSetCreator
 from tools.cpp_project.cmake_file_set_creator import CmakeFileSetCreator
