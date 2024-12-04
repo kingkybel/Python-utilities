@@ -51,8 +51,9 @@ class LogLevels(ExtendedEnum):
     FATAL = int(logging.FATAL)
     ERROR = int(logging.ERROR)
     WARNING = int(logging.WARNING)
-    COMMAND = int(logging.WARNING) - 3
-    COMMAND_OUTPUT = int(logging.WARNING) - 6
+    COMMAND = int(logging.WARNING) - 2
+    COMMAND_OUTPUT = int(logging.WARNING) - 4
+    COMMAND_STDERR = int(logging.WARNING) - 6
     INFO = int(logging.INFO)
     DEBUG = int(logging.DEBUG)
 
@@ -91,6 +92,9 @@ class CustomFormatter(logging.Formatter):
         if record.levelno == LogLevels.COMMAND_OUTPUT:
             self._style._fmt = "%(messages)s"
 
+        if record.levelno == LogLevels.COMMAND_STDERR:
+            self._style._fmt = "%(messages)s"
+
         result = logging.Formatter.format(self, record)
 
         self._style._fmt = format_orig
@@ -116,7 +120,7 @@ class CustomFormatter(logging.Formatter):
 
 class ScriptLogger:
     """
-    A logger class that uses the LogLevels enum to format log entries for files and command-line.
+    A logger class that uses the LogLevels enum to format log entries for logfiles and console.
     """
 
     def __init__(self,
@@ -213,6 +217,13 @@ class ScriptLogger:
         if self.verbosity.logging_level() <= LogLevels.COMMAND_OUTPUT.value:
             print(command_output)
 
+    def log_command_stderr(self, command_stderr: str):
+        if self.do_file_log:
+            logging.log(level=LogLevels.COMMAND_STDERR.logging_level(),
+                        msg=command_stderr)
+        if self.verbosity.logging_level() <= LogLevels.COMMAND_STDERR.value:
+            print(f"{Fore.RED}!!{Style.RESET_ALL} {Fore.LIGHTWHITE_EX}{command_stderr}{Style.RESET_ALL}")
+
     def log_header(self, header, filler: str = "="):
         if len(header) <= 96:
             filler_len = int((100 - len(header) - 2) / 2)
@@ -245,6 +256,8 @@ class ScriptLogger:
                 self.log_command(message, extra_comment=extra_comment)
             case LogLevels.COMMAND_OUTPUT:
                 self.log_command_output(message)
+            case LogLevels.COMMAND_STDERR:
+                self.log_command_stderr(message)
 
 
 global_logger = ScriptLogger()

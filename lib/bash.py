@@ -185,7 +185,7 @@ def pipe_monitor_thread_function(pipe: IO[str|bytes], verbosity: LogLevels):
     """
     Function that runs as thread and is monitoring the output of a pipe.
     :param pipe: file-pipe: either stdin or stdout.
-    :param verbosity: log-level so out put can be customised.
+    :param verbosity: log-level so output can be customised.
     :return: the string that was piped to the pipe.
     """
     piped_str = ""
@@ -234,7 +234,7 @@ def run_command(cmd: (str | list[str]),
         out_thread = ReturningThread(target=pipe_monitor_thread_function,
                                      args=(process.stdout, LogLevels.COMMAND_OUTPUT))
         err_thread = ReturningThread(target=pipe_monitor_thread_function,
-                                     args=(process.stderr, LogLevels.WARNING))
+                                     args=(process.stderr, LogLevels.COMMAND_STDERR))
         out_thread.start()
         err_thread.start()
         # let the process do its job
