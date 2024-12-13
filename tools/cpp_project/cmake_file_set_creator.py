@@ -42,7 +42,6 @@ from tools.cpp_project.abc_file_set_creator import ABCFileSetCreator
 from tools.cpp_project.template_file_set_creator import TemplateFileSetCreator
 
 
-
 class CmakeFileSetCreator(ABCFileSetCreator):
     """
     @brief Create files for all the cmake files necessary for the project.
@@ -106,22 +105,18 @@ class CmakeFileSetCreator(ABCFileSetCreator):
 
     @overrides(ABCFileSetCreator)
     def get_tag_replacements(self) -> dict[str, str]:
-        tag_dict = {}
-        tag_dict["{{cookiecutter.cmake_include_classes_sub_dir}}"] = ""
-        tag_dict["{{cookiecutter.cmake_class_lib_targets}}"] = ""
-        tag_dict["{{cookiecutter.cmake_include_grpc_sub_dir}}"] = ""
-        tag_dict["{{cookiecutter.cmake_include_services_sub_dir}}"] = "add_subdirectory(services)"
-        tag_dict["{{cookiecutter.cmake_services_project_part}}"] = ""
-        tag_dict["{{cookiecutter.cmake_services_grpc_part}}"] = ""
-        tag_dict["{{cookiecutter.cmake_grpc_services}}"] = ""
-        tag_dict["{{cookiecutter.test_exe_link_libraries}}"] = self.__make_test_link_libraries()
-        tag_dict["{{cookiecutter.test_source_files}}"] = self.__make_test_source_files()
-        tag_dict["{{cookiecutter.cmake_test_include_dirs}}"] = ""
-        tag_dict["{{cookiecutter.cmake_test_exe_link_libraries}}"] = self.__make_cmake_test_exe_link_libraries()
-        tag_dict["{{cookiecutter.docker_build_command}}"] = self.__make_docker_build_command()
-        tag_dict["{{cookiecutter.cmake_grpc_common_defs}}"] = ""
-        tag_dict["{{cookiecutter.cmake_grpc_common_libs}}"] = ""
-        tag_dict["{{cookiecutter.cmake_include_subdir_test}}"] = "add_subdirectory(test)"
+        tag_dict = {"{{cookiecutter.cmake_include_classes_sub_dir}}": "",
+                    "{{cookiecutter.cmake_class_lib_targets}}": "", "{{cookiecutter.cmake_include_grpc_sub_dir}}": "",
+                    "{{cookiecutter.cmake_include_services_sub_dir}}": "add_subdirectory(services)",
+                    "{{cookiecutter.cmake_services_project_part}}": "", "{{cookiecutter.cmake_services_grpc_part}}": "",
+                    "{{cookiecutter.cmake_grpc_services}}": "",
+                    "{{cookiecutter.test_exe_link_libraries}}": self.__make_test_link_libraries(),
+                    "{{cookiecutter.test_source_files}}": self.__make_test_source_files(),
+                    "{{cookiecutter.cmake_test_include_dirs}}": "",
+                    "{{cookiecutter.cmake_test_exe_link_libraries}}": self.__make_cmake_test_exe_link_libraries(),
+                    "{{cookiecutter.docker_build_command}}": self.__make_docker_build_command(),
+                    "{{cookiecutter.cmake_grpc_common_defs}}": "", "{{cookiecutter.cmake_grpc_common_libs}}": "",
+                    "{{cookiecutter.cmake_include_subdir_test}}": "add_subdirectory(test)"}
 
         if len(self.__class_names) > 0:
             tag_dict["{{cookiecutter.cmake_include_classes_sub_dir}}"] = "add_subdirectory(classes)"
@@ -223,21 +218,23 @@ class CmakeFileSetCreator(ABCFileSetCreator):
 
     def __make_cmake_test_exe_link_libraries(self) -> str:
         link_libs = ""
-
-        multiline = len(self.__class_names) + len(self.__grpc_service_config_strings) > 1
+        INDENTATION = "\n                      "
+        print(f"{self.__class_names} {self.__grpc_service_config_strings}")
+        multiline = (len(self.__class_names) + len(self.__grpc_service_config_strings)) > 1 or \
+                    len(self.__grpc_service_config_strings) == 1
         for cls in self.__class_names:
             if multiline:
-                link_libs += "\n                      "
+                link_libs += INDENTATION
             link_libs += cls.lower()
         for grpc_service_config_string in self.__grpc_service_config_strings:
             grpc_config = GrpcFileSetCreator(project_path=self.project_path(),
                                              proto_service_request_str=grpc_service_config_string,
                                              port=-1)
             if multiline:
-                link_libs += "\n                      "
+                link_libs += INDENTATION
             link_libs += f"{grpc_config.service_with_type().lower()}_client"
             if multiline:
-                link_libs += "\n                      "
+                link_libs += INDENTATION
             link_libs += f"{grpc_config.service_with_type().lower()}_service"
         if not is_empty_string(link_libs):
             link_libs = \
