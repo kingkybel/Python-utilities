@@ -32,7 +32,6 @@ import sys
 import pandas as pd
 import requests
 
-from lib.git_commands import get_current_local_branch
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../../Python-utilities")
@@ -41,6 +40,7 @@ if not os.path.isdir(dk_lib_dir):
 sys.path.insert(0, dk_lib_dir)
 
 # pylint: disable=wrong-import-position
+from lib.git_commands import get_current_local_branch
 from lib.exceptions import JsonError
 from lib.logger import error, log_info, log_warning
 from lib.file_system_object import find, FileSystemObjectType
@@ -61,7 +61,6 @@ class GitLabTools:
     def extract_gitlab_project_id(self, repo_name: str) -> str | None:
         """
         Extract the GitLab project ID from the remote URL.
-        :param: gitlab_access_token: Access token for the current user
         :param: repo_name: name of the repository/project
         :return: the project id for the repository/project
         """
@@ -146,6 +145,18 @@ class GitLabTools:
 
         return merge_requests_combined
 
+    def pipelines_on_local_directories(self, project_dirs: list[PathLike | str]) -> JsonObject:
+        pipelines_combined = JsonObject("[]")
+        for project_dir in project_dirs:
+            log_info(f"processing project_dir '{project_dir}'")
+            project = os.path.basename(project_dir)
+            project_id = self.extract_gitlab_project_id(repo_name=project)
+            if project_id is not None:
+                pipelines_on_this_project = self.get_pipelines(project_id)
+                pipelines_combined.set("[$]", pipelines_on_this_project, force=True)
+
+        return pipelines_combined
+
     def get_pipelines(self, project_id):
         headers = {"PRIVATE-TOKEN": self.access_token}
         url = f"{self.GITLAB_COM_API_URL}/projects/{project_id}/pipelines"
@@ -214,11 +225,16 @@ if __name__ == "__main__":
         print(local_dirs)
 
     gitlab_tool = GitLabTools(args.gitlab_access_token)
-    merge_requests = gitlab_tool.merge_requests_on_local_directories(local_dirs)
 
-    if args.output_file is not None:
-        df = pd.json_normalize(merge_requests.get())
-        df.to_excel("output.xlsx", index=False)
-        # write_file(filename=valid_absolute_path(f"{this_dir}/{args.output_file}"), content=merge_requests.to_str())
-    else:
-        print(merge_requests.to_str())
+    proj_id = gitlab_tool.extract_gitlab_project_id("ecom-api")
+    pipelines = gitlab_tool.get_pipelines(proj_id)
+    all_pipes = gitlab_tool.pipelines_on_local_directories(local_dirs)
+
+    # merge_requests = gitlab_tool.merge_requests_on_local_directories(local_dirs)
+    #
+    # if args.output_file is not None:
+    #     df = pd.json_normalize(merge_requests.get())
+    #     df.to_excel("output.xlsx", index=False)
+    #     # write_file(filename=valid_absolute_path(f"{this_dir}/{args.output_file}"), content=merge_requests.to_str())
+    # else:
+    #     print(merge_requests.to_str())

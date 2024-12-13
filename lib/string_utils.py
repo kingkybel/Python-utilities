@@ -165,6 +165,12 @@ def matches_any(search_string: str, patterns: (str | list[str]) = None) -> bool:
 
 
 def replace_all(content: str, replacements: dict[str, str]) -> str:
+    """
+    Replace all occurrences of the given replacements.
+    :param content: the original string.
+    :param replacements: a mapping from original strings to replacements.
+    :return: the modified string.
+    """
     for tag in replacements.keys():
         content = content.replace(tag, replacements[tag])
     return content
@@ -201,7 +207,7 @@ def normalise_sentence(sentence: str,
     return reval
 
 
-def get_random_string(length, letters: str = None) -> str:
+def get_random_string(length: int, letters: str = None) -> str:
     """
     Create a random string of given length.
     :param length: number of characters.
@@ -214,7 +220,7 @@ def get_random_string(length, letters: str = None) -> str:
     return ''.join(random.choice(letters) for i in range(length))
 
 
-def contains_at_least_n_of(text, specified_words: (str | list[str]) = None, minimum: int = 10) -> bool:
+def contains_at_least_n_of(text:str, specified_words: (str | list[str]) = None, minimum: int = 10) -> bool:
     """
     Check whether a text contains at least `minimum` of the specified words.
     :param text: the text to check.
@@ -231,6 +237,11 @@ def contains_at_least_n_of(text, specified_words: (str | list[str]) = None, mini
 
 
 def is_cpp_id(identifier: str) -> bool:
+    """
+    Check whether a string is a CPP identifier or not.
+    :param identifier: the string to check.
+    :return: True if the string is a CPP identifier, False otherwise.
+    """
     # Check if the identifier is not empty
     if not identifier:
         return False
@@ -250,6 +261,24 @@ def is_cpp_id(identifier: str) -> bool:
 
     # If all checks pass, it's a valid C++ identifier
     return True
+
+
+def make_cpp_id(input_string: str) -> str:
+    """
+    Replaces every character in a string that is not alphanumeric or an underscore with an underscore.
+    Ensures multiple consecutive underscores are replaced with a single underscore.
+
+    :param input_string: The input string to process.
+    :return: A processed string with only alphanumeric characters and underscores.
+    """
+    # Replace all non-alphanumeric and non-underscore characters with underscores
+    processed_string = re.sub(r'[^\w]', '_', input_string)
+    # Replace multiple consecutive underscores with a single underscore
+    processed_string = re.sub(r'__+', '_', processed_string)
+    processed_string = processed_string.strip('_')
+    if is_empty_string(processed_string):
+        processed_string = "_"
+    return processed_string
 
 
 def split_text_into_chunks(text: str, max_chunk_size: int) -> list[str]:
@@ -281,6 +310,11 @@ def split_text_into_chunks(text: str, max_chunk_size: int) -> list[str]:
 
 
 def is_utf8_ascii(text: str) -> bool:
+    """
+    Check whether a string is a UTF-8 ASCII character.
+    :param text: the text to check.
+    :return: True if the string is a UTF-8 ASCII character, False otherwise.
+    """
     try:
         text.encode(encoding='utf-8').decode('ascii')
         return True
@@ -291,7 +325,7 @@ def is_utf8_ascii(text: str) -> bool:
 def is_roman_numeral(text: str) -> bool:
     """
     Check whether a number is a Roman numeral.
-    :param: text: the text to check.
+    :param text: the text to check.
     :return: True, if the text is a Roman numeral, False otherwise.
     """
     text = text.upper().strip()
@@ -306,6 +340,11 @@ def is_roman_numeral(text: str) -> bool:
 
 
 def roman_to_integer(text: str) -> int:
+    """
+    Convert Roman numeral to integer.
+    :param text: the text to convert.
+    :return: the converted integer, if possible, 0 otherwise.
+    """
     if not is_roman_numeral(text):
         return -1
 

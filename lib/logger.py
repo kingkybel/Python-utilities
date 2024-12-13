@@ -210,19 +210,19 @@ class ScriptLogger:
             spaces = " " * spaces_len
             print(f"{Fore.MAGENTA}{command_str}{Fore.LIGHTBLACK_EX}{spaces}{comment}{Style.RESET_ALL}")
 
-    def log_command_output(self, command_output: str):
+    def log_command_stdout(self, command_stdout: str):
         if self.do_file_log:
             logging.log(level=LogLevels.COMMAND_OUTPUT.logging_level(),
-                        msg=command_output)
+                        msg=command_stdout)
         if self.verbosity.logging_level() <= LogLevels.COMMAND_OUTPUT.value:
-            print(command_output)
+            print(f"{Fore.GREEN}(stdout){Style.RESET_ALL} {Fore.LIGHTWHITE_EX}{command_stdout}{Style.RESET_ALL}")
 
     def log_command_stderr(self, command_stderr: str):
         if self.do_file_log:
             logging.log(level=LogLevels.COMMAND_STDERR.logging_level(),
                         msg=command_stderr)
         if self.verbosity.logging_level() <= LogLevels.COMMAND_STDERR.value:
-            print(f"{Fore.RED}!!{Style.RESET_ALL} {Fore.LIGHTWHITE_EX}{command_stderr}{Style.RESET_ALL}")
+            print(f"{Fore.RED}(stderr){Style.RESET_ALL} {Fore.LIGHTWHITE_EX}{command_stderr}{Style.RESET_ALL}")
 
     def log_header(self, header, filler: str = "="):
         if len(header) <= 96:
@@ -255,7 +255,7 @@ class ScriptLogger:
             case LogLevels.COMMAND:
                 self.log_command(message, extra_comment=extra_comment)
             case LogLevels.COMMAND_OUTPUT:
-                self.log_command_output(message)
+                self.log_command_stdout(message)
             case LogLevels.COMMAND_STDERR:
                 self.log_command_stderr(message)
 

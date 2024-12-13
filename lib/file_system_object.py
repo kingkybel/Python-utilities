@@ -57,8 +57,8 @@ class FindSortField(ExtendedEnum):
 
 
 class FileSystemObjectType(ExtendedFlag):
-    NONE = 0
-    FILE = 1
+    NONE = auto()
+    FILE = auto()
     EMPTY_DIR = auto()
     NOT_EMPTY_DIR = auto()
     STALE_LINK = auto()
@@ -205,9 +205,7 @@ def remove(paths: (str | PathLike | list),
     :param allow_system_paths:
     :param dryrun: just go through the motions
     """
-    glob_mode = GlobMode.WARN_EMPTY
-    if force:
-        glob_mode = GlobMode.KEEP_EMPTY
+    glob_mode = GlobMode.WARN_EMPTY if force else GlobMode.KEEP_EMPTY
     paths = glob_path_patterns(paths, glob_mode=glob_mode)
     log_command(f"rm -rf {paths}", dryrun=dryrun)
     if not dryrun:

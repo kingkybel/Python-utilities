@@ -89,7 +89,8 @@ def expand_time_field(field: str, max_value: int) -> list[int]:
     result = set()
     for part in field.split(","):
         if "-" in part:  # Range
-            start, end = {int, part.split("-")}
+            t1, t2 = part.split("-")
+            start, end = int(t1), int(t2)
             result.update(range(start, end + 1))
         elif part == "*":  # Wildcard
             result.update(range(max_value))
@@ -175,7 +176,6 @@ def plot_job_intervals(job_intervals: list[tuple[str, list[str]]], title: str):
     Plots the number of jobs per interval
     :param job_intervals:
     :param title:
-    :return:
     """
     interval_labels = [interval for interval, _ in job_intervals]
     job_counts = [len(jobs) for _, jobs in job_intervals]
@@ -198,7 +198,6 @@ def write_to_csv(file_path: str, rows: list[list[str]], headers: list[str]):
     :param file_path:
     :param rows:
     :param headers:
-    :return:
     """
     with open(file_path, mode="w", newline="", encoding="utf-8") as csv_file:
         writer = csv.writer(csv_file)
@@ -211,16 +210,15 @@ def write_to_json(job_intervals: list[tuple[str, str]], output_file: PathLike | 
     Writes job intervals to a JSON file in the specified format.
     :param job_intervals: List of (interval_label, jobs) tuples.
     :param output_file: Path to the output JSON file.
-    :return:
     """
     # Create the JSON structure
     json_data = [
         {
-            "time": interval,
+            "time": time_interval,
             "numberOfJobs": len(jobs),
             "jobs": jobs
         }
-        for interval, jobs in job_intervals
+        for time_interval, jobs in job_intervals
     ]
 
     # Sort the data by numberOfJobs in descending order
@@ -228,7 +226,7 @@ def write_to_json(job_intervals: list[tuple[str, str]], output_file: PathLike | 
 
     # Write to the JSON file
     with open(output_file, "w", encoding="utf-8") as json_file:
-        json.dump(json_data, json_file, indent=4)
+        json.dump(obj=json_data, fp=json_file, indent=4)
 
 
 # Example Usage
@@ -286,8 +284,6 @@ if __name__ == "__main__":
 
     # Write the schedule to a CSV
     schedule_rows = [[interval] + jobs for interval, jobs in job_intervals]
-
-    write_to_csv(args.schedule_output, schedule_rows, ["Interval", "Jobs"])
 
     # Write to a JSON file
     write_to_json(job_intervals=job_intervals, output_file=f"{this_dir}/job_schedule.json")

@@ -32,7 +32,6 @@ class DirectedAcyclicGraph:
         # Check if adding this edge would create a cycle
         if not nx.is_directed_acyclic_graph(self.graph):
             raise ValueError("Adding this edge would create a cycle.")
-
         self.graph.add_edge(source, target)
 
     def add_node(self, node):

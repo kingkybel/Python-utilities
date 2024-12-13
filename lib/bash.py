@@ -55,6 +55,10 @@ from lib.thread_with_return import ReturningThread
 
 
 def get_effective_user() -> str:
+    """
+    Retrieve the user ID of the currently executing user.
+    :return: the current user ID
+    """
     return getuser()
 
 
@@ -92,7 +96,7 @@ def number_of_cores() -> int:
 
 def hostname() -> str:
     """
-    Get the hostname
+    Get the hostname.
     :return: the hostname
     """
     return gethostname()
@@ -126,7 +130,7 @@ def get_external_ip() -> str:
 
 def ping(host_name: str = None) -> tuple[int, str]:
     """
-    Ping the host
+    Ping the host.
     :param host_name: the host name to ping
     :return: a tuple error code and error message
     """
@@ -143,7 +147,7 @@ def ping(host_name: str = None) -> tuple[int, str]:
 
 def is_tool_installed(name: str) -> bool:
     """
-    Check if the tool is installed
+    Check if the tool is installed.
     :param name: name of the tool
     :return: True, if tool is installed, False otherwise
     """
