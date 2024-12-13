@@ -23,6 +23,7 @@
 
 from __future__ import annotations
 import os
+import re
 import sys
 from os import PathLike
 
@@ -45,7 +46,8 @@ from lib.string_utils import is_cpp_id
 
 class GrpcFileSetCreator(ABCFileSetCreator):
 
-    def __init__(self, project_path: (str | PathLike),
+    def __init__(self,
+                 project_path: (str | PathLike),
                  proto_service_request_str: str,
                  port: int,
                  add_docker: bool = False):
@@ -190,6 +192,36 @@ class GrpcFileSetCreator(ABCFileSetCreator):
             "{{cookiecutter.grpc_client_test_hash_includes}}": f'#include "{self.client_h()}"\n',
             "{{cookiecutter.grpc_service_test_hash_includes}}": f'#include "{self.service_h()}"\n',
         }
+
+    # Function to parse the proto file and extract messages and services
+    def parse_proto(self, proto_file):
+        with open(proto_file, "r", encoding="utf-8") as file:
+            proto_content = file.read()
+
+        # Extract package name
+        package_match = re.search(r"package\s+([\w\.]+);", proto_content)
+        package_name = package_match.group(1) if package_match else "default"
+
+        # Extract message definitions
+        messages = re.findall(r"message\s+(\w+)\s*{(.*?)}", proto_content, re.DOTALL)
+
+        # Extract service definitions
+        services = re.findall(r"service\s+(\w+)\s*{(.*?)}", proto_content, re.DOTALL)
+
+        parsed_messages = []
+        for message_name, message_body in messages:
+            fields = re.findall(r"(\w+(?:<.*?>)?\s+)?(\w+)\s*=\s*(\d+);", message_body)
+            parsed_messages.append({"name": message_name, "fields": fields})
+
+        parsed_services = []
+        for service_name, service_body in services:
+            methods = re.findall(
+                r"rpc\s+(\w+)\s*\((\w+)\)\s+returns\s+\((\w+)\);",
+                service_body,
+            )
+            parsed_services.append({"name": service_name, "methods": methods})
+
+        return package_name, parsed_messages, parsed_services
 
     def proto(self):
         return self.__proto

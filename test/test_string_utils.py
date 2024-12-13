@@ -33,7 +33,8 @@ if not os.path.isdir(dk_lib_dir):
 sys.path.insert(0, dk_lib_dir)
 
 # pylint: disable=wrong-import-position
-from lib.string_utils import squeeze_chars, matches_any, normalise_sentence, roman_to_integer, is_roman_numeral
+from lib.string_utils import squeeze_chars, matches_any, normalise_sentence, roman_to_integer, is_roman_numeral, \
+    identify_case, IdentifierStringCase, make_cpp_id
 from lib.logger import LogLevels, set_logger
 
 
@@ -75,6 +76,44 @@ class BasicFunctionsTests(unittest.TestCase):
         self.assertEqual(roman_to_integer("MCMXCIV"), 1994)
 
         self.assertEqual(roman_to_integer("abc"), -1)
+
+    def test_identify_case(self):
+        self.assertEqual(identify_case("snake_case"), IdentifierStringCase.SNAKE)
+        self.assertEqual(identify_case("camelCase"), IdentifierStringCase.CAMEL)
+        self.assertEqual(identify_case("CamelCase"), IdentifierStringCase.CLASS)
+        self.assertEqual(identify_case("mixed_Case"), IdentifierStringCase.MIXED)
+        self.assertEqual(identify_case("Mixed_Case"), IdentifierStringCase.MIXED)
+
+    def test_constant_conversion(self):
+        self.assertEqual(make_cpp_id("this_is_constant_case", IdentifierStringCase.CONSTANT),
+                         "THIS_IS_CONSTANT_CASE")
+        self.assertEqual(make_cpp_id("ThisIsConstantCase", IdentifierStringCase.CONSTANT),
+                         "THIS_IS_CONSTANT_CASE")
+        self.assertEqual(make_cpp_id("thisIsConstantCase", IdentifierStringCase.CONSTANT),
+                         "THIS_IS_CONSTANT_CASE")
+        self.assertEqual(make_cpp_id("thisIs_Constant_Case", IdentifierStringCase.CONSTANT),
+                         "THIS_IS__CONSTANT__CASE")
+
+    def test_no_identifier_conversion(self):
+        self.assertEqual(make_cpp_id("This is not valid!", IdentifierStringCase.SNAKE), "this_is_not_valid")
+        self.assertEqual(make_cpp_id("This is not valid!", IdentifierStringCase.CLASS), "ThisIsNotValid")
+        self.assertEqual(make_cpp_id("This is not valid!", IdentifierStringCase.CONSTANT), "THIS_IS_NOT_VALID")
+        self.assertEqual(make_cpp_id("This is not valid!", IdentifierStringCase.MIXED), "This_is_not_valid")
+        self.assertEqual(make_cpp_id("This is not valid!", IdentifierStringCase.CAMEL), "thisIsNotValid")
+
+    def test_empty_id_string(self):
+        self.assertEqual(make_cpp_id("", IdentifierStringCase.SNAKE), "_")
+        self.assertEqual(make_cpp_id("", IdentifierStringCase.CAMEL), "_")
+        self.assertEqual(make_cpp_id("", IdentifierStringCase.CLASS), "_")
+        self.assertEqual(make_cpp_id("", IdentifierStringCase.CONSTANT), "_")
+        self.assertEqual(make_cpp_id("", IdentifierStringCase.MIXED), "_")
+
+    def test_numbered_id_string(self):
+        self.assertEqual(make_cpp_id("this is numbered 1234.341", IdentifierStringCase.SNAKE), "this_is_numbered_1234_341")
+        self.assertEqual(make_cpp_id("this is numbered 1234.341", IdentifierStringCase.CONSTANT), "THIS_IS_NUMBERED_1234_341")
+        self.assertEqual(make_cpp_id("This is Numbered 1234.341", IdentifierStringCase.MIXED), "This_is_Numbered_1234_341")
+        self.assertEqual(make_cpp_id("111this is numbered 1234.341", IdentifierStringCase.SNAKE), "_111_this_is_numbered_1234_341")
+        self.assertEqual(make_cpp_id("111this is numbered 1234.341", IdentifierStringCase.CLASS), "_111ThisIsNumbered1234_341")
 
 
 if __name__ == '__main__':

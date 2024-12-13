@@ -31,7 +31,7 @@ import sys
 from os import PathLike
 
 from lib.file_utils import write_file
-from lib.string_utils import make_cpp_id
+from lib.string_utils import make_cpp_id, IdentifierStringCase
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 dk_lib_dir = os.path.abspath(f"{this_dir}/../../../Python-utilities")
@@ -47,11 +47,11 @@ def convert_dependency_dict_to_graphviz(dependency_dict: dict[str, list[str]]) -
     graph = "\ndigraph G {\n"
 
     for service_node in dependency_dict.keys():
-        graph += f'\t{make_cpp_id(service_node)} [label="{service_node}"];\n'
+        graph += f'\t{make_cpp_id(service_node, IdentifierStringCase.SNAKE)} [label="{service_node}"];\n'
 
     for service_node in dependency_dict.keys():
         for dep in dependency_dict[service_node]:
-            graph += f"\t{make_cpp_id(service_node)} -> {make_cpp_id(dep)};\n"
+            graph += f"\t{make_cpp_id(service_node, IdentifierStringCase.SNAKE)} -> {make_cpp_id(dep, IdentifierStringCase.SNAKE)};\n"
     graph += "}\n"
 
     return graph
